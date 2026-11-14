@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { CmsModule } from './cms/cms.module.js';
+import { CheckoutModule } from './checkout/checkout.module.js';
 import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware.js';
 import { MailModule } from './mail/mail.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -37,6 +38,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     AuthModule,
     UsersModule,
     CmsModule,
+    CheckoutModule,
   ],
   controllers: [AppController],
   providers: [

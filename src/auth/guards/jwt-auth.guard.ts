@@ -38,9 +38,10 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      const secret =
+      const rawSecret =
         this.config.get<string>('JWT_ACCESS_SECRET') ||
         'dev-slimza-access-secret-change-in-production';
+      const secret = rawSecret.trim().replace(/^["']|["']$/g, '');
       const payload = await this.jwtService.verifyAsync<AuthUserPayload>(token, {
         secret,
       });

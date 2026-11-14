@@ -20,7 +20,12 @@
     "test:cov": "vitest run --coverage",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
-    "seed": "npm run build && node dist/prisma/seed.js"
+    "seed": "npm run build && node dist/prisma/seed.js",
+    "pm2:start": "npm run build && pm2 start ecosystem.config.cjs",
+    "pm2:stop": "pm2 stop slimza-backend",
+    "pm2:restart": "npm run build && pm2 restart slimza-backend",
+    "pm2:logs": "pm2 logs slimza-backend",
+    "pm2:status": "pm2 status"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
@@ -38,6 +43,7 @@
     "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "stripe": "^23.1.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {

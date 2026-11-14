@@ -71,3 +71,13 @@ export type CmsSection = Prisma.CmsSectionModel
  * 
  */
 export type NewsletterLead = Prisma.NewsletterLeadModel
+/**
+ * Model Order
+ * 
+ */
+export type Order = Prisma.OrderModel
+/**
+ * Model OrderItem
+ * 
+ */
+export type OrderItem = Prisma.OrderItemModel

@@ -56,7 +56,9 @@ export const ModelName = {
   OtpCode: 'OtpCode',
   RefreshToken: 'RefreshToken',
   CmsSection: 'CmsSection',
-  NewsletterLead: 'NewsletterLead'
+  NewsletterLead: 'NewsletterLead',
+  Order: 'Order',
+  OrderItem: 'OrderItem'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -171,6 +173,55 @@ export const NewsletterLeadScalarFieldEnum = {
 export type NewsletterLeadScalarFieldEnum = (typeof NewsletterLeadScalarFieldEnum)[keyof typeof NewsletterLeadScalarFieldEnum]
 
 
+export const OrderScalarFieldEnum = {
+  id: 'id',
+  orderNumber: 'orderNumber',
+  userId: 'userId',
+  customerEmail: 'customerEmail',
+  customerName: 'customerName',
+  customerPhone: 'customerPhone',
+  shippingAddress: 'shippingAddress',
+  shippingMethod: 'shippingMethod',
+  shippingFee: 'shippingFee',
+  subtotal: 'subtotal',
+  discount: 'discount',
+  bundleSavings: 'bundleSavings',
+  bundleReward: 'bundleReward',
+  promoCode: 'promoCode',
+  total: 'total',
+  currency: 'currency',
+  status: 'status',
+  paymentStatus: 'paymentStatus',
+  paymentMode: 'paymentMode',
+  paymentIntentId: 'paymentIntentId',
+  stripeChargeId: 'stripeChargeId',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
+export const OrderItemScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  productId: 'productId',
+  productName: 'productName',
+  productImage: 'productImage',
+  sizeLabel: 'sizeLabel',
+  planLabel: 'planLabel',
+  quantity: 'quantity',
+  unitPrice: 'unitPrice',
+  totalPrice: 'totalPrice',
+  isBundle: 'isBundle',
+  bundleData: 'bundleData',
+  createdAt: 'createdAt'
+} as const
+
+export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -184,6 +235,14 @@ export const JsonNullValueInput = {
 } as const
 
 export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {

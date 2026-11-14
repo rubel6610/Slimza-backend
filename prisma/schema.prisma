@@ -38,6 +38,7 @@ model User {
   addresses           Address[]
   otpCodes            OtpCode[]
   refreshTokens       RefreshToken[]
+  orders              Order[]
 }
 
 model Address {
@@ -108,4 +109,75 @@ model NewsletterLead {
   subscribedAt DateTime @default(now())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Order {
+  id              String        @id @default(uuid())
+  orderNumber     String        @unique
+  userId          String?
+  customerEmail   String
+  customerName    String
+  customerPhone   String        @default("")
+  shippingAddress Json
+  shippingMethod  String        @default("uk-standard")
+  shippingFee     Float         @default(0)
+  subtotal        Float
+  discount        Float         @default(0)
+  bundleSavings   Float         @default(0)
+  bundleReward    Float         @default(0)
+  promoCode       String?
+  total           Float
+  currency        String        @default("gbp")
+  status          OrderStatus   @default(PROCESSING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMode     String        @default("stripe")
+  paymentIntentId String?       @unique
+  stripeChargeId  String?
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items           OrderItem[]
+
+  @@index([userId])
+  @@index([customerEmail])
+  @@index([paymentIntentId])
+  @@index([orderNumber])
+}
+
+model OrderItem {
+  id           String   @id @default(uuid())
+  orderId      String
+  productId    String
+  productName  String
+  productImage String   @default("")
+  sizeLabel    String?
+  planLabel    String?
+  quantity     Int      @default(1)
+  unitPrice    Float
+  totalPrice   Float
+  isBundle     Boolean  @default(false)
+  bundleData   Json?
+  createdAt    DateTime @default(now())
+
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([productId])
 }

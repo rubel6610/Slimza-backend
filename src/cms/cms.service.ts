@@ -47,7 +47,6 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
       { id: 'nav-2', label: 'Shop', href: '/shop', active: true },
       { id: 'nav-3', label: 'Make Your Own Bundle', href: '/bundle', active: true },
       { id: 'nav-4', label: 'About Us', href: '/about', active: true },
-      { id: 'nav-5', label: 'New Products Basket', href: '#', active: true },
     ],
   },
   banner_slides: [
