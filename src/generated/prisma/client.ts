@@ -61,3 +61,13 @@ export type OtpCode = Prisma.OtpCodeModel
  * 
  */
 export type RefreshToken = Prisma.RefreshTokenModel
+/**
+ * Model CmsSection
+ * 
+ */
+export type CmsSection = Prisma.CmsSectionModel
+/**
+ * Model NewsletterLead
+ * 
+ */
+export type NewsletterLead = Prisma.NewsletterLeadModel

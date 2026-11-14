@@ -92,3 +92,20 @@ model RefreshToken {
 
   @@index([userId])
 }
+
+model CmsSection {
+  key       String   @id
+  data      Json
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model NewsletterLead {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  source       String   @default("Footer Newsletter")
+  status       String   @default("Subscribed")
+  subscribedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

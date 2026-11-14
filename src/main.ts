@@ -19,7 +19,9 @@ async function bootstrap() {
   app.useGlobalPipes(new StandardSchemaValidationPipe());
   app.setGlobalPrefix('Api');
 
-  const rawCorsOrigins = process.env.CORS_ORIGINS || ['http://localhost:3000', 'http://localhost:5173'].join(',');
+  const rawCorsOrigins =
+    process.env.CORS_ORIGINS ||
+    ['http://localhost:3000', 'http://localhost:5173'].join(',');
   const corsOrigins = rawCorsOrigins
     ? rawCorsOrigins
         .split(',')
@@ -39,6 +41,8 @@ async function bootstrap() {
     ],
   });
 
-  await app.listen(process.env.PORT ?? 4000);
+  await app.listen(process.env.PORT ?? 4000, '0.0.0.0', () => {
+    console.log(`Server is running on port ${process.env.PORT ?? 4000}`);
+  });
 }
 await bootstrap();

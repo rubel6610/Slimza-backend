@@ -58,6 +58,28 @@ async function main() {
     console.log(
       `Seeded admin user: id=${admin.id} email=${admin.email} role=${admin.role} verified=${admin.isEmailVerified}`,
     );
+
+    // Seed default CMS sections
+    const defaultSections: Record<string, unknown> = {
+      bundle_banner: {
+        imageUrl: '/banner/bundle-reward-banner.png',
+        altText: 'Spend £500+ on bundles, get £5 off your order - Bundle Reward',
+        href: '/bundle',
+        active: true,
+      },
+    };
+
+    for (const [key, data] of Object.entries(defaultSections)) {
+      await prisma.cmsSection.upsert({
+        where: { key },
+        update: {},
+        create: {
+          key,
+          data: data as any,
+        },
+      });
+      console.log(`Ensured CMS section "${key}" is seeded.`);
+    }
   } finally {
     await prisma.$disconnect();
     await pool.end();

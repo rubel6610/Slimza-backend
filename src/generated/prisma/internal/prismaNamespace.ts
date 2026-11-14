@@ -400,7 +400,9 @@ export const ModelName = {
   User: 'User',
   Address: 'Address',
   OtpCode: 'OtpCode',
-  RefreshToken: 'RefreshToken'
+  RefreshToken: 'RefreshToken',
+  CmsSection: 'CmsSection',
+  NewsletterLead: 'NewsletterLead'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -416,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "address" | "otpCode" | "refreshToken"
+    modelProps: "user" | "address" | "otpCode" | "refreshToken" | "cmsSection" | "newsletterLead"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -716,6 +718,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CmsSection: {
+      payload: Prisma.$CmsSectionPayload<ExtArgs>
+      fields: Prisma.CmsSectionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CmsSectionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsSectionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CmsSectionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsSectionPayload>
+        }
+        findFirst: {
+          args: Prisma.CmsSectionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsSectionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CmsSectionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsSectionPayload>
+        }
+        findMany: {
+          args: Prisma.CmsSectionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsSectionPayload>[]
+        }
+        create: {
+          args: Prisma.CmsSectionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsSectionPayload>
+        }
+        createMany: {
+          args: Prisma.CmsSectionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CmsSectionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsSectionPayload>[]
+        }
+        delete: {
+          args: Prisma.CmsSectionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsSectionPayload>
+        }
+        update: {
+          args: Prisma.CmsSectionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsSectionPayload>
+        }
+        deleteMany: {
+          args: Prisma.CmsSectionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CmsSectionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CmsSectionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsSectionPayload>[]
+        }
+        upsert: {
+          args: Prisma.CmsSectionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CmsSectionPayload>
+        }
+        aggregate: {
+          args: Prisma.CmsSectionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCmsSection>
+        }
+        groupBy: {
+          args: Prisma.CmsSectionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CmsSectionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CmsSectionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CmsSectionCountAggregateOutputType> | number
+        }
+      }
+    }
+    NewsletterLead: {
+      payload: Prisma.$NewsletterLeadPayload<ExtArgs>
+      fields: Prisma.NewsletterLeadFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.NewsletterLeadFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NewsletterLeadPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.NewsletterLeadFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NewsletterLeadPayload>
+        }
+        findFirst: {
+          args: Prisma.NewsletterLeadFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NewsletterLeadPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.NewsletterLeadFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NewsletterLeadPayload>
+        }
+        findMany: {
+          args: Prisma.NewsletterLeadFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NewsletterLeadPayload>[]
+        }
+        create: {
+          args: Prisma.NewsletterLeadCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NewsletterLeadPayload>
+        }
+        createMany: {
+          args: Prisma.NewsletterLeadCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.NewsletterLeadCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NewsletterLeadPayload>[]
+        }
+        delete: {
+          args: Prisma.NewsletterLeadDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NewsletterLeadPayload>
+        }
+        update: {
+          args: Prisma.NewsletterLeadUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NewsletterLeadPayload>
+        }
+        deleteMany: {
+          args: Prisma.NewsletterLeadDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.NewsletterLeadUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.NewsletterLeadUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NewsletterLeadPayload>[]
+        }
+        upsert: {
+          args: Prisma.NewsletterLeadUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NewsletterLeadPayload>
+        }
+        aggregate: {
+          args: Prisma.NewsletterLeadAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNewsletterLead>
+        }
+        groupBy: {
+          args: Prisma.NewsletterLeadGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NewsletterLeadGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.NewsletterLeadCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NewsletterLeadCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -828,12 +978,42 @@ export const RefreshTokenScalarFieldEnum = {
 export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
 
 
+export const CmsSectionScalarFieldEnum = {
+  key: 'key',
+  data: 'data',
+  updatedAt: 'updatedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type CmsSectionScalarFieldEnum = (typeof CmsSectionScalarFieldEnum)[keyof typeof CmsSectionScalarFieldEnum]
+
+
+export const NewsletterLeadScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  source: 'source',
+  status: 'status',
+  subscribedAt: 'subscribedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NewsletterLeadScalarFieldEnum = (typeof NewsletterLeadScalarFieldEnum)[keyof typeof NewsletterLeadScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -850,6 +1030,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -932,6 +1121,20 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -1103,6 +1306,8 @@ export type GlobalOmitConfig = {
   address?: Prisma.AddressOmit
   otpCode?: Prisma.OtpCodeOmit
   refreshToken?: Prisma.RefreshTokenOmit
+  cmsSection?: Prisma.CmsSectionOmit
+  newsletterLead?: Prisma.NewsletterLeadOmit
 }
 
 /* Types for Logging */
