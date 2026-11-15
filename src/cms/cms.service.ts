@@ -129,25 +129,168 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
     ],
   },
   about_us: {
-    title: 'About Us',
-    subtitle: 'Small changes, big results. Rooted in herbal tradition, refined for modern vitality.',
-    mission: 'Our mission is to make pure, natural wellness simple, enjoyable, and genuinely effective.',
-    story: 'Founded with a passion for traditional herbalism and clean wellness, Slimza curates the highest-grade botanicals, wild-harvested Himalayan shilajit, and stone-ground ceremonial matcha.',
-    highlights: [
-      { title: '100% Natural', description: 'Zero artificial additives, preservatives, or synthetic fillers.' },
-      { title: 'Ethically Sourced', description: 'Fair partnerships with sustainable smallholder farms and wild-crafters.' },
-      { title: 'Third-Party Tested', description: 'Independent lab verified for purity, potency, and safety.' },
+    eyebrow: 'About us',
+    title: 'Premium Health & Wellbeing Products at Slimza',
+    lead: 'At Slimza, we believe that living well should feel simple, empowering, and sustainable.',
+    paragraphs: [
+      'Our mission is to provide premium-quality health and wellbeing products that support healthier lifestyles, increased confidence, and everyday vitality.',
+      'Whether you are starting your wellness journey or maintaining a balanced lifestyle, Slimza is here to support you with trusted products you can rely on.',
+    ],
+    imageUrl: '/slimza-values/products-lifestyle.png',
+    imageAlt:
+      'Slimza Matcha, Shilajit Resin, Bovine Collagen, Botanical Tea and Detox Tea on a wooden table among leaves',
+    journeyTitle: 'Supporting Your Wellness Journey',
+    journeyText:
+      'Health and wellbeing are ongoing journeys. Slimza helps you make positive lifestyle choices through premium wellness solutions and trusted support.',
+    whyUsTitle: 'Why Choose Us',
+    whyUsText:
+      'We are dedicated to delivering premium quality, purity, and performance in every product we create. From detox teas to shilajit resin, shilajit coffee, and collagen electrolytes, each formula is crafted using carefully sourced ingredients and strict quality standards. Designed for real results, our products elevate your daily wellness routine—helping you feel energised, balanced, and at your best.',
+    lists: [
+      {
+        title: 'Our Commitment to Quality',
+        items: [
+          'Premium-quality health and wellbeing products',
+          'Carefully selected ingredients and formulations',
+          'Customer-focused service and support',
+          'Dedication to wellness and healthy living',
+          'Products designed for modern lifestyles',
+        ],
+      },
+      {
+        title: 'Why Choose Slimza?',
+        items: [
+          'Trusted premium wellness products',
+          'Focus on customer satisfaction',
+          'Modern approach to health and wellbeing',
+          'Reliable service and fast support',
+          'Passion for helping customers feel their best',
+        ],
+      },
     ],
   },
   privacy_policy: {
     title: 'Privacy Policy',
     lastUpdated: 'January 2026',
-    content: 'At Slimza, we respect your privacy and are committed to protecting your personal data in accordance with the UK GDPR and Data Protection Act 2018.',
+    content: `## Who we are
+This website is operated by Slimza Ltd ("Slimza", "we", "us"). We are the data controller for the personal information we collect about you through slimza.com.
+If you have any questions about this policy, email us at info@slimza.com.
+
+## Information we collect
+- Contact details — your name, email address, phone number and delivery address
+- Order details — the products you buy, payment confirmation (we do not store full card details) and delivery information
+- Messages — anything you send us through the contact form or by email
+- Technical data — your device, browser and how you use our website, collected through cookies
+
+## How we use your information
+- To process and deliver your orders, and to handle returns and refunds
+- To reply to your questions and provide customer support
+- To send marketing emails, only if you have opted in — you can unsubscribe at any time
+- To improve our website, products and services
+- To meet our legal and accounting obligations
+We rely on the following legal bases under UK GDPR: performing our contract with you, your consent (for marketing), our legitimate interests (improving our service) and legal obligations.
+
+## Who we share it with
+We never sell your personal data. We share it only with trusted providers who help us run our business — such as payment processors, delivery companies, website hosting and email services — and only as much as they need to do their job.
+
+## Cookies
+We use essential cookies and local storage to make the website work — for example, to remember the items in your basket. With your consent, we may also use analytics cookies to understand how visitors use our site.
+
+## How long we keep it
+We keep order records for six years to meet tax and accounting rules. Other information is kept only for as long as we need it for the purposes above.
+
+## Your rights
+You have the right to access, correct or delete your personal data, to object to or restrict how we use it, to data portability, and to withdraw consent at any time.
+To use any of these rights, email info@slimza.com. If you are unhappy with how we handle your data, you can complain to the Information Commissioner's Office (ico.org.uk).
+
+## Changes to this policy
+We may update this policy from time to time.`,
   },
   terms: {
     title: 'Terms and Conditions',
     lastUpdated: 'January 2026',
     content: 'Welcome to Slimza. By placing an order or using our website, you agree to these terms and conditions.',
+  },
+  return_policy: {
+    heroTitle: 'Return policy',
+    eyebrow: 'Shop with confidence',
+    title: 'Return & Refund Policy',
+    introText:
+      'We want our customers to shop with confidence. Please read our returns policy carefully before making a purchase.',
+    facts: {
+      reportTime: '24 hrs',
+      reportLabel: 'to report an issue',
+      returnWindow: '30 days',
+      returnLabel: 'to return an item',
+      conditionValue: 'Unopened',
+      conditionLabel: '& unused items only',
+    },
+    reportingIssue: {
+      title: 'Reporting an Issue',
+      text: 'If there is an issue with your order, customers must contact us within 24 hours of receiving the item.',
+    },
+    cards: [
+      {
+        id: 'card-1',
+        icon: 'box',
+        title: 'Returns',
+        text: 'Items can only be returned within 30 days of receiving your order, and must be sent back in the same condition.',
+        items: [
+          'The item must be unopened',
+          'The item must be unused',
+          'The item must be in original condition',
+          'Proof of purchase may be required',
+        ],
+        tone: 'default',
+      },
+      {
+        id: 'card-2',
+        icon: 'refund',
+        title: 'Refunds',
+        text: 'Refunds will only be processed once the returned item has been received and inspected.',
+        items: [
+          'Item must pass inspection',
+          'Must meet return eligibility conditions',
+          'Non-compliant items will not be refunded',
+        ],
+        tone: 'default',
+      },
+      {
+        id: 'card-3',
+        icon: 'ban',
+        title: 'Non-Refundable Items',
+        items: [
+          'Opened products',
+          'Used products',
+          'Damaged or altered items',
+          'Late returns (after 30 days)',
+        ],
+        tone: 'warning',
+      },
+      {
+        id: 'card-4',
+        icon: 'truck',
+        title: 'Return Shipping',
+        text: 'Returns are not free — customers are responsible for return shipping costs, unless the item is incorrect or damaged upon delivery.',
+        tone: 'default',
+      },
+    ],
+    address: {
+      title: 'Return Address',
+      lines: [
+        'Slimza Returns',
+        'PO BOX 18802',
+        'SOLIHULL',
+        'B90 9NP',
+        'United Kingdom',
+      ],
+    },
+    contact: {
+      title: 'Contact Us',
+      text: 'If you have any questions regarding returns or refunds, please contact our customer support team before returning any item.',
+      buttonText: 'Contact support',
+      buttonHref: '/contact',
+      supportEmail: 'info@slimza.com',
+    },
   },
 };
 
@@ -182,6 +325,22 @@ export class CmsService implements OnModuleInit {
           });
           this.logger.log(`Initialized default CMS section for "${key}"`);
         }
+      }
+
+      // Upgrade old 1-sentence privacy_policy placeholder to full policy content
+      const privacyRec = await this.prisma.cmsSection.findUnique({ where: { key: 'privacy_policy' } });
+      if (
+        privacyRec &&
+        typeof privacyRec.data === 'object' &&
+        privacyRec.data !== null &&
+        typeof (privacyRec.data as any).content === 'string' &&
+        (privacyRec.data as any).content.startsWith('At Slimza, we respect your privacy')
+      ) {
+        await this.prisma.cmsSection.update({
+          where: { key: 'privacy_policy' },
+          data: { data: DEFAULT_CMS_DATA.privacy_policy as Prisma.InputJsonValue },
+        });
+        this.logger.log('Upgraded privacy_policy in database to full comprehensive content');
       }
     } catch (err) {
       this.logger.warn(`Failed to seed default CMS sections: ${String(err)}`);

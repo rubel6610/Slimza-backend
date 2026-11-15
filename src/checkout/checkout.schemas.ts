@@ -48,7 +48,7 @@ export type CreatePaymentIntentInput = z.infer<
 export const confirmOrderSchema = z.object({
   paymentIntentId: z.string().trim().nullable().optional(),
   paymentMode: z.enum(['stripe', 'demo']).optional().default('stripe'),
-  paymentLabel: z.string().trim().optional().default('Paid securely with Stripe'),
+  paymentLabel: z.string().trim().optional().default('Paid securely'),
   lines: z.array(cartLineInputSchema).optional().default([]),
   bundles: z.array(cartBundleInputSchema).optional().default([]),
   promoCode: z.string().trim().nullable().optional(),

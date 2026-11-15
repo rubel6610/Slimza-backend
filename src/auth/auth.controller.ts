@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Post,
@@ -93,6 +94,7 @@ export class AuthController {
       ok: result.ok,
       user: result.user,
       accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
     };
   }
 
@@ -135,7 +137,7 @@ export class AuthController {
       | string
       | undefined;
     const result = await this.authService.refresh(
-      cookieToken || body?.refreshToken,
+      body?.refreshToken || cookieToken,
       {
         userAgent: req.headers['user-agent'],
         ipAddress: req.ip,
@@ -153,25 +155,34 @@ export class AuthController {
       ok: result.ok,
       user: result.user,
       accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
     };
   }
 
   @Public()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  @Header('Pragma', 'no-cache')
+  @Header('Expires', '0')
   async logout(
+    @Body({ schema: refreshTokenSchema }) body: RefreshTokenInput,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
     const cookieToken = req.cookies?.[REFRESH_COOKIE_NAME] as
       | string
       | undefined;
-    const result = await this.authService.logout(cookieToken);
+    const tokenToRevoke = body?.refreshToken || cookieToken;
+    const result = await this.authService.logout(tokenToRevoke);
     this.clearAuthCookies(res);
     return result;
   }
 
   @Get('me')
+  @Header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  @Header('Pragma', 'no-cache')
+  @Header('Expires', '0')
   getMe(@CurrentUser() user: AuthUserPayload) {
     return this.authService.getMe(user.sub);
   }
@@ -217,7 +228,12 @@ export class AuthController {
 
   private clearAuthCookies(res: Response) {
     const base = this.getBaseCookieOptions();
-    res.clearCookie(ACCESS_COOKIE_NAME, base);
-    res.clearCookie(REFRESH_COOKIE_NAME, base);
+    const expireOptions = {
+      ...base,
+      maxAge: 0,
+      expires: new Date(0),
+    };
+    res.clearCookie(ACCESS_COOKIE_NAME, expireOptions);
+    res.clearCookie(REFRESH_COOKIE_NAME, expireOptions);
   }
 }

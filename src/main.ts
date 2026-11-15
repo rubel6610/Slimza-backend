@@ -15,22 +15,37 @@ async function bootstrap() {
   mkdirSync(join(uploadsDir, 'avatars'), { recursive: true });
   app.useStaticAssets(uploadsDir, { prefix: '/uploads/' });
 
+  app.set('etag', false);
   app.use(cookieParser());
   app.useGlobalPipes(new StandardSchemaValidationPipe());
   app.setGlobalPrefix('Api');
 
+  // Ensure all auth endpoints are never cached by browsers, proxies, or Cloudflare
+  app.use('/Api/auth', (_req: unknown, res: any, next: () => void) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+  });
+
   const rawCorsOrigins =
     process.env.CORS_ORIGINS ||
-    ['http://localhost:3000', 'http://localhost:5173'].join(',');
+    process.env.CORS_ORIGIN ||
+    'http://localhost:3000,https://slimza.vercel.app';
   const corsOrigins = rawCorsOrigins
-    ? rawCorsOrigins
-        .split(',')
-        .map((origin) => origin.trim())
-        .filter(Boolean)
-    : ['http://localhost:3000', 'http://localhost:5173'];
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
   app.enableCors({
-    origin: corsOrigins,
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      if (!origin) return callback(null, true);
+      if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return callback(null, true);
+      if (/^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)) return callback(null, true);
+      if (/^https:\/\/.*\.vercel\.app$/.test(origin)) return callback(null, true);
+      if (corsOrigins.includes(origin)) return callback(null, true);
+      return callback(null, true);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
