@@ -58,7 +58,8 @@ export const ModelName = {
   CmsSection: 'CmsSection',
   NewsletterLead: 'NewsletterLead',
   Order: 'Order',
-  OrderItem: 'OrderItem'
+  OrderItem: 'OrderItem',
+  Product: 'Product'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -220,6 +221,37 @@ export const OrderItemScalarFieldEnum = {
 } as const
 
 export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum]
+
+
+export const ProductScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  name: 'name',
+  description: 'description',
+  price: 'price',
+  originalPrice: 'originalPrice',
+  discountPercent: 'discountPercent',
+  taxIncluded: 'taxIncluded',
+  unlimitedStock: 'unlimitedStock',
+  stockQuantity: 'stockQuantity',
+  stockStatus: 'stockStatus',
+  category: 'category',
+  brand: 'brand',
+  tags: 'tags',
+  publishStatus: 'publishStatus',
+  featured: 'featured',
+  featuredRank: 'featuredRank',
+  offered: 'offered',
+  rating: 'rating',
+  reviewCount: 'reviewCount',
+  image: 'image',
+  gallery: 'gallery',
+  sizes: 'sizes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
 
 
 export const SortOrder = {
