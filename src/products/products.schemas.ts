@@ -12,6 +12,7 @@ export const createProductSchema = z.object({
   stockQuantity: z.coerce.number().int().min(0).optional().default(50),
   stockStatus: z.enum(['In Stock', 'Low Stock', 'Out of Stock']).optional().default('In Stock'),
   category: z.string().trim().optional().default('cleanse-reset'),
+  categories: z.array(z.string()).optional().default([]),
   brand: z.string().trim().optional().default('slimza-teas'),
   tags: z.array(z.string()).optional().default([]),
   publishStatus: z.enum(['published', 'draft']).optional().default('published'),
@@ -21,6 +22,9 @@ export const createProductSchema = z.object({
   image: z.string().trim().optional().default('/products/tea/teatox-green.png'),
   gallery: z.array(z.string()).optional().default([]),
   sizes: z.unknown().optional(),
+  variations: z.unknown().optional(),
+  supplyDuration: z.string().trim().optional().default('1 Month'),
+  packsPerMonth: z.coerce.number().int().min(1).optional().default(1),
 });
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 

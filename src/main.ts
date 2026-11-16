@@ -27,9 +27,14 @@ async function bootstrap() {
     res.setHeader('Expires', '0');
     next();
   });
+const allowedOrigins = [
+  process.env.CORS_ORIGIN || 'http://localhost:3000',
+  'https://slimza.vercel.app',
+];
+
 
 app.enableCors({
-  origin: [process.env.CORS_ORIGIN || 'http://localhost:3000' || 'https://slimza.vercel.app'],
+  origin: allowedOrigins,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   allowedHeaders: 'Content-Type, Accept, Authorization',

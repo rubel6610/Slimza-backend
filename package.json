@@ -6,14 +6,18 @@
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
+  "main": "dist/main.js",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
-    "build": "nest build",
+    "build": "prisma generate && nest build",
     "deploy": "nest deploy",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
+    "start": "node dist/main.js",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/main.js",
     "lint": "oxlint --type-aware src/ test/",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -28,6 +32,7 @@
     "pm2:status": "pm2 status"
   },
   "dependencies": {
+    "@nestjs/cli": "^12.0.13",
     "@nestjs/common": "^12.0.1",
     "@nestjs/config": "^12.1.1",
     "@nestjs/core": "^12.0.1",
@@ -46,10 +51,10 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "stripe": "^23.1.0",
+    "typescript": "^6.0.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@nestjs/cli": "^12.0.0",
     "@nestjs/mau": "^0.2.6",
     "@nestjs/schematics": "^12.0.0",
     "@nestjs/testing": "^12.0.1",
@@ -66,7 +71,6 @@
     "prisma": "^7.10.1",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
-    "typescript": "^6.0.2",
     "vite": "^8.0.0",
     "vitest": "^4.1.2"
   }

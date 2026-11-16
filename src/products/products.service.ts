@@ -436,9 +436,15 @@ export class ProductsService implements OnModuleInit {
     if (query.category) {
       const cats = query.category.split(',').map((c) => c.trim()).filter(Boolean);
       if (cats.length === 1) {
-        where.category = cats[0];
+        where.OR = [
+          { category: cats[0] },
+          { categories: { has: cats[0] } },
+        ];
       } else if (cats.length > 1) {
-        where.category = { in: cats };
+        where.OR = [
+          { category: { in: cats } },
+          { categories: { hasSome: cats } },
+        ];
       }
     }
 
@@ -518,6 +524,13 @@ export class ProductsService implements OnModuleInit {
     const baseSlug = input.slug?.trim() || this.slugify(input.name);
     const slug = await this.generateUniqueSlug(baseSlug);
 
+    const productCategories =
+      Array.isArray(input.categories) && input.categories.length > 0
+        ? input.categories
+        : [input.category || 'cleanse-reset'];
+
+    const primaryCategory = input.category || productCategories[0] || 'cleanse-reset';
+
     const product = await this.prisma.product.create({
       data: {
         slug,
@@ -530,7 +543,8 @@ export class ProductsService implements OnModuleInit {
         unlimitedStock: input.unlimitedStock ?? false,
         stockQuantity: input.unlimitedStock ? 999 : input.stockQuantity ?? 50,
         stockStatus: input.stockStatus ?? 'In Stock',
-        category: input.category ?? 'cleanse-reset',
+        category: primaryCategory,
+        categories: productCategories,
         brand: input.brand ?? 'slimza-teas',
         tags: input.tags ?? [],
         publishStatus: input.publishStatus ?? 'published',
@@ -540,6 +554,9 @@ export class ProductsService implements OnModuleInit {
         image: input.image ?? '/products/tea/teatox-green.png',
         gallery: input.gallery && input.gallery.length > 0 ? input.gallery : [input.image || '/products/tea/teatox-green.png'],
         sizes: (input.sizes as Prisma.InputJsonValue) ?? null,
+        variations: (input.variations as Prisma.InputJsonValue) ?? null,
+        supplyDuration: input.supplyDuration ?? '1 Month',
+        packsPerMonth: input.packsPerMonth ?? 1,
       },
     });
 
@@ -574,6 +591,7 @@ export class ProductsService implements OnModuleInit {
         ...(input.stockQuantity !== undefined && { stockQuantity: input.stockQuantity }),
         ...(input.stockStatus !== undefined && { stockStatus: input.stockStatus }),
         ...(input.category !== undefined && { category: input.category }),
+        ...(input.categories !== undefined && { categories: input.categories }),
         ...(input.brand !== undefined && { brand: input.brand }),
         ...(input.tags !== undefined && { tags: input.tags }),
         ...(input.publishStatus !== undefined && { publishStatus: input.publishStatus }),
@@ -583,6 +601,9 @@ export class ProductsService implements OnModuleInit {
         ...(input.image !== undefined && { image: input.image }),
         ...(input.gallery !== undefined && { gallery: input.gallery }),
         ...(input.sizes !== undefined && { sizes: input.sizes as Prisma.InputJsonValue }),
+        ...(input.variations !== undefined && { variations: input.variations as Prisma.InputJsonValue }),
+        ...(input.supplyDuration !== undefined && { supplyDuration: input.supplyDuration }),
+        ...(input.packsPerMonth !== undefined && { packsPerMonth: input.packsPerMonth }),
       },
     });
 
