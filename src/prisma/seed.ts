@@ -17,11 +17,11 @@ async function main() {
     throw new Error('DATABASE_URL environment variable is required');
   }
 
-  const email = (process.env.ADMIN_EMAIL ?? 'admin@slimza.com')
+  const email = (process.env.ADMIN_EMAIL!)
     .trim()
     .toLowerCase();
-  const password = process.env.ADMIN_PASSWORD ?? 'Admin@12345';
-  const name = (process.env.ADMIN_NAME ?? 'Slimza Admin').trim();
+  const password = process.env.ADMIN_PASSWORD!;
+  const name = (process.env.ADMIN_NAME!);
   const { firstName, lastName } = splitFullName(name);
 
   const pool = new pg.Pool({ connectionString });
