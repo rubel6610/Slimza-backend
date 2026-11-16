@@ -34,6 +34,7 @@ export type ProductAvgAggregateOutputType = {
   featuredRank: number | null
   rating: number | null
   reviewCount: number | null
+  packsPerMonth: number | null
 }
 
 export type ProductSumAggregateOutputType = {
@@ -44,6 +45,7 @@ export type ProductSumAggregateOutputType = {
   featuredRank: number | null
   rating: number | null
   reviewCount: number | null
+  packsPerMonth: number | null
 }
 
 export type ProductMinAggregateOutputType = {
@@ -67,6 +69,8 @@ export type ProductMinAggregateOutputType = {
   rating: number | null
   reviewCount: number | null
   image: string | null
+  supplyDuration: string | null
+  packsPerMonth: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -92,6 +96,8 @@ export type ProductMaxAggregateOutputType = {
   rating: number | null
   reviewCount: number | null
   image: string | null
+  supplyDuration: string | null
+  packsPerMonth: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -109,6 +115,7 @@ export type ProductCountAggregateOutputType = {
   stockQuantity: number
   stockStatus: number
   category: number
+  categories: number
   brand: number
   tags: number
   publishStatus: number
@@ -120,6 +127,9 @@ export type ProductCountAggregateOutputType = {
   image: number
   gallery: number
   sizes: number
+  variations: number
+  supplyDuration: number
+  packsPerMonth: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -134,6 +144,7 @@ export type ProductAvgAggregateInputType = {
   featuredRank?: true
   rating?: true
   reviewCount?: true
+  packsPerMonth?: true
 }
 
 export type ProductSumAggregateInputType = {
@@ -144,6 +155,7 @@ export type ProductSumAggregateInputType = {
   featuredRank?: true
   rating?: true
   reviewCount?: true
+  packsPerMonth?: true
 }
 
 export type ProductMinAggregateInputType = {
@@ -167,6 +179,8 @@ export type ProductMinAggregateInputType = {
   rating?: true
   reviewCount?: true
   image?: true
+  supplyDuration?: true
+  packsPerMonth?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -192,6 +206,8 @@ export type ProductMaxAggregateInputType = {
   rating?: true
   reviewCount?: true
   image?: true
+  supplyDuration?: true
+  packsPerMonth?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -209,6 +225,7 @@ export type ProductCountAggregateInputType = {
   stockQuantity?: true
   stockStatus?: true
   category?: true
+  categories?: true
   brand?: true
   tags?: true
   publishStatus?: true
@@ -220,6 +237,9 @@ export type ProductCountAggregateInputType = {
   image?: true
   gallery?: true
   sizes?: true
+  variations?: true
+  supplyDuration?: true
+  packsPerMonth?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -324,6 +344,7 @@ export type ProductGroupByOutputType = {
   stockQuantity: number
   stockStatus: string
   category: string
+  categories: string[]
   brand: string
   tags: string[]
   publishStatus: string
@@ -335,6 +356,9 @@ export type ProductGroupByOutputType = {
   image: string
   gallery: string[]
   sizes: runtime.JsonValue | null
+  variations: runtime.JsonValue | null
+  supplyDuration: string | null
+  packsPerMonth: number | null
   createdAt: Date
   updatedAt: Date
   _count: ProductCountAggregateOutputType | null
@@ -375,6 +399,7 @@ export type ProductWhereInput = {
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   stockStatus?: Prisma.StringFilter<"Product"> | string
   category?: Prisma.StringFilter<"Product"> | string
+  categories?: Prisma.StringNullableListFilter<"Product">
   brand?: Prisma.StringFilter<"Product"> | string
   tags?: Prisma.StringNullableListFilter<"Product">
   publishStatus?: Prisma.StringFilter<"Product"> | string
@@ -386,6 +411,9 @@ export type ProductWhereInput = {
   image?: Prisma.StringFilter<"Product"> | string
   gallery?: Prisma.StringNullableListFilter<"Product">
   sizes?: Prisma.JsonNullableFilter<"Product">
+  variations?: Prisma.JsonNullableFilter<"Product">
+  supplyDuration?: Prisma.StringNullableFilter<"Product"> | string | null
+  packsPerMonth?: Prisma.IntNullableFilter<"Product"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
 }
@@ -403,6 +431,7 @@ export type ProductOrderByWithRelationInput = {
   stockQuantity?: Prisma.SortOrder
   stockStatus?: Prisma.SortOrder
   category?: Prisma.SortOrder
+  categories?: Prisma.SortOrder
   brand?: Prisma.SortOrder
   tags?: Prisma.SortOrder
   publishStatus?: Prisma.SortOrder
@@ -414,6 +443,9 @@ export type ProductOrderByWithRelationInput = {
   image?: Prisma.SortOrder
   gallery?: Prisma.SortOrder
   sizes?: Prisma.SortOrderInput | Prisma.SortOrder
+  variations?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplyDuration?: Prisma.SortOrderInput | Prisma.SortOrder
+  packsPerMonth?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -434,6 +466,7 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   stockStatus?: Prisma.StringFilter<"Product"> | string
   category?: Prisma.StringFilter<"Product"> | string
+  categories?: Prisma.StringNullableListFilter<"Product">
   brand?: Prisma.StringFilter<"Product"> | string
   tags?: Prisma.StringNullableListFilter<"Product">
   publishStatus?: Prisma.StringFilter<"Product"> | string
@@ -445,6 +478,9 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   image?: Prisma.StringFilter<"Product"> | string
   gallery?: Prisma.StringNullableListFilter<"Product">
   sizes?: Prisma.JsonNullableFilter<"Product">
+  variations?: Prisma.JsonNullableFilter<"Product">
+  supplyDuration?: Prisma.StringNullableFilter<"Product"> | string | null
+  packsPerMonth?: Prisma.IntNullableFilter<"Product"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
 }, "id" | "slug">
@@ -462,6 +498,7 @@ export type ProductOrderByWithAggregationInput = {
   stockQuantity?: Prisma.SortOrder
   stockStatus?: Prisma.SortOrder
   category?: Prisma.SortOrder
+  categories?: Prisma.SortOrder
   brand?: Prisma.SortOrder
   tags?: Prisma.SortOrder
   publishStatus?: Prisma.SortOrder
@@ -473,6 +510,9 @@ export type ProductOrderByWithAggregationInput = {
   image?: Prisma.SortOrder
   gallery?: Prisma.SortOrder
   sizes?: Prisma.SortOrderInput | Prisma.SortOrder
+  variations?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplyDuration?: Prisma.SortOrderInput | Prisma.SortOrder
+  packsPerMonth?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ProductCountOrderByAggregateInput
@@ -498,6 +538,7 @@ export type ProductScalarWhereWithAggregatesInput = {
   stockQuantity?: Prisma.IntWithAggregatesFilter<"Product"> | number
   stockStatus?: Prisma.StringWithAggregatesFilter<"Product"> | string
   category?: Prisma.StringWithAggregatesFilter<"Product"> | string
+  categories?: Prisma.StringNullableListFilter<"Product">
   brand?: Prisma.StringWithAggregatesFilter<"Product"> | string
   tags?: Prisma.StringNullableListFilter<"Product">
   publishStatus?: Prisma.StringWithAggregatesFilter<"Product"> | string
@@ -509,6 +550,9 @@ export type ProductScalarWhereWithAggregatesInput = {
   image?: Prisma.StringWithAggregatesFilter<"Product"> | string
   gallery?: Prisma.StringNullableListFilter<"Product">
   sizes?: Prisma.JsonNullableWithAggregatesFilter<"Product">
+  variations?: Prisma.JsonNullableWithAggregatesFilter<"Product">
+  supplyDuration?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
+  packsPerMonth?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
 }
@@ -526,6 +570,7 @@ export type ProductCreateInput = {
   stockQuantity?: number
   stockStatus?: string
   category?: string
+  categories?: Prisma.ProductCreatecategoriesInput | string[]
   brand?: string
   tags?: Prisma.ProductCreatetagsInput | string[]
   publishStatus?: string
@@ -537,6 +582,9 @@ export type ProductCreateInput = {
   image?: string
   gallery?: Prisma.ProductCreategalleryInput | string[]
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: string | null
+  packsPerMonth?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -554,6 +602,7 @@ export type ProductUncheckedCreateInput = {
   stockQuantity?: number
   stockStatus?: string
   category?: string
+  categories?: Prisma.ProductCreatecategoriesInput | string[]
   brand?: string
   tags?: Prisma.ProductCreatetagsInput | string[]
   publishStatus?: string
@@ -565,6 +614,9 @@ export type ProductUncheckedCreateInput = {
   image?: string
   gallery?: Prisma.ProductCreategalleryInput | string[]
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: string | null
+  packsPerMonth?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -582,6 +634,7 @@ export type ProductUpdateInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   stockStatus?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
+  categories?: Prisma.ProductUpdatecategoriesInput | string[]
   brand?: Prisma.StringFieldUpdateOperationsInput | string
   tags?: Prisma.ProductUpdatetagsInput | string[]
   publishStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -593,6 +646,9 @@ export type ProductUpdateInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   gallery?: Prisma.ProductUpdategalleryInput | string[]
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -610,6 +666,7 @@ export type ProductUncheckedUpdateInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   stockStatus?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
+  categories?: Prisma.ProductUpdatecategoriesInput | string[]
   brand?: Prisma.StringFieldUpdateOperationsInput | string
   tags?: Prisma.ProductUpdatetagsInput | string[]
   publishStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -621,6 +678,9 @@ export type ProductUncheckedUpdateInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   gallery?: Prisma.ProductUpdategalleryInput | string[]
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -638,6 +698,7 @@ export type ProductCreateManyInput = {
   stockQuantity?: number
   stockStatus?: string
   category?: string
+  categories?: Prisma.ProductCreatecategoriesInput | string[]
   brand?: string
   tags?: Prisma.ProductCreatetagsInput | string[]
   publishStatus?: string
@@ -649,6 +710,9 @@ export type ProductCreateManyInput = {
   image?: string
   gallery?: Prisma.ProductCreategalleryInput | string[]
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: string | null
+  packsPerMonth?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -666,6 +730,7 @@ export type ProductUpdateManyMutationInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   stockStatus?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
+  categories?: Prisma.ProductUpdatecategoriesInput | string[]
   brand?: Prisma.StringFieldUpdateOperationsInput | string
   tags?: Prisma.ProductUpdatetagsInput | string[]
   publishStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -677,6 +742,9 @@ export type ProductUpdateManyMutationInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   gallery?: Prisma.ProductUpdategalleryInput | string[]
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -694,6 +762,7 @@ export type ProductUncheckedUpdateManyInput = {
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   stockStatus?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
+  categories?: Prisma.ProductUpdatecategoriesInput | string[]
   brand?: Prisma.StringFieldUpdateOperationsInput | string
   tags?: Prisma.ProductUpdatetagsInput | string[]
   publishStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -705,6 +774,9 @@ export type ProductUncheckedUpdateManyInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   gallery?: Prisma.ProductUpdategalleryInput | string[]
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -730,6 +802,7 @@ export type ProductCountOrderByAggregateInput = {
   stockQuantity?: Prisma.SortOrder
   stockStatus?: Prisma.SortOrder
   category?: Prisma.SortOrder
+  categories?: Prisma.SortOrder
   brand?: Prisma.SortOrder
   tags?: Prisma.SortOrder
   publishStatus?: Prisma.SortOrder
@@ -741,6 +814,9 @@ export type ProductCountOrderByAggregateInput = {
   image?: Prisma.SortOrder
   gallery?: Prisma.SortOrder
   sizes?: Prisma.SortOrder
+  variations?: Prisma.SortOrder
+  supplyDuration?: Prisma.SortOrder
+  packsPerMonth?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -753,6 +829,7 @@ export type ProductAvgOrderByAggregateInput = {
   featuredRank?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
+  packsPerMonth?: Prisma.SortOrder
 }
 
 export type ProductMaxOrderByAggregateInput = {
@@ -776,6 +853,8 @@ export type ProductMaxOrderByAggregateInput = {
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
   image?: Prisma.SortOrder
+  supplyDuration?: Prisma.SortOrder
+  packsPerMonth?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -801,6 +880,8 @@ export type ProductMinOrderByAggregateInput = {
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
   image?: Prisma.SortOrder
+  supplyDuration?: Prisma.SortOrder
+  packsPerMonth?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -813,6 +894,11 @@ export type ProductSumOrderByAggregateInput = {
   featuredRank?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
+  packsPerMonth?: Prisma.SortOrder
+}
+
+export type ProductCreatecategoriesInput = {
+  set: string[]
 }
 
 export type ProductCreatetagsInput = {
@@ -831,6 +917,11 @@ export type NullableFloatFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type ProductUpdatecategoriesInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
 export type ProductUpdatetagsInput = {
   set?: string[]
   push?: string | string[]
@@ -839,6 +930,14 @@ export type ProductUpdatetagsInput = {
 export type ProductUpdategalleryInput = {
   set?: string[]
   push?: string | string[]
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 
@@ -856,6 +955,7 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   stockQuantity?: boolean
   stockStatus?: boolean
   category?: boolean
+  categories?: boolean
   brand?: boolean
   tags?: boolean
   publishStatus?: boolean
@@ -867,6 +967,9 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   image?: boolean
   gallery?: boolean
   sizes?: boolean
+  variations?: boolean
+  supplyDuration?: boolean
+  packsPerMonth?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["product"]>
@@ -884,6 +987,7 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   stockQuantity?: boolean
   stockStatus?: boolean
   category?: boolean
+  categories?: boolean
   brand?: boolean
   tags?: boolean
   publishStatus?: boolean
@@ -895,6 +999,9 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   image?: boolean
   gallery?: boolean
   sizes?: boolean
+  variations?: boolean
+  supplyDuration?: boolean
+  packsPerMonth?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["product"]>
@@ -912,6 +1019,7 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   stockQuantity?: boolean
   stockStatus?: boolean
   category?: boolean
+  categories?: boolean
   brand?: boolean
   tags?: boolean
   publishStatus?: boolean
@@ -923,6 +1031,9 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   image?: boolean
   gallery?: boolean
   sizes?: boolean
+  variations?: boolean
+  supplyDuration?: boolean
+  packsPerMonth?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["product"]>
@@ -940,6 +1051,7 @@ export type ProductSelectScalar = {
   stockQuantity?: boolean
   stockStatus?: boolean
   category?: boolean
+  categories?: boolean
   brand?: boolean
   tags?: boolean
   publishStatus?: boolean
@@ -951,11 +1063,14 @@ export type ProductSelectScalar = {
   image?: boolean
   gallery?: boolean
   sizes?: boolean
+  variations?: boolean
+  supplyDuration?: boolean
+  packsPerMonth?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "price" | "originalPrice" | "discountPercent" | "taxIncluded" | "unlimitedStock" | "stockQuantity" | "stockStatus" | "category" | "brand" | "tags" | "publishStatus" | "featured" | "featuredRank" | "offered" | "rating" | "reviewCount" | "image" | "gallery" | "sizes" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "price" | "originalPrice" | "discountPercent" | "taxIncluded" | "unlimitedStock" | "stockQuantity" | "stockStatus" | "category" | "categories" | "brand" | "tags" | "publishStatus" | "featured" | "featuredRank" | "offered" | "rating" | "reviewCount" | "image" | "gallery" | "sizes" | "variations" | "supplyDuration" | "packsPerMonth" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
 
 export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Product"
@@ -973,6 +1088,7 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     stockQuantity: number
     stockStatus: string
     category: string
+    categories: string[]
     brand: string
     tags: string[]
     publishStatus: string
@@ -984,6 +1100,9 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     image: string
     gallery: string[]
     sizes: runtime.JsonValue | null
+    variations: runtime.JsonValue | null
+    supplyDuration: string | null
+    packsPerMonth: number | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["product"]>
@@ -1421,6 +1540,7 @@ export interface ProductFieldRefs {
   readonly stockQuantity: Prisma.FieldRef<"Product", 'Int'>
   readonly stockStatus: Prisma.FieldRef<"Product", 'String'>
   readonly category: Prisma.FieldRef<"Product", 'String'>
+  readonly categories: Prisma.FieldRef<"Product", 'String[]'>
   readonly brand: Prisma.FieldRef<"Product", 'String'>
   readonly tags: Prisma.FieldRef<"Product", 'String[]'>
   readonly publishStatus: Prisma.FieldRef<"Product", 'String'>
@@ -1432,6 +1552,9 @@ export interface ProductFieldRefs {
   readonly image: Prisma.FieldRef<"Product", 'String'>
   readonly gallery: Prisma.FieldRef<"Product", 'String[]'>
   readonly sizes: Prisma.FieldRef<"Product", 'Json'>
+  readonly variations: Prisma.FieldRef<"Product", 'Json'>
+  readonly supplyDuration: Prisma.FieldRef<"Product", 'String'>
+  readonly packsPerMonth: Prisma.FieldRef<"Product", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Product", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Product", 'DateTime'>
 }
