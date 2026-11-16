@@ -483,11 +483,14 @@ export class AuthService {
       role: user.role,
     };
 
-    const accessSecret =
+    const rawSecret =
       this.config.get<string>('JWT_ACCESS_SECRET') ||
       'dev-slimza-access-secret-change-in-production';
-    const accessExpiresIn =
+    const accessSecret = rawSecret.trim().replace(/^["']|["']$/g, '');
+
+    const rawExpiresIn =
       this.config.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m';
+    const accessExpiresIn = rawExpiresIn.trim().replace(/^["']|["']$/g, '');
 
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: accessSecret,

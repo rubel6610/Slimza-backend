@@ -38,6 +38,7 @@ model User {
   addresses           Address[]
   otpCodes            OtpCode[]
   refreshTokens       RefreshToken[]
+  orders              Order[]
 }
 
 model Address {
@@ -91,4 +92,125 @@ model RefreshToken {
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model CmsSection {
+  key       String   @id
+  data      Json
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model NewsletterLead {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  source       String   @default("Footer Newsletter")
+  status       String   @default("Subscribed")
+  subscribedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Order {
+  id              String        @id @default(uuid())
+  orderNumber     String        @unique
+  userId          String?
+  customerEmail   String
+  customerName    String
+  customerPhone   String        @default("")
+  shippingAddress Json
+  shippingMethod  String        @default("uk-standard")
+  shippingFee     Float         @default(0)
+  subtotal        Float
+  discount        Float         @default(0)
+  bundleSavings   Float         @default(0)
+  bundleReward    Float         @default(0)
+  promoCode       String?
+  total           Float
+  currency        String        @default("gbp")
+  status          OrderStatus   @default(PROCESSING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMode     String        @default("stripe")
+  paymentIntentId String?       @unique
+  stripeChargeId  String?
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items           OrderItem[]
+
+  @@index([userId])
+  @@index([customerEmail])
+  @@index([paymentIntentId])
+  @@index([orderNumber])
+}
+
+model OrderItem {
+  id           String   @id @default(uuid())
+  orderId      String
+  productId    String
+  productName  String
+  productImage String   @default("")
+  sizeLabel    String?
+  planLabel    String?
+  quantity     Int      @default(1)
+  unitPrice    Float
+  totalPrice   Float
+  isBundle     Boolean  @default(false)
+  bundleData   Json?
+  createdAt    DateTime @default(now())
+
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Product {
+  id              String   @id @default(uuid())
+  slug            String   @unique
+  name            String
+  description     String   @default("")
+  price           Float
+  originalPrice   Float?
+  discountPercent Float    @default(0)
+  taxIncluded     Boolean  @default(true)
+  unlimitedStock  Boolean  @default(false)
+  stockQuantity   Int      @default(50)
+  stockStatus     String   @default("In Stock") // "In Stock" | "Low Stock" | "Out of Stock"
+  category        String   @default("cleanse-reset")
+  brand           String   @default("slimza-teas")
+  tags            String[] @default([])
+  publishStatus   String   @default("published") // "published" | "draft"
+  featured        Boolean  @default(false)
+  featuredRank    Int      @default(99)
+  offered         Boolean  @default(false)
+  rating          Float    @default(5.0)
+  reviewCount     Int      @default(12)
+  image           String   @default("/products/tea/teatox-green.png")
+  gallery         String[] @default([])
+  sizes           Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
+  @@index([category])
+  @@index([publishStatus])
+  @@index([featured])
 }

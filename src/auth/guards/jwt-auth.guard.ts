@@ -38,9 +38,10 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      const secret =
+      const rawSecret =
         this.config.get<string>('JWT_ACCESS_SECRET') ||
         'dev-slimza-access-secret-change-in-production';
+      const secret = rawSecret.trim().replace(/^["']|["']$/g, '');
       const payload = await this.jwtService.verifyAsync<AuthUserPayload>(token, {
         secret,
       });
@@ -52,14 +53,19 @@ export class JwtAuthGuard implements CanActivate {
   }
 
   private extractToken(request: Request): string | undefined {
+    const authHeader = request.headers.authorization;
+    if (authHeader) {
+      const [type, token] = authHeader.split(' ');
+      if (type?.toLowerCase() === 'bearer' && token) {
+        return token;
+      }
+    }
+
     const cookieToken = request.cookies?.[ACCESS_COOKIE_NAME] as
       | string
       | undefined;
     if (cookieToken) return cookieToken;
 
-    const authHeader = request.headers.authorization;
-    if (!authHeader) return undefined;
-    const [type, token] = authHeader.split(' ');
-    return type?.toLowerCase() === 'bearer' && token ? token : undefined;
+    return undefined;
   }
 }

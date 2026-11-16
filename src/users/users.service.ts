@@ -284,7 +284,9 @@ export class UsersService {
   async findAll() {
     const users = await this.prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
-      include: { addresses: true },
+      include: {
+        addresses: { orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }] },
+      },
     });
     return users.map(serializeUser);
   }
@@ -292,7 +294,9 @@ export class UsersService {
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      include: { addresses: true },
+      include: {
+        addresses: { orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }] },
+      },
     });
     if (!user) throw new NotFoundException('User not found');
     return serializeUser(user);

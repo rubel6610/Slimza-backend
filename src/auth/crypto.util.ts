@@ -18,14 +18,22 @@ export async function hashPassword(password: string): Promise<string> {
 
 export async function verifyPassword(
   password: string,
-  storedHash: string,
+  storedHash?: string | null,
 ): Promise<boolean> {
-  const [salt, keyHex] = storedHash.split(':');
+  if (!password || !storedHash || typeof storedHash !== 'string') return false;
+  const parts = storedHash.split(':');
+  if (parts.length !== 2) return false;
+  const [salt, keyHex] = parts;
   if (!salt || !keyHex) return false;
-  const keyBuffer = Buffer.from(keyHex, 'hex');
-  const derived = (await scryptAsync(password, salt, KEY_LENGTH)) as Buffer;
-  if (keyBuffer.length !== derived.length) return false;
-  return timingSafeEqual(keyBuffer, derived);
+
+  try {
+    const keyBuffer = Buffer.from(keyHex, 'hex');
+    const derived = (await scryptAsync(password, salt, KEY_LENGTH)) as Buffer;
+    if (keyBuffer.length !== derived.length) return false;
+    return timingSafeEqual(keyBuffer, derived);
+  } catch {
+    return false;
+  }
 }
 
 export function generateOtpCode(): string {

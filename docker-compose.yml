@@ -1,0 +1,22 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: slimza-backend-dev
+    ports:
+      - '4000:4000'
+    volumes:
+      # ১. লাইভ সিঙ্ক: আপনার লোকাল কোড ডকারের ভেতর লাইভ কানেক্টেড থাকবে
+      - .:/app
+      # ২. ডকারের নিজস্ব লিনাক্স বাইনারি node_modules সুরক্ষিত রাখা
+      - /app/node_modules
+      - slimza-uploads:/app/uploads
+    env_file:
+      - .env.docker
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+
+volumes:
+  slimza-uploads:
