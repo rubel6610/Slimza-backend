@@ -69,12 +69,22 @@ export class MailService {
       return;
     }
 
-    await this.transporter.sendMail({
-      from: this.fromAddress,
-      to: params.to,
-      subject,
-      text,
-      html,
-    });
+    try {
+      await this.transporter.sendMail({
+        from: this.fromAddress,
+        to: params.to,
+        subject,
+        text,
+        html,
+      });
+      this.logger.log(`Sent ${params.purpose} OTP email to ${params.to}`);
+    } catch (err: any) {
+      this.logger.error(
+        `Failed to send email via SMTP to ${params.to}: ${err.code || err.message}`,
+      );
+      this.logger.warn(
+        `[FALLBACK OTP CODE] Purpose=${params.purpose} To=${params.to} Code=${params.code} (SMTP failed: ${err.message})`,
+      );
+    }
   }
 }
