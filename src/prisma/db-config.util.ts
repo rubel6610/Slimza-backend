@@ -1,5 +1,3 @@
-import type { PrismaMariaDb } from '@prisma/adapter-mariadb';
-
 export type MariaDbPoolConfig = {
   host?: string;
   port?: number;
@@ -8,6 +6,8 @@ export type MariaDbPoolConfig = {
   database?: string;
   connectionLimit?: number;
   connectTimeout?: number;
+  acquireTimeout?: number;
+  ssl?: boolean | object;
 };
 
 export interface DatabaseConnectionConfig {
@@ -27,7 +27,7 @@ export function parseDatabaseUrl(rawUrl: string): MariaDbPoolConfig {
     const password = decodeURIComponent(parsed.password || '');
     const host = parsed.hostname || 'localhost';
     const port = Number.parseInt(parsed.port || '3306', 10) || 3306;
-    const database = parsed.pathname.replace(/^\//, '') || undefined;
+    const database = decodeURIComponent(parsed.pathname.replace(/^\//, '')) || undefined;
 
     return {
       host,
@@ -36,7 +36,9 @@ export function parseDatabaseUrl(rawUrl: string): MariaDbPoolConfig {
       password: password || undefined,
       database,
       connectionLimit: Number.parseInt(process.env.DB_POOL_LIMIT || '10', 10) || 10,
-      connectTimeout: 15000,
+      connectTimeout: Number.parseInt(process.env.DB_CONNECT_TIMEOUT || '15000', 10) || 15000,
+      acquireTimeout: Number.parseInt(process.env.DB_ACQUIRE_TIMEOUT || '15000', 10) || 15000,
+      ssl: process.env.DB_SSL === 'true' ? true : undefined,
     };
   } catch (err) {
     throw new Error(`Failed to parse database connection URL: ${(err as Error).message}`);
@@ -47,13 +49,14 @@ export function parseDatabaseUrl(rawUrl: string): MariaDbPoolConfig {
  * Builds a standardized MySQL connection string and PoolConfig.
  *
  * Supported environments:
- * 1. GoDaddy Node.js Hosting variables:
- *    - DB_HOST (defaults to 'localhost')
- *    - DB_PORT (defaults to 3306)
+ * 1. GoDaddy Platform-Managed Node.js Hosting variables:
+ *    - DB_HOST (e.g. 'localhost' or remote database host)
  *    - DB_NAME
  *    - DB_USER
  *    - DB_PASSWORD
+ *    - DB_PORT (defaults to 3306)
  * 2. Explicit DATABASE_URL (mysql://user:pass@host:3306/dbname)
+ * 3. Local fallback (mysql://root:password@localhost:3306/slimza)
  */
 export function getDatabaseConnectionConfig(): DatabaseConnectionConfig {
   const dbHost = process.env.DB_HOST?.trim();
@@ -68,7 +71,8 @@ export function getDatabaseConnectionConfig(): DatabaseConnectionConfig {
   if (dbHost && dbName && dbUser) {
     const encodedUser = encodeURIComponent(dbUser);
     const encodedPass = encodeURIComponent(dbPassword);
-    connectionString = `mysql://${encodedUser}:${encodedPass}@${dbHost}:${dbPort}/${dbName}`;
+    const encodedDb = encodeURIComponent(dbName);
+    connectionString = `mysql://${encodedUser}:${encodedPass}@${dbHost}:${dbPort}/${encodedDb}`;
 
     poolOptions = {
       host: dbHost,
@@ -77,7 +81,9 @@ export function getDatabaseConnectionConfig(): DatabaseConnectionConfig {
       password: dbPassword,
       database: dbName,
       connectionLimit: Number.parseInt(process.env.DB_POOL_LIMIT || '10', 10) || 10,
-      connectTimeout: 15000,
+      connectTimeout: Number.parseInt(process.env.DB_CONNECT_TIMEOUT || '15000', 10) || 15000,
+      acquireTimeout: Number.parseInt(process.env.DB_ACQUIRE_TIMEOUT || '15000', 10) || 15000,
+      ssl: process.env.DB_SSL === 'true' ? true : undefined,
     };
   } else if (process.env.DATABASE_URL?.trim()) {
     connectionString = process.env.DATABASE_URL.trim();
@@ -91,9 +97,12 @@ export function getDatabaseConnectionConfig(): DatabaseConnectionConfig {
       password: 'password',
       database: 'slimza',
       connectionLimit: 10,
+      connectTimeout: 15000,
+      acquireTimeout: 15000,
     };
   }
 
+  // Ensure process.env.DATABASE_URL is populated
   if (!process.env.DATABASE_URL) {
     process.env.DATABASE_URL = connectionString;
   }

@@ -14,6 +14,10 @@ export class PrismaService
     const { poolOptions, connectionString } = getDatabaseConnectionConfig();
     const adapter = new PrismaMariaDb(poolOptions || connectionString);
     super({ adapter });
+
+    this.logger.log(
+      `Prisma configured for MySQL at ${poolOptions.host ?? 'localhost'}:${poolOptions.port ?? 3306}/${poolOptions.database ?? 'slimza'} (user: ${poolOptions.user ?? 'anonymous'})`,
+    );
   }
 
   async onModuleInit() {
