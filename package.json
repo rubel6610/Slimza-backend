@@ -10,6 +10,7 @@
   "engines": {
     "node": "22.x"
   },
+  "packageManager": "npm@11.17.0",
   "scripts": {
     "dev": "node -e \"if (!require('fs').existsSync('dist/main.js')) require('child_process').execSync('npm run build', {stdio:'inherit'})\" && prisma migrate deploy && node dist/main.js",
     "build": "prisma generate && nest build",
