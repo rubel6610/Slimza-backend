@@ -18,7 +18,9 @@ async function bootstrap() {
   app.set('etag', false);
   app.use(cookieParser());
   app.useGlobalPipes(new StandardSchemaValidationPipe());
-  app.setGlobalPrefix('Api');
+  app.setGlobalPrefix('Api', {
+    exclude: ['/', 'health'],
+  });
 
   // Ensure all auth endpoints are never cached by browsers, proxies, or Cloudflare
   app.use('/Api/auth', (_req: unknown, res: any, next: () => void) => {
