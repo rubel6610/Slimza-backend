@@ -8,6 +8,7 @@ export type MariaDbPoolConfig = {
   connectTimeout?: number;
   acquireTimeout?: number;
   ssl?: boolean | object;
+  allowPublicKeyRetrieval?: boolean;
 };
 
 export interface DatabaseConnectionConfig {
@@ -28,6 +29,9 @@ export function parseDatabaseUrl(rawUrl: string): MariaDbPoolConfig {
     const host = parsed.hostname || 'localhost';
     const port = Number.parseInt(parsed.port || '3306', 10) || 3306;
     const database = decodeURIComponent(parsed.pathname.replace(/^\//, '')) || undefined;
+    const allowPublicKeyRetrieval = parsed.searchParams.has('allowPublicKeyRetrieval')
+      ? parsed.searchParams.get('allowPublicKeyRetrieval') !== 'false'
+      : process.env.DB_ALLOW_PUBLIC_KEY_RETRIEVAL !== 'false';
 
     return {
       host,
@@ -39,6 +43,7 @@ export function parseDatabaseUrl(rawUrl: string): MariaDbPoolConfig {
       connectTimeout: Number.parseInt(process.env.DB_CONNECT_TIMEOUT || '15000', 10) || 15000,
       acquireTimeout: Number.parseInt(process.env.DB_ACQUIRE_TIMEOUT || '15000', 10) || 15000,
       ssl: process.env.DB_SSL === 'true' ? true : undefined,
+      allowPublicKeyRetrieval,
     };
   } catch (err) {
     throw new Error(`Failed to parse database connection URL: ${(err as Error).message}`);
@@ -64,6 +69,7 @@ export function getDatabaseConnectionConfig(): DatabaseConnectionConfig {
   const dbUser = process.env.DB_USER?.trim();
   const dbPassword = process.env.DB_PASSWORD ?? '';
   const dbPort = Number.parseInt(process.env.DB_PORT || '3306', 10) || 3306;
+  const allowPublicKeyRetrieval = process.env.DB_ALLOW_PUBLIC_KEY_RETRIEVAL !== 'false';
 
   let connectionString: string;
   let poolOptions: MariaDbPoolConfig;
@@ -72,7 +78,8 @@ export function getDatabaseConnectionConfig(): DatabaseConnectionConfig {
     const encodedUser = encodeURIComponent(dbUser);
     const encodedPass = encodeURIComponent(dbPassword);
     const encodedDb = encodeURIComponent(dbName);
-    connectionString = `mysql://${encodedUser}:${encodedPass}@${dbHost}:${dbPort}/${encodedDb}`;
+    const pubKeyParam = allowPublicKeyRetrieval ? '?allowPublicKeyRetrieval=true' : '';
+    connectionString = `mysql://${encodedUser}:${encodedPass}@${dbHost}:${dbPort}/${encodedDb}${pubKeyParam}`;
 
     poolOptions = {
       host: dbHost,
@@ -84,12 +91,13 @@ export function getDatabaseConnectionConfig(): DatabaseConnectionConfig {
       connectTimeout: Number.parseInt(process.env.DB_CONNECT_TIMEOUT || '15000', 10) || 15000,
       acquireTimeout: Number.parseInt(process.env.DB_ACQUIRE_TIMEOUT || '15000', 10) || 15000,
       ssl: process.env.DB_SSL === 'true' ? true : undefined,
+      allowPublicKeyRetrieval,
     };
   } else if (process.env.DATABASE_URL?.trim()) {
     connectionString = process.env.DATABASE_URL.trim();
     poolOptions = parseDatabaseUrl(connectionString);
   } else {
-    connectionString = 'mysql://root:password@localhost:3306/slimza';
+    connectionString = 'mysql://root:password@localhost:3306/slimza?allowPublicKeyRetrieval=true';
     poolOptions = {
       host: 'localhost',
       port: 3306,
@@ -99,6 +107,7 @@ export function getDatabaseConnectionConfig(): DatabaseConnectionConfig {
       connectionLimit: 10,
       connectTimeout: 15000,
       acquireTimeout: 15000,
+      allowPublicKeyRetrieval: true,
     };
   }
 

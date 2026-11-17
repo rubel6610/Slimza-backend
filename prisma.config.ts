@@ -25,11 +25,11 @@ function resolveDatabaseUrl(): string {
     const encodedUser = encodeURIComponent(dbUser);
     const encodedPass = encodeURIComponent(dbPassword);
     const encodedDb = encodeURIComponent(dbName);
-    url = `mysql://${encodedUser}:${encodedPass}@${dbHost}:${dbPort}/${encodedDb}`;
+    url = `mysql://${encodedUser}:${encodedPass}@${dbHost}:${dbPort}/${encodedDb}?allowPublicKeyRetrieval=true`;
   } else if (process.env.DATABASE_URL?.trim()) {
     url = process.env.DATABASE_URL.trim();
   } else {
-    url = 'mysql://root:password@localhost:3306/slimza';
+    url = 'mysql://root:password@localhost:3306/slimza?allowPublicKeyRetrieval=true';
   }
 
   // Ensure process.env.DATABASE_URL is populated for any child tools or scripts
