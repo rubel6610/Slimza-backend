@@ -289,6 +289,7 @@ export type OtpCodeOrderByWithRelationInput = {
   consumedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
+  _relevance?: Prisma.OtpCodeOrderByRelevanceInput
 }
 
 export type OtpCodeWhereUniqueInput = Prisma.AtLeast<{
@@ -460,6 +461,12 @@ export type OtpCodeListRelationFilter = {
 
 export type OtpCodeOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type OtpCodeOrderByRelevanceInput = {
+  fields: Prisma.OtpCodeOrderByRelevanceFieldEnum | Prisma.OtpCodeOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type OtpCodeCountOrderByAggregateInput = {
@@ -715,37 +722,7 @@ export type OtpCodeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["otpCode"]>
 
-export type OtpCodeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
-  userId?: boolean
-  email?: boolean
-  purpose?: boolean
-  codeHash?: boolean
-  attempts?: boolean
-  expiresAt?: boolean
-  verifiedAt?: boolean
-  resetTokenHash?: boolean
-  resetTokenExpiresAt?: boolean
-  consumedAt?: boolean
-  createdAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-}, ExtArgs["result"]["otpCode"]>
 
-export type OtpCodeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
-  userId?: boolean
-  email?: boolean
-  purpose?: boolean
-  codeHash?: boolean
-  attempts?: boolean
-  expiresAt?: boolean
-  verifiedAt?: boolean
-  resetTokenHash?: boolean
-  resetTokenExpiresAt?: boolean
-  consumedAt?: boolean
-  createdAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-}, ExtArgs["result"]["otpCode"]>
 
 export type OtpCodeSelectScalar = {
   id?: boolean
@@ -764,12 +741,6 @@ export type OtpCodeSelectScalar = {
 
 export type OtpCodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "email" | "purpose" | "codeHash" | "attempts" | "expiresAt" | "verifiedAt" | "resetTokenHash" | "resetTokenExpiresAt" | "consumedAt" | "createdAt", ExtArgs["result"]["otpCode"]>
 export type OtpCodeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-}
-export type OtpCodeIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-}
-export type OtpCodeIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
@@ -909,30 +880,6 @@ export interface OtpCodeDelegate<ExtArgs extends runtime.Types.Extensions.Intern
   createMany<T extends OtpCodeCreateManyArgs>(args?: Prisma.SelectSubset<T, OtpCodeCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
 
   /**
-   * Create many OtpCodes and returns the data saved in the database.
-   * @param {OtpCodeCreateManyAndReturnArgs} args - Arguments to create many OtpCodes.
-   * @example
-   * // Create many OtpCodes
-   * const otpCode = await prisma.otpCode.createManyAndReturn({
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * 
-   * // Create many OtpCodes and only return the `id`
-   * const otpCodeWithIdOnly = await prisma.otpCode.createManyAndReturn({
-   *   select: { id: true },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * Note, that providing `undefined` is treated as the value not being there.
-   * Read more here: https://pris.ly/d/null-undefined
-   * 
-   */
-  createManyAndReturn<T extends OtpCodeCreateManyAndReturnArgs>(args?: Prisma.SelectSubset<T, OtpCodeCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OtpCodePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-  /**
    * Delete a OtpCode.
    * @param {OtpCodeDeleteArgs} args - Arguments to delete one OtpCode.
    * @example
@@ -995,36 +942,6 @@ export interface OtpCodeDelegate<ExtArgs extends runtime.Types.Extensions.Intern
    * 
    */
   updateMany<T extends OtpCodeUpdateManyArgs>(args: Prisma.SelectSubset<T, OtpCodeUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
-
-  /**
-   * Update zero or more OtpCodes and returns the data updated in the database.
-   * @param {OtpCodeUpdateManyAndReturnArgs} args - Arguments to update many OtpCodes.
-   * @example
-   * // Update many OtpCodes
-   * const otpCode = await prisma.otpCode.updateManyAndReturn({
-   *   where: {
-   *     // ... provide filter here
-   *   },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * 
-   * // Update zero or more OtpCodes and only return the `id`
-   * const otpCodeWithIdOnly = await prisma.otpCode.updateManyAndReturn({
-   *   select: { id: true },
-   *   where: {
-   *     // ... provide filter here
-   *   },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * Note, that providing `undefined` is treated as the value not being there.
-   * Read more here: https://pris.ly/d/null-undefined
-   * 
-   */
-  updateManyAndReturn<T extends OtpCodeUpdateManyAndReturnArgs>(args: Prisma.SelectSubset<T, OtpCodeUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OtpCodePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
   /**
    * Create or update one OtpCode.
@@ -1465,29 +1382,6 @@ export type OtpCodeCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
 }
 
 /**
- * OtpCode createManyAndReturn
- */
-export type OtpCodeCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the OtpCode
-   */
-  select?: Prisma.OtpCodeSelectCreateManyAndReturn<ExtArgs> | null
-  /**
-   * Omit specific fields from the OtpCode
-   */
-  omit?: Prisma.OtpCodeOmit<ExtArgs> | null
-  /**
-   * The data used to create many OtpCodes.
-   */
-  data: Prisma.OtpCodeCreateManyInput | Prisma.OtpCodeCreateManyInput[]
-  skipDuplicates?: boolean
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.OtpCodeIncludeCreateManyAndReturn<ExtArgs> | null
-}
-
-/**
  * OtpCode update
  */
 export type OtpCodeUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1529,36 +1423,6 @@ export type OtpCodeUpdateManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Limit how many OtpCodes to update.
    */
   limit?: number
-}
-
-/**
- * OtpCode updateManyAndReturn
- */
-export type OtpCodeUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the OtpCode
-   */
-  select?: Prisma.OtpCodeSelectUpdateManyAndReturn<ExtArgs> | null
-  /**
-   * Omit specific fields from the OtpCode
-   */
-  omit?: Prisma.OtpCodeOmit<ExtArgs> | null
-  /**
-   * The data used to update OtpCodes.
-   */
-  data: Prisma.XOR<Prisma.OtpCodeUpdateManyMutationInput, Prisma.OtpCodeUncheckedUpdateManyInput>
-  /**
-   * Filter which OtpCodes to update
-   */
-  where?: Prisma.OtpCodeWhereInput
-  /**
-   * Limit how many OtpCodes to update.
-   */
-  limit?: number
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.OtpCodeIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**

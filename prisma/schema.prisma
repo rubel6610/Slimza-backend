@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
 }
 
 enum UserRole {
@@ -186,7 +186,7 @@ model Product {
   id              String   @id @default(uuid())
   slug            String   @unique
   name            String
-  description     String   @default("")
+  description     String   @db.Text
   price           Float
   originalPrice   Float?
   discountPercent Float    @default(0)
@@ -195,9 +195,9 @@ model Product {
   stockQuantity   Int      @default(50)
   stockStatus     String   @default("In Stock") // "In Stock" | "Low Stock" | "Out of Stock"
   category        String   @default("cleanse-reset")
-  categories      String[] @default([])
+  categories      Json?
   brand           String   @default("slimza-teas")
-  tags            String[] @default([])
+  tags            Json?
   publishStatus   String   @default("published") // "published" | "draft"
   featured        Boolean  @default(false)
   featuredRank    Int      @default(99)
@@ -205,7 +205,7 @@ model Product {
   rating          Float    @default(5.0)
   reviewCount     Int      @default(12)
   image           String   @default("/products/tea/teatox-green.png")
-  gallery         String[] @default([])
+  gallery         Json?
   sizes           Json?
   variations      Json?
   supplyDuration  String?  @default("1 Month")

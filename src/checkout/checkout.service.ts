@@ -447,10 +447,10 @@ export class CheckoutService {
     if (params?.search) {
       const term = params.search.trim();
       where.OR = [
-        { orderNumber: { contains: term, mode: 'insensitive' } },
-        { customerName: { contains: term, mode: 'insensitive' } },
-        { customerEmail: { contains: term, mode: 'insensitive' } },
-        { paymentIntentId: { contains: term, mode: 'insensitive' } },
+        { orderNumber: { contains: term } },
+        { customerName: { contains: term } },
+        { customerEmail: { contains: term } },
+        { paymentIntentId: { contains: term } },
       ];
     }
 

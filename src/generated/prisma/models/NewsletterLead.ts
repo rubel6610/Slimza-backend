@@ -208,6 +208,7 @@ export type NewsletterLeadOrderByWithRelationInput = {
   subscribedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  _relevance?: Prisma.NewsletterLeadOrderByRelevanceInput
 }
 
 export type NewsletterLeadWhereUniqueInput = Prisma.AtLeast<{
@@ -319,6 +320,12 @@ export type NewsletterLeadUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+export type NewsletterLeadOrderByRelevanceInput = {
+  fields: Prisma.NewsletterLeadOrderByRelevanceFieldEnum | Prisma.NewsletterLeadOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
+}
+
 export type NewsletterLeadCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
@@ -361,25 +368,7 @@ export type NewsletterLeadSelect<ExtArgs extends runtime.Types.Extensions.Intern
   updatedAt?: boolean
 }, ExtArgs["result"]["newsletterLead"]>
 
-export type NewsletterLeadSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
-  email?: boolean
-  source?: boolean
-  status?: boolean
-  subscribedAt?: boolean
-  createdAt?: boolean
-  updatedAt?: boolean
-}, ExtArgs["result"]["newsletterLead"]>
 
-export type NewsletterLeadSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
-  email?: boolean
-  source?: boolean
-  status?: boolean
-  subscribedAt?: boolean
-  createdAt?: boolean
-  updatedAt?: boolean
-}, ExtArgs["result"]["newsletterLead"]>
 
 export type NewsletterLeadSelectScalar = {
   id?: boolean
@@ -522,30 +511,6 @@ export interface NewsletterLeadDelegate<ExtArgs extends runtime.Types.Extensions
   createMany<T extends NewsletterLeadCreateManyArgs>(args?: Prisma.SelectSubset<T, NewsletterLeadCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
 
   /**
-   * Create many NewsletterLeads and returns the data saved in the database.
-   * @param {NewsletterLeadCreateManyAndReturnArgs} args - Arguments to create many NewsletterLeads.
-   * @example
-   * // Create many NewsletterLeads
-   * const newsletterLead = await prisma.newsletterLead.createManyAndReturn({
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * 
-   * // Create many NewsletterLeads and only return the `id`
-   * const newsletterLeadWithIdOnly = await prisma.newsletterLead.createManyAndReturn({
-   *   select: { id: true },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * Note, that providing `undefined` is treated as the value not being there.
-   * Read more here: https://pris.ly/d/null-undefined
-   * 
-   */
-  createManyAndReturn<T extends NewsletterLeadCreateManyAndReturnArgs>(args?: Prisma.SelectSubset<T, NewsletterLeadCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NewsletterLeadPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-  /**
    * Delete a NewsletterLead.
    * @param {NewsletterLeadDeleteArgs} args - Arguments to delete one NewsletterLead.
    * @example
@@ -608,36 +573,6 @@ export interface NewsletterLeadDelegate<ExtArgs extends runtime.Types.Extensions
    * 
    */
   updateMany<T extends NewsletterLeadUpdateManyArgs>(args: Prisma.SelectSubset<T, NewsletterLeadUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
-
-  /**
-   * Update zero or more NewsletterLeads and returns the data updated in the database.
-   * @param {NewsletterLeadUpdateManyAndReturnArgs} args - Arguments to update many NewsletterLeads.
-   * @example
-   * // Update many NewsletterLeads
-   * const newsletterLead = await prisma.newsletterLead.updateManyAndReturn({
-   *   where: {
-   *     // ... provide filter here
-   *   },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * 
-   * // Update zero or more NewsletterLeads and only return the `id`
-   * const newsletterLeadWithIdOnly = await prisma.newsletterLead.updateManyAndReturn({
-   *   select: { id: true },
-   *   where: {
-   *     // ... provide filter here
-   *   },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * Note, that providing `undefined` is treated as the value not being there.
-   * Read more here: https://pris.ly/d/null-undefined
-   * 
-   */
-  updateManyAndReturn<T extends NewsletterLeadUpdateManyAndReturnArgs>(args: Prisma.SelectSubset<T, NewsletterLeadUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NewsletterLeadPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
   /**
    * Create or update one NewsletterLead.
@@ -1048,25 +983,6 @@ export type NewsletterLeadCreateManyArgs<ExtArgs extends runtime.Types.Extension
 }
 
 /**
- * NewsletterLead createManyAndReturn
- */
-export type NewsletterLeadCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the NewsletterLead
-   */
-  select?: Prisma.NewsletterLeadSelectCreateManyAndReturn<ExtArgs> | null
-  /**
-   * Omit specific fields from the NewsletterLead
-   */
-  omit?: Prisma.NewsletterLeadOmit<ExtArgs> | null
-  /**
-   * The data used to create many NewsletterLeads.
-   */
-  data: Prisma.NewsletterLeadCreateManyInput | Prisma.NewsletterLeadCreateManyInput[]
-  skipDuplicates?: boolean
-}
-
-/**
  * NewsletterLead update
  */
 export type NewsletterLeadUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1092,32 +1008,6 @@ export type NewsletterLeadUpdateArgs<ExtArgs extends runtime.Types.Extensions.In
  * NewsletterLead updateMany
  */
 export type NewsletterLeadUpdateManyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * The data used to update NewsletterLeads.
-   */
-  data: Prisma.XOR<Prisma.NewsletterLeadUpdateManyMutationInput, Prisma.NewsletterLeadUncheckedUpdateManyInput>
-  /**
-   * Filter which NewsletterLeads to update
-   */
-  where?: Prisma.NewsletterLeadWhereInput
-  /**
-   * Limit how many NewsletterLeads to update.
-   */
-  limit?: number
-}
-
-/**
- * NewsletterLead updateManyAndReturn
- */
-export type NewsletterLeadUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the NewsletterLead
-   */
-  select?: Prisma.NewsletterLeadSelectUpdateManyAndReturn<ExtArgs> | null
-  /**
-   * Omit specific fields from the NewsletterLead
-   */
-  omit?: Prisma.NewsletterLeadOmit<ExtArgs> | null
   /**
    * The data used to update NewsletterLeads.
    */

@@ -428,8 +428,8 @@ export class ProductsService implements OnModuleInit {
 
     if (query.q) {
       where.OR = [
-        { name: { contains: query.q, mode: 'insensitive' } },
-        { description: { contains: query.q, mode: 'insensitive' } },
+        { name: { contains: query.q } },
+        { description: { contains: query.q } },
       ];
     }
 
@@ -438,12 +438,12 @@ export class ProductsService implements OnModuleInit {
       if (cats.length === 1) {
         where.OR = [
           { category: cats[0] },
-          { categories: { has: cats[0] } },
+          { categories: { array_contains: cats[0] } },
         ];
       } else if (cats.length > 1) {
         where.OR = [
           { category: { in: cats } },
-          { categories: { hasSome: cats } },
+          ...cats.map((c) => ({ categories: { array_contains: c } })),
         ];
       }
     }
@@ -458,7 +458,7 @@ export class ProductsService implements OnModuleInit {
     }
 
     if (query.tag) {
-      where.tags = { has: query.tag };
+      where.tags = { array_contains: query.tag };
     }
 
     if (query.publishStatus) {
@@ -544,15 +544,17 @@ export class ProductsService implements OnModuleInit {
         stockQuantity: input.unlimitedStock ? 999 : input.stockQuantity ?? 50,
         stockStatus: input.stockStatus ?? 'In Stock',
         category: primaryCategory,
-        categories: productCategories,
+        categories: productCategories as unknown as Prisma.InputJsonValue,
         brand: input.brand ?? 'slimza-teas',
-        tags: input.tags ?? [],
+        tags: (input.tags ?? []) as unknown as Prisma.InputJsonValue,
         publishStatus: input.publishStatus ?? 'published',
         featured: input.featured ?? false,
         featuredRank: input.featuredRank ?? 99,
         offered: input.offered ?? false,
         image: input.image ?? '/products/tea/teatox-green.png',
-        gallery: input.gallery && input.gallery.length > 0 ? input.gallery : [input.image || '/products/tea/teatox-green.png'],
+        gallery: (input.gallery && input.gallery.length > 0
+          ? input.gallery
+          : [input.image || '/products/tea/teatox-green.png']) as unknown as Prisma.InputJsonValue,
         sizes: (input.sizes as Prisma.InputJsonValue) ?? null,
         variations: (input.variations as Prisma.InputJsonValue) ?? null,
         supplyDuration: input.supplyDuration ?? '1 Month',
@@ -591,15 +593,21 @@ export class ProductsService implements OnModuleInit {
         ...(input.stockQuantity !== undefined && { stockQuantity: input.stockQuantity }),
         ...(input.stockStatus !== undefined && { stockStatus: input.stockStatus }),
         ...(input.category !== undefined && { category: input.category }),
-        ...(input.categories !== undefined && { categories: input.categories }),
+        ...(input.categories !== undefined && {
+          categories: input.categories as unknown as Prisma.InputJsonValue,
+        }),
         ...(input.brand !== undefined && { brand: input.brand }),
-        ...(input.tags !== undefined && { tags: input.tags }),
+        ...(input.tags !== undefined && {
+          tags: input.tags as unknown as Prisma.InputJsonValue,
+        }),
         ...(input.publishStatus !== undefined && { publishStatus: input.publishStatus }),
         ...(input.featured !== undefined && { featured: input.featured }),
         ...(input.featuredRank !== undefined && { featuredRank: input.featuredRank }),
         ...(input.offered !== undefined && { offered: input.offered }),
         ...(input.image !== undefined && { image: input.image }),
-        ...(input.gallery !== undefined && { gallery: input.gallery }),
+        ...(input.gallery !== undefined && {
+          gallery: input.gallery as unknown as Prisma.InputJsonValue,
+        }),
         ...(input.sizes !== undefined && { sizes: input.sizes as Prisma.InputJsonValue }),
         ...(input.variations !== undefined && { variations: input.variations as Prisma.InputJsonValue }),
         ...(input.supplyDuration !== undefined && { supplyDuration: input.supplyDuration }),

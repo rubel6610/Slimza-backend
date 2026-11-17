@@ -9,7 +9,7 @@ RUN npm ci
 
 COPY . .
 
-ENV DATABASE_URL="postgresql://build:build-only@localhost:5432/build_db"
+ENV DATABASE_URL="mysql://build:build-only@localhost:3306/build_db"
 
 RUN npx prisma generate
 

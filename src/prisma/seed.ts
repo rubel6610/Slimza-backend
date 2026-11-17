@@ -1,8 +1,8 @@
 import 'dotenv/config';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { hashPassword } from '../auth/crypto.util.js';
 import { PrismaClient, UserRole } from '../generated/prisma/client.js';
+import { getDatabaseConnectionConfig } from './db-config.util.js';
 
 function splitFullName(fullName: string) {
   const parts = fullName.trim().split(/\s+/).filter(Boolean);
@@ -12,20 +12,16 @@ function splitFullName(fullName: string) {
 }
 
 async function main() {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    throw new Error('DATABASE_URL environment variable is required');
-  }
+  const { poolOptions } = getDatabaseConnectionConfig();
 
-  const email = (process.env.ADMIN_EMAIL!)
+  const email = (process.env.ADMIN_EMAIL || 'admin@slimza.com')
     .trim()
     .toLowerCase();
-  const password = process.env.ADMIN_PASSWORD!;
-  const name = (process.env.ADMIN_NAME!);
+  const password = process.env.ADMIN_PASSWORD || 'Admin@12345';
+  const name = process.env.ADMIN_NAME || 'Slimza Admin';
   const { firstName, lastName } = splitFullName(name);
 
-  const pool = new pg.Pool({ connectionString });
-  const adapter = new PrismaPg(pool);
+  const adapter = new PrismaMariaDb(poolOptions);
   const prisma = new PrismaClient({ adapter });
 
   try {
@@ -701,7 +697,6 @@ async function main() {
     console.log(`Successfully seeded ${CATALOG_PRODUCTS.length} products to database!`);
   } finally {
     await prisma.$disconnect();
-    await pool.end();
   }
 }
 
