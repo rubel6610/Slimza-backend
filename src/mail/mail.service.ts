@@ -12,23 +12,34 @@ export class MailService {
     const host = this.config.get<string>('SMTP_HOST')?.trim();
     const user = this.config.get<string>('SMTP_USER')?.trim();
     const pass = this.config.get<string>('SMTP_PASS')?.trim();
-    const port = Number(this.config.get<string>('SMTP_PORT') ?? 587);
+    const rawPort = this.config.get<string>('SMTP_PORT')?.trim();
     const secure = this.config.get<string>('SMTP_SECURE') === 'true';
+
+    // Port is optional: defaults to 25 for shared hosting (or 465 if SMTP_SECURE is true)
+    const port = rawPort ? Number.parseInt(rawPort, 10) : (secure ? 465 : 25);
+
     this.fromAddress =
       this.config.get<string>('SMTP_FROM')?.trim() ||
       'Slimza <no-reply@slimza.com>';
 
-    if (host && user && pass) {
+    if (host) {
       this.transporter = nodemailer.createTransport({
         host,
         port,
         secure,
-        auth: { user, pass },
-      });
+        ...(user && pass ? { auth: { user, pass } } : {}),
+        tls: {
+          rejectUnauthorized: false,
+        },
+      } as any);
+
+      this.logger.log(
+        `SMTP configured: host=${host}, port=${port}, secure=${secure}, auth=${Boolean(user && pass)}`,
+      );
     } else {
       this.transporter = null;
       this.logger.warn(
-        'SMTP credentials are not configured; OTP codes will be logged to the console.',
+        'SMTP_HOST is not configured; OTP codes will be logged to the console.',
       );
     }
   }
