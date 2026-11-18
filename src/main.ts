@@ -2,8 +2,6 @@ import { StandardSchemaValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
-import { mkdirSync } from 'node:fs';
-import { join } from 'node:path';
 import { AppModule, ObserveInstrument } from './app.module.js';
 
 async function bootstrap() {
@@ -11,19 +9,15 @@ async function bootstrap() {
     instrument: ObserveInstrument,
   });
 
-  const uploadsDir = join(process.cwd(), 'uploads');
-  mkdirSync(join(uploadsDir, 'avatars'), { recursive: true });
-  app.useStaticAssets(uploadsDir, { prefix: '/uploads/' });
-
   app.set('etag', false);
   app.use(cookieParser());
   app.useGlobalPipes(new StandardSchemaValidationPipe());
   app.setGlobalPrefix('Api', {
-    exclude: ['/', 'health'],
+    exclude: ['/', 'health', 'uploads/:folder/:filename'],
   });
 
-  // Ensure all auth endpoints are never cached by browsers, proxies, or Cloudflare
-  app.use('/Api/auth', (_req: unknown, res: any, next: () => void) => {
+  // Ensure auth and CMS endpoints are never cached by browsers, proxies, or Cloudflare
+  app.use(['/Api/auth', '/Api/cms'], (_req: unknown, res: any, next: () => void) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');

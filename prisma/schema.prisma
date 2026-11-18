@@ -264,3 +264,16 @@ model Coupon {
 
   @@index([code])
 }
+
+model MediaAsset {
+  id        String   @id @default(uuid())
+  folder    String
+  filename  String
+  mimeType  String
+  size      Int
+  data      Bytes    @db.LongBlob
+  createdAt DateTime @default(now())
+
+  @@unique([folder, filename])
+  @@index([folder])
+}

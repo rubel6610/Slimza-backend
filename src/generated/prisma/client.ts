@@ -96,3 +96,8 @@ export type Product = Prisma.ProductModel
  * 
  */
 export type Coupon = Prisma.CouponModel
+/**
+ * Model MediaAsset
+ * 
+ */
+export type MediaAsset = Prisma.MediaAssetModel

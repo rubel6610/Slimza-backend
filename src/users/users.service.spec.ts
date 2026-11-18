@@ -1,11 +1,17 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { vi } from 'vitest';
+import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { UsersService } from './users.service.js';
 
 describe('UsersService', () => {
   let service: UsersService;
+  const mockMediaService = {
+    saveAsset: vi.fn(),
+    getAsset: vi.fn(),
+    deleteByUrl: vi.fn(),
+  };
   const mockPrisma = {
     user: {
       findUnique: vi.fn(),
@@ -26,6 +32,7 @@ describe('UsersService', () => {
       providers: [
         UsersService,
         { provide: PrismaService, useValue: mockPrisma },
+        { provide: MediaService, useValue: mockMediaService },
       ],
     }).compile();
 

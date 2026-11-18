@@ -1,10 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { vi } from 'vitest';
+import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CmsService, DEFAULT_CMS_DATA } from './cms.service.js';
 
 describe('CmsService', () => {
   let service: CmsService;
+  const mockMediaService = {
+    saveAsset: vi.fn(),
+    getAsset: vi.fn(),
+    deleteByUrl: vi.fn(),
+  };
   const mockPrisma = {
     cmsSection: {
       findMany: vi.fn(),
@@ -27,6 +33,7 @@ describe('CmsService', () => {
       providers: [
         CmsService,
         { provide: PrismaService, useValue: mockPrisma },
+        { provide: MediaService, useValue: mockMediaService },
       ],
     }).compile();
 

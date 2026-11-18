@@ -61,7 +61,8 @@ export const ModelName = {
   RefundRequest: 'RefundRequest',
   OrderItem: 'OrderItem',
   Product: 'Product',
-  Coupon: 'Coupon'
+  Coupon: 'Coupon',
+  MediaAsset: 'MediaAsset'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -296,6 +297,19 @@ export const CouponScalarFieldEnum = {
 export type CouponScalarFieldEnum = (typeof CouponScalarFieldEnum)[keyof typeof CouponScalarFieldEnum]
 
 
+export const MediaAssetScalarFieldEnum = {
+  id: 'id',
+  folder: 'folder',
+  filename: 'filename',
+  mimeType: 'mimeType',
+  size: 'size',
+  data: 'data',
+  createdAt: 'createdAt'
+} as const
+
+export type MediaAssetScalarFieldEnum = (typeof MediaAssetScalarFieldEnum)[keyof typeof MediaAssetScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -484,4 +498,14 @@ export const CouponOrderByRelevanceFieldEnum = {
 } as const
 
 export type CouponOrderByRelevanceFieldEnum = (typeof CouponOrderByRelevanceFieldEnum)[keyof typeof CouponOrderByRelevanceFieldEnum]
+
+
+export const MediaAssetOrderByRelevanceFieldEnum = {
+  id: 'id',
+  folder: 'folder',
+  filename: 'filename',
+  mimeType: 'mimeType'
+} as const
+
+export type MediaAssetOrderByRelevanceFieldEnum = (typeof MediaAssetOrderByRelevanceFieldEnum)[keyof typeof MediaAssetOrderByRelevanceFieldEnum]
 

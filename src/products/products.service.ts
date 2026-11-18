@@ -5,9 +5,10 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Prisma } from '../generated/prisma/client.js';
+import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
   CreateProductInput,
@@ -349,7 +350,10 @@ export const INITIAL_PRODUCTS = [
 export class ProductsService implements OnModuleInit {
   private readonly logger = new Logger(ProductsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mediaService: MediaService,
+  ) {}
 
   async onModuleInit() {
     await this.ensureUploadsDirectory();
@@ -652,17 +656,12 @@ export class ProductsService implements OnModuleInit {
       throw new BadRequestException('Image must be 15MB or smaller');
     }
 
-    const productsDir = join(process.cwd(), 'uploads', 'products');
-    await mkdir(productsDir, { recursive: true });
-
     const safeName = file.originalname
       .toLowerCase()
       .replace(/[^a-z0-9.]+/g, '-')
       .replace(/^-+|-+$/g, '');
     const filename = `${Date.now()}-${safeName.endsWith(`.${ext}`) ? safeName : `${safeName}.${ext}`}`;
-    const filePath = join(productsDir, filename);
 
-    await writeFile(filePath, file.buffer);
-    return { url: `/uploads/products/${filename}` };
+    return this.mediaService.saveAsset('products', filename, file.mimetype, file.buffer);
   }
 }

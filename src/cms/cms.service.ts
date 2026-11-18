@@ -5,9 +5,10 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Prisma } from '../generated/prisma/client.js';
+import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export interface UploadedCmsFile {
@@ -298,7 +299,10 @@ We may update this policy from time to time.`,
 export class CmsService implements OnModuleInit {
   private readonly logger = new Logger(CmsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mediaService: MediaService,
+  ) {}
 
   async onModuleInit() {
     await this.ensureCmsUploadsDirectory();
@@ -409,18 +413,13 @@ export class CmsService implements OnModuleInit {
       throw new BadRequestException('Image must be 10MB or smaller');
     }
 
-    const cmsDir = join(process.cwd(), 'uploads', 'cms');
-    await mkdir(cmsDir, { recursive: true });
-
     const safeName = file.originalname
       .toLowerCase()
       .replace(/[^a-z0-9.]+/g, '-')
       .replace(/^-+|-+$/g, '');
     const filename = `${Date.now()}-${safeName.endsWith(`.${ext}`) ? safeName : `${safeName}.${ext}`}`;
-    const filePath = join(cmsDir, filename);
 
-    await writeFile(filePath, file.buffer);
-    return { url: `/uploads/cms/${filename}` };
+    return this.mediaService.saveAsset('cms', filename, file.mimetype, file.buffer);
   }
 
   async subscribeNewsletter(email: string, source = 'Footer Newsletter') {

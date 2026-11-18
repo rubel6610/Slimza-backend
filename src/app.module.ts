@@ -17,6 +17,7 @@ import { CheckoutModule } from './checkout/checkout.module.js';
 import { CouponsModule } from './coupons/coupons.module.js';
 import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware.js';
 import { MailModule } from './mail/mail.module.js';
+import { MediaModule } from './media/media.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ProductsModule } from './products/products.module.js';
 import { UsersModule } from './users/users.module.js';
@@ -36,6 +37,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       serviceId: 'slimza_backend',
     }),
     PrismaModule,
+    MediaModule,
     MailModule,
     AuthModule,
     UsersModule,

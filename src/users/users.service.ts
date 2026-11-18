@@ -4,9 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { mkdir, unlink, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import { serializeUser } from '../auth/auth.service.js';
+import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
   CreateAddressInput,
@@ -31,7 +30,10 @@ const MIME_TO_EXT: Record<string, string> = {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mediaService: MediaService,
+  ) {}
 
   async getMe(userId: string) {
     const user = await this.prisma.user.findUnique({
@@ -106,14 +108,13 @@ export class UsersService {
     });
     if (!existing) throw new NotFoundException('User not found');
 
-    const avatarsDir = join(process.cwd(), 'uploads', 'avatars');
-    await mkdir(avatarsDir, { recursive: true });
-
     const filename = `${userId}-${Date.now()}.${ext}`;
-    const filePath = join(avatarsDir, filename);
-    await writeFile(filePath, file.buffer);
-
-    const nextAvatarUrl = `/uploads/avatars/${filename}`;
+    const { url: nextAvatarUrl } = await this.mediaService.saveAsset(
+      'avatars',
+      filename,
+      file.mimetype,
+      file.buffer,
+    );
     const updated = await this.prisma.user.update({
       where: { id: userId },
       data: { avatarUrl: nextAvatarUrl },
@@ -146,13 +147,7 @@ export class UsersService {
 
   private async deleteLocalAvatarIfExists(avatarUrl: string) {
     if (!avatarUrl.startsWith('/uploads/avatars/')) return;
-    const filename = avatarUrl.slice('/uploads/avatars/'.length);
-    if (!filename || filename.includes('/') || filename.includes('..')) return;
-    try {
-      await unlink(join(process.cwd(), 'uploads', 'avatars', filename));
-    } catch {
-      // File may already be missing; ignore cleanup errors.
-    }
+    await this.mediaService.deleteByUrl(avatarUrl);
   }
 
   async addAddress(userId: string, input: CreateAddressInput) {
