@@ -8,6 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import { OrderStatus, PaymentStatus } from '../generated/prisma/enums.js';
+import { evaluateCouponStatus } from '../coupons/coupons.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
   CartBundleInput,
@@ -19,7 +20,6 @@ import {
   BACKEND_BUNDLE_PRODUCTS,
   BACKEND_CATALOG,
   BUNDLE_SPEND_REWARD,
-  PROMO_CODES,
   SHIPPING_METHODS,
   SIZE_TABLES,
   SUPPLY_PLAN_DISCOUNTS,
@@ -89,12 +89,15 @@ export class CheckoutService {
     return this.publishableKey;
   }
 
-  calculatePricing(input: {
-    lines?: CartLineInput[];
-    bundles?: CartBundleInput[];
-    promoCode?: string | null;
-    shippingMethodId?: string;
-  }): CalculatedPricing {
+  async calculatePricing(
+    input: {
+      lines?: CartLineInput[];
+      bundles?: CartBundleInput[];
+      promoCode?: string | null;
+      shippingMethodId?: string;
+    },
+    options?: { strictPromo?: boolean },
+  ): Promise<CalculatedPricing> {
     const lines = input.lines ?? [];
     const bundles = input.bundles ?? [];
     const lineItems: CalculatedPricing['lineItems'] = [];
@@ -103,10 +106,23 @@ export class CheckoutService {
 
     for (const line of lines) {
       if (!line.qty || line.qty <= 0) continue;
-      const product = BACKEND_CATALOG[line.productId];
-      const name = product ? product.name : `Product ${line.productId}`;
-      const basePrice = product ? product.price : 25;
+      let product = BACKEND_CATALOG[line.productId];
+      let name = product ? product.name : `Product ${line.productId}`;
+      let basePrice = product ? product.price : 25;
+      let image = product?.image ?? '';
       const sizeType = product ? product.sizeType : 'powder';
+
+      if (!product && this.prisma.product?.findFirst) {
+        const dbProduct = await this.prisma.product.findFirst({
+          where: { OR: [{ id: line.productId }, { slug: line.productId }] },
+        });
+        if (dbProduct) {
+          name = dbProduct.name;
+          basePrice = dbProduct.price;
+          image = dbProduct.image ?? '';
+        }
+      }
+
       const sizeTable = SIZE_TABLES[sizeType];
       const sizeIndex =
         line.sizeIndex !== undefined && sizeTable[line.sizeIndex]
@@ -125,7 +141,7 @@ export class CheckoutService {
       lineItems.push({
         productId: line.productId,
         productName: name,
-        productImage: product?.image ?? '',
+        productImage: image,
         sizeLabel: sizeOption.label,
         planLabel: plan.label,
         quantity: line.qty,
@@ -181,10 +197,34 @@ export class CheckoutService {
     const normalizedPromo = input.promoCode
       ? input.promoCode.trim().toUpperCase()
       : null;
-    const promoRate =
-      normalizedPromo && PROMO_CODES[normalizedPromo]
-        ? PROMO_CODES[normalizedPromo]
-        : 0;
+
+    let promoRate = 0;
+    let appliedPromoCode: string | null = null;
+
+    if (normalizedPromo) {
+      const coupon = await this.prisma.coupon.findUnique({
+        where: { code: normalizedPromo },
+      });
+
+      if (!coupon) {
+        if (options?.strictPromo) {
+          throw new BadRequestException('Invalid coupon code.');
+        }
+      } else {
+        const evaluation = evaluateCouponStatus(coupon);
+        if (!evaluation.isValid) {
+          if (options?.strictPromo) {
+            throw new BadRequestException(
+              evaluation.reason ?? 'This coupon has expired or is no longer valid.',
+            );
+          }
+        } else {
+          promoRate = Math.min(1, Math.max(0, coupon.discountPercent / 100));
+          appliedPromoCode = coupon.code;
+        }
+      }
+    }
+
     const discount = round2(subtotal * promoRate);
 
     const bundleReward =
@@ -216,7 +256,7 @@ export class CheckoutService {
       shippingMethod: selectedShipping,
       total,
       totalInPence,
-      promoCode: promoRate > 0 ? normalizedPromo : null,
+      promoCode: appliedPromoCode,
       lineItems,
     };
   }
@@ -235,12 +275,15 @@ export class CheckoutService {
       shippingMethod: { id: string; name: string; fee: number; eta: string };
     };
   }> {
-    const pricing = this.calculatePricing({
-      lines: input.lines,
-      bundles: input.bundles,
-      promoCode: input.promoCode,
-      shippingMethodId: input.shippingMethodId,
-    });
+    const pricing = await this.calculatePricing(
+      {
+        lines: input.lines,
+        bundles: input.bundles,
+        promoCode: input.promoCode,
+        shippingMethodId: input.shippingMethodId,
+      },
+      { strictPromo: true },
+    );
 
     if (pricing.total <= 0) {
       throw new BadRequestException('Shopping basket is empty or has a total of zero.');
@@ -304,12 +347,15 @@ export class CheckoutService {
     input: ConfirmOrderInput,
     userId?: string,
   ) {
-    const pricing = this.calculatePricing({
-      lines: input.lines,
-      bundles: input.bundles,
-      promoCode: input.promoCode,
-      shippingMethodId: input.shippingMethodId,
-    });
+    const pricing = await this.calculatePricing(
+      {
+        lines: input.lines,
+        bundles: input.bundles,
+        promoCode: input.promoCode,
+        shippingMethodId: input.shippingMethodId,
+      },
+      { strictPromo: input.paymentMode === 'demo' },
+    );
 
     // Check if an order already exists for this paymentIntentId
     if (input.paymentIntentId) {
@@ -417,6 +463,13 @@ export class CheckoutService {
         items: true,
       },
     });
+
+    if (pricing.promoCode) {
+      await this.prisma.coupon.updateMany({
+        where: { code: pricing.promoCode },
+        data: { uses: { increment: 1 } },
+      });
+    }
 
     this.logger.log(`Order ${order.orderNumber} successfully recorded in database.`);
     return order;

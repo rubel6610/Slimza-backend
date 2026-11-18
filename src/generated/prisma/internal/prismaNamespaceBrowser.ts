@@ -59,7 +59,8 @@ export const ModelName = {
   NewsletterLead: 'NewsletterLead',
   Order: 'Order',
   OrderItem: 'OrderItem',
-  Product: 'Product'
+  Product: 'Product',
+  Coupon: 'Coupon'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -258,6 +259,22 @@ export const ProductScalarFieldEnum = {
 export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
 
 
+export const CouponScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  discountPercent: 'discountPercent',
+  customerRange: 'customerRange',
+  uses: 'uses',
+  generateDate: 'generateDate',
+  expiredDate: 'expiredDate',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CouponScalarFieldEnum = (typeof CouponScalarFieldEnum)[keyof typeof CouponScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -421,4 +438,14 @@ export const ProductOrderByRelevanceFieldEnum = {
 } as const
 
 export type ProductOrderByRelevanceFieldEnum = (typeof ProductOrderByRelevanceFieldEnum)[keyof typeof ProductOrderByRelevanceFieldEnum]
+
+
+export const CouponOrderByRelevanceFieldEnum = {
+  id: 'id',
+  code: 'code',
+  generateDate: 'generateDate',
+  expiredDate: 'expiredDate'
+} as const
+
+export type CouponOrderByRelevanceFieldEnum = (typeof CouponOrderByRelevanceFieldEnum)[keyof typeof CouponOrderByRelevanceFieldEnum]
 

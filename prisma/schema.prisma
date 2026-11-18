@@ -218,3 +218,18 @@ model Product {
   @@index([publishStatus])
   @@index([featured])
 }
+
+model Coupon {
+  id              String   @id @default(uuid())
+  code            String   @unique
+  discountPercent Float
+  customerRange   Int      @default(100)
+  uses            Int      @default(0)
+  generateDate    String
+  expiredDate     String
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([code])
+}

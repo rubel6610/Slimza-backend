@@ -23,6 +23,10 @@ describe('CheckoutService', () => {
       user: {
         findUnique: vi.fn(),
       },
+      coupon: {
+        findUnique: vi.fn(),
+        updateMany: vi.fn(),
+      },
     };
 
     mockConfig = {
@@ -40,8 +44,8 @@ describe('CheckoutService', () => {
     );
   });
 
-  it('calculates pricing correctly with catalog items and shipping', () => {
-    const pricing = service.calculatePricing({
+  it('calculates pricing correctly with catalog items and shipping', async () => {
+    const pricing = await service.calculatePricing({
       lines: [{ productId: 'p01', sizeIndex: 0, months: 1, qty: 1 }],
       shippingMethodId: 'uk-express',
     });
@@ -53,8 +57,19 @@ describe('CheckoutService', () => {
     expect(pricing.totalInPence).toBe(3298);
   });
 
-  it('applies promo code SLIMZAX2 discount', () => {
-    const pricing = service.calculatePricing({
+  it('applies valid active DB coupon discount', async () => {
+    mockPrisma.coupon.findUnique.mockResolvedValue({
+      id: 'cpn-1',
+      code: 'SLIMZAX2',
+      discountPercent: 10,
+      customerRange: 100,
+      uses: 5,
+      generateDate: '2026-01-01',
+      expiredDate: '2099-12-31',
+      isActive: true,
+    });
+
+    const pricing = await service.calculatePricing({
       lines: [{ productId: 'p02', sizeIndex: 0, months: 1, qty: 1 }],
       promoCode: 'SLIMZAX2',
       shippingMethodId: 'uk-standard',
@@ -65,6 +80,39 @@ describe('CheckoutService', () => {
     expect(pricing.discount).toBe(4.0);
     expect(pricing.total).toBe(35.99);
     expect(pricing.totalInPence).toBe(3599);
+    expect(pricing.promoCode).toBe('SLIMZAX2');
+  });
+
+  it('rejects expired coupon in strict checkout mode and gives zero discount otherwise', async () => {
+    mockPrisma.coupon.findUnique.mockResolvedValue({
+      id: 'cpn-expired',
+      code: 'EXPIRED10',
+      discountPercent: 10,
+      customerRange: 100,
+      uses: 0,
+      generateDate: '2020-01-01',
+      expiredDate: '2020-01-31',
+      isActive: true,
+    });
+
+    await expect(
+      service.calculatePricing(
+        {
+          lines: [{ productId: 'p02', sizeIndex: 0, months: 1, qty: 1 }],
+          promoCode: 'EXPIRED10',
+          shippingMethodId: 'uk-standard',
+        },
+        { strictPromo: true },
+      ),
+    ).rejects.toThrow(/expired/i);
+
+    const pricing = await service.calculatePricing({
+      lines: [{ productId: 'p02', sizeIndex: 0, months: 1, qty: 1 }],
+      promoCode: 'EXPIRED10',
+      shippingMethodId: 'uk-standard',
+    });
+    expect(pricing.discount).toBe(0);
+    expect(pricing.promoCode).toBeNull();
   });
 
   it('confirms and records order in database', async () => {
