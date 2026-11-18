@@ -53,6 +53,11 @@ export type NewsletterLead = Prisma.NewsletterLeadModel
  */
 export type Order = Prisma.OrderModel
 /**
+ * Model RefundRequest
+ * 
+ */
+export type RefundRequest = Prisma.RefundRequestModel
+/**
  * Model OrderItem
  * 
  */

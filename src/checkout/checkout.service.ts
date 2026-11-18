@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -9,7 +10,13 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
-import { OrderStatus, PaymentStatus, UserRole } from '../generated/prisma/enums.js';
+import type { AuthUserPayload } from '../auth/decorators/current-user.decorator.js';
+import {
+  OrderStatus,
+  PaymentStatus,
+  RefundStatus,
+  UserRole,
+} from '../generated/prisma/enums.js';
 import { evaluateCouponStatus } from '../coupons/coupons.service.js';
 import { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -18,6 +25,7 @@ import type {
   CartLineInput,
   ConfirmOrderInput,
   CreatePaymentIntentInput,
+  ProcessRefundInput,
 } from './checkout.schemas.js';
 import {
   BACKEND_BUNDLE_PRODUCTS,
@@ -547,12 +555,273 @@ export class CheckoutService {
     return order;
   }
 
-  async getMyOrders(userId: string) {
+  async getMyOrders(userId: string, email?: string) {
+    const normalizedEmail = email?.trim().toLowerCase();
     return this.prisma.order.findMany({
-      where: { userId },
-      include: { items: true },
+      where: normalizedEmail
+        ? {
+            OR: [{ userId }, { customerEmail: normalizedEmail }],
+          }
+        : { userId },
+      include: {
+        items: true,
+        refundRequest: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async requestRefund(orderId: string, user: AuthUserPayload, reason: string) {
+    const order = await this.prisma.order.findFirst({
+      where: {
+        OR: [{ id: orderId }, { orderNumber: orderId }],
+      },
+      include: {
+        items: true,
+        refundRequest: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found.');
+    }
+
+    const userEmail = user.email?.trim().toLowerCase();
+    const isOwner =
+      order.userId === user.sub ||
+      (Boolean(userEmail) && order.customerEmail.toLowerCase() === userEmail);
+
+    if (!isOwner) {
+      throw new NotFoundException('Order not found.');
+    }
+
+    if (order.status === OrderStatus.DELIVERED) {
+      throw new BadRequestException(
+        'Delivered orders cannot be requested for non-delivered refund.',
+      );
+    }
+
+    if (order.paymentStatus === PaymentStatus.REFUNDED) {
+      throw new BadRequestException('This order has already been refunded.');
+    }
+
+    if (order.status === OrderStatus.CANCELLED) {
+      throw new BadRequestException('Cancelled orders cannot be requested for refund.');
+    }
+
+    if (
+      order.refundRequest &&
+      (order.refundRequest.status === RefundStatus.REQUESTED ||
+        order.refundRequest.status === RefundStatus.REFUNDED ||
+        order.refundRequest.status === RefundStatus.APPROVED)
+    ) {
+      throw new ConflictException(
+        'A refund request for this order is already in progress or completed.',
+      );
+    }
+
+    const refundRequest = order.refundRequest
+      ? await this.prisma.refundRequest.update({
+          where: { id: order.refundRequest.id },
+          data: {
+            reason,
+            status: RefundStatus.REQUESTED,
+            adminNote: null,
+            processedAt: null,
+          },
+          include: {
+            order: { include: { items: true } },
+          },
+        })
+      : await this.prisma.refundRequest.create({
+          data: {
+            orderId: order.id,
+            userId: user.sub,
+            customerEmail: order.customerEmail,
+            customerName: order.customerName,
+            amount: order.total,
+            currency: order.currency,
+            reason,
+            status: RefundStatus.REQUESTED,
+          },
+          include: {
+            order: { include: { items: true } },
+          },
+        });
+
+    this.logger.log(
+      `Refund request ${refundRequest.id} submitted for order #${order.orderNumber} by ${order.customerEmail}`,
+    );
+
+    return refundRequest;
+  }
+
+  async getAdminRefunds(params?: { status?: RefundStatus; search?: string }) {
+    const where: any = {};
+    if (
+      params?.status &&
+      Object.values(RefundStatus).includes(params.status)
+    ) {
+      where.status = params.status;
+    }
+    if (params?.search?.trim()) {
+      const term = params.search.trim();
+      where.OR = [
+        { customerName: { contains: term } },
+        { customerEmail: { contains: term } },
+        { reason: { contains: term } },
+        { order: { orderNumber: { contains: term } } },
+      ];
+    }
+
+    const [refunds, allRefunds] = await Promise.all([
+      this.prisma.refundRequest.findMany({
+        where,
+        include: {
+          order: {
+            include: {
+              items: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  avatarUrl: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.refundRequest.findMany({
+        select: { status: true, amount: true },
+      }),
+    ]);
+
+    const summary = {
+      total: allRefunds.length,
+      requested: allRefunds.filter((r) => r.status === RefundStatus.REQUESTED)
+        .length,
+      refunded: allRefunds.filter((r) => r.status === RefundStatus.REFUNDED)
+        .length,
+      rejected: allRefunds.filter((r) => r.status === RefundStatus.REJECTED)
+        .length,
+      totalRefundedAmount: round2(
+        allRefunds
+          .filter((r) => r.status === RefundStatus.REFUNDED)
+          .reduce((sum, r) => sum + r.amount, 0),
+      ),
+    };
+
+    return { refunds, summary };
+  }
+
+  async processRefund(refundId: string, input: ProcessRefundInput) {
+    const refund = await this.prisma.refundRequest.findUnique({
+      where: { id: refundId },
+      include: {
+        order: { include: { items: true } },
+      },
+    });
+
+    if (!refund) {
+      throw new NotFoundException('Refund request not found.');
+    }
+
+    if (refund.status === RefundStatus.REFUNDED) {
+      throw new BadRequestException('This refund request has already been refunded.');
+    }
+
+    const adminNote = input.adminNote?.trim() || null;
+
+    if (input.action === 'REJECT') {
+      const updated = await this.prisma.refundRequest.update({
+        where: { id: refund.id },
+        data: {
+          status: RefundStatus.REJECTED,
+          adminNote,
+          processedAt: new Date(),
+        },
+        include: {
+          order: { include: { items: true } },
+        },
+      });
+      this.logger.log(
+        `Refund request ${refund.id} for order #${refund.order.orderNumber} rejected by admin.`,
+      );
+      return updated;
+    }
+
+    // APPROVE_REFUND: execute real Stripe refund when paid via Stripe
+    const order = refund.order;
+    if (order.paymentStatus === PaymentStatus.REFUNDED) {
+      throw new BadRequestException('This order has already been refunded.');
+    }
+
+    let stripeRefundId: string | null = null;
+
+    if (order.paymentMode === 'stripe' && order.paymentIntentId) {
+      if (!this.stripe) {
+        throw new BadRequestException(
+          'Stripe is not configured on the server. Cannot process Stripe refund.',
+        );
+      }
+
+      try {
+        const stripeRefund = await this.stripe.refunds.create({
+          payment_intent: order.paymentIntentId,
+          reason: 'requested_by_customer',
+          metadata: {
+            orderNumber: order.orderNumber,
+            orderId: order.id,
+            refundRequestId: refund.id,
+          },
+        });
+        stripeRefundId = stripeRefund.id;
+        this.logger.log(
+          `Stripe refund ${stripeRefund.id} created for order #${order.orderNumber} (PI: ${order.paymentIntentId})`,
+        );
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : 'Stripe refund failed.';
+        this.logger.error(
+          `Stripe refund error for order #${order.orderNumber}: ${message}`,
+        );
+        throw new BadRequestException(`Stripe refund failed: ${message}`);
+      }
+    }
+
+    const [updatedRefund] = await this.prisma.$transaction([
+      this.prisma.refundRequest.update({
+        where: { id: refund.id },
+        data: {
+          status: RefundStatus.REFUNDED,
+          stripeRefundId,
+          adminNote,
+          processedAt: new Date(),
+        },
+        include: {
+          order: { include: { items: true } },
+        },
+      }),
+      this.prisma.order.update({
+        where: { id: order.id },
+        data: {
+          paymentStatus: PaymentStatus.REFUNDED,
+          status: OrderStatus.CANCELLED,
+        },
+      }),
+    ]);
+
+    return {
+      ...updatedRefund,
+      order: {
+        ...updatedRefund.order,
+        paymentStatus: PaymentStatus.REFUNDED,
+        status: OrderStatus.CANCELLED,
+      },
+    };
   }
 
   async getAllOrders(params?: {
@@ -584,6 +853,7 @@ export class CheckoutService {
         where,
         include: {
           items: true,
+          refundRequest: true,
           user: {
             select: {
               id: true,
@@ -618,6 +888,7 @@ export class CheckoutService {
       },
       include: {
         items: true,
+        refundRequest: true,
         user: {
           select: {
             id: true,
@@ -658,6 +929,7 @@ export class CheckoutService {
       },
       include: {
         items: true,
+        refundRequest: true,
       },
     });
   }
@@ -694,6 +966,22 @@ export class CheckoutService {
             paymentStatus: PaymentStatus.FAILED,
           },
         });
+      } else if (event.type === 'charge.refunded') {
+        const charge = event.data.object as Stripe.Charge;
+        const paymentIntentId =
+          typeof charge.payment_intent === 'string'
+            ? charge.payment_intent
+            : charge.payment_intent?.id;
+        if (paymentIntentId) {
+          this.logger.log(`Charge refunded via Stripe webhook for PI ${paymentIntentId}.`);
+          await this.prisma.order.updateMany({
+            where: { paymentIntentId },
+            data: {
+              paymentStatus: PaymentStatus.REFUNDED,
+              status: OrderStatus.CANCELLED,
+            },
+          });
+        }
       }
 
       return { received: true };

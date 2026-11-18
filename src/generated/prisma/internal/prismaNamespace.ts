@@ -404,6 +404,7 @@ export const ModelName = {
   CmsSection: 'CmsSection',
   NewsletterLead: 'NewsletterLead',
   Order: 'Order',
+  RefundRequest: 'RefundRequest',
   OrderItem: 'OrderItem',
   Product: 'Product',
   Coupon: 'Coupon'
@@ -422,7 +423,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "address" | "otpCode" | "refreshToken" | "cmsSection" | "newsletterLead" | "order" | "orderItem" | "product" | "coupon"
+    modelProps: "user" | "address" | "otpCode" | "refreshToken" | "cmsSection" | "newsletterLead" | "order" | "refundRequest" | "orderItem" | "product" | "coupon"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -888,6 +889,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    RefundRequest: {
+      payload: Prisma.$RefundRequestPayload<ExtArgs>
+      fields: Prisma.RefundRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RefundRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RefundRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.RefundRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RefundRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundRequestPayload>
+        }
+        findMany: {
+          args: Prisma.RefundRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundRequestPayload>[]
+        }
+        create: {
+          args: Prisma.RefundRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundRequestPayload>
+        }
+        createMany: {
+          args: Prisma.RefundRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.RefundRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundRequestPayload>
+        }
+        update: {
+          args: Prisma.RefundRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.RefundRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RefundRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.RefundRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.RefundRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRefundRequest>
+        }
+        groupBy: {
+          args: Prisma.RefundRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RefundRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RefundRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RefundRequestCountAggregateOutputType> | number
+        }
+      }
+    }
     OrderItem: {
       payload: Prisma.$OrderItemPayload<ExtArgs>
       fields: Prisma.OrderItemFieldRefs
@@ -1251,6 +1318,26 @@ export const OrderScalarFieldEnum = {
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
 
 
+export const RefundRequestScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  userId: 'userId',
+  customerEmail: 'customerEmail',
+  customerName: 'customerName',
+  amount: 'amount',
+  currency: 'currency',
+  reason: 'reason',
+  status: 'status',
+  adminNote: 'adminNote',
+  stripeRefundId: 'stripeRefundId',
+  processedAt: 'processedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RefundRequestScalarFieldEnum = (typeof RefundRequestScalarFieldEnum)[keyof typeof RefundRequestScalarFieldEnum]
+
+
 export const OrderItemScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
@@ -1457,6 +1544,21 @@ export const OrderOrderByRelevanceFieldEnum = {
 export type OrderOrderByRelevanceFieldEnum = (typeof OrderOrderByRelevanceFieldEnum)[keyof typeof OrderOrderByRelevanceFieldEnum]
 
 
+export const RefundRequestOrderByRelevanceFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  userId: 'userId',
+  customerEmail: 'customerEmail',
+  customerName: 'customerName',
+  currency: 'currency',
+  reason: 'reason',
+  adminNote: 'adminNote',
+  stripeRefundId: 'stripeRefundId'
+} as const
+
+export type RefundRequestOrderByRelevanceFieldEnum = (typeof RefundRequestOrderByRelevanceFieldEnum)[keyof typeof RefundRequestOrderByRelevanceFieldEnum]
+
+
 export const OrderItemOrderByRelevanceFieldEnum = {
   id: 'id',
   orderId: 'orderId',
@@ -1576,6 +1678,13 @@ export type EnumOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pris
  * Reference to a field of type 'PaymentStatus'
  */
 export type EnumPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'RefundStatus'
+ */
+export type EnumRefundStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RefundStatus'>
     
 
 /**
@@ -1736,6 +1845,7 @@ export type GlobalOmitConfig = {
   cmsSection?: Prisma.CmsSectionOmit
   newsletterLead?: Prisma.NewsletterLeadOmit
   order?: Prisma.OrderOmit
+  refundRequest?: Prisma.RefundRequestOmit
   orderItem?: Prisma.OrderItemOmit
   product?: Prisma.ProductOmit
   coupon?: Prisma.CouponOmit

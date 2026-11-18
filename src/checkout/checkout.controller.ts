@@ -21,9 +21,13 @@ import {
   confirmOrderSchema,
   createPaymentIntentSchema,
   orderIdParamSchema,
+  processRefundSchema,
+  requestRefundSchema,
   updateOrderStatusSchema,
   type ConfirmOrderInput,
   type CreatePaymentIntentInput,
+  type ProcessRefundInput,
+  type RequestRefundInput,
   type UpdateOrderStatusInput,
 } from './checkout.schemas.js';
 import { CheckoutService } from './checkout.service.js';
@@ -70,7 +74,34 @@ export class CheckoutController {
 
   @Get('my-orders')
   async getMyOrders(@CurrentUser() user: AuthUserPayload) {
-    return this.checkoutService.getMyOrders(user.sub);
+    return this.checkoutService.getMyOrders(user.sub, user.email);
+  }
+
+  @Post('my-orders/:id/refund-request')
+  async requestRefund(
+    @Param('id', { schema: orderIdParamSchema }) id: string,
+    @Body({ schema: requestRefundSchema }) body: RequestRefundInput,
+    @CurrentUser() user: AuthUserPayload,
+  ) {
+    return this.checkoutService.requestRefund(id, user, body.reason);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Get('admin/refunds')
+  async getAdminRefunds(
+    @Query('status') status?: any,
+    @Query('search') search?: string,
+  ) {
+    return this.checkoutService.getAdminRefunds({ status, search });
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Post('admin/refunds/:id/process')
+  async processRefund(
+    @Param('id', { schema: orderIdParamSchema }) id: string,
+    @Body({ schema: processRefundSchema }) body: ProcessRefundInput,
+  ) {
+    return this.checkoutService.processRefund(id, body);
   }
 
   @Roles(UserRole.ADMIN)

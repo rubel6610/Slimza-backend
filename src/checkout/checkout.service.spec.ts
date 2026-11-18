@@ -1,7 +1,12 @@
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { OrderStatus, PaymentStatus, UserRole } from '../generated/prisma/enums.js';
+import {
+  OrderStatus,
+  PaymentStatus,
+  RefundStatus,
+  UserRole,
+} from '../generated/prisma/enums.js';
 import type { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CheckoutService } from './checkout.service.js';
@@ -30,6 +35,13 @@ describe('CheckoutService', () => {
         findUnique: vi.fn(),
         updateMany: vi.fn(),
       },
+      refundRequest: {
+        findUnique: vi.fn(),
+        findMany: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+      },
+      $transaction: vi.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
     };
 
     mockConfig = {
@@ -221,5 +233,61 @@ describe('CheckoutService', () => {
         lines: [{ productId: 'p02', sizeIndex: 0, months: 1, qty: 1 }],
       }),
     ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('allows customer refund request for non-delivered order and blocks delivered order', async () => {
+    const customer = {
+      sub: 'user-1',
+      email: 'jane@example.com',
+      role: UserRole.CUSTOMER,
+    };
+
+    mockPrisma.order.findFirst.mockResolvedValueOnce({
+      id: 'ord-delivered',
+      orderNumber: 'SLZ-11111',
+      userId: 'user-1',
+      customerEmail: 'jane@example.com',
+      customerName: 'Jane Doe',
+      total: 29.99,
+      currency: 'gbp',
+      status: OrderStatus.DELIVERED,
+      paymentStatus: PaymentStatus.PAID,
+      items: [],
+      refundRequest: null,
+    });
+
+    await expect(
+      service.requestRefund('ord-delivered', customer, 'Want to cancel'),
+    ).rejects.toThrow(BadRequestException);
+
+    mockPrisma.order.findFirst.mockResolvedValueOnce({
+      id: 'ord-processing',
+      orderNumber: 'SLZ-22222',
+      userId: 'user-1',
+      customerEmail: 'jane@example.com',
+      customerName: 'Jane Doe',
+      total: 29.99,
+      currency: 'gbp',
+      status: OrderStatus.PROCESSING,
+      paymentStatus: PaymentStatus.PAID,
+      items: [],
+      refundRequest: null,
+    });
+
+    mockPrisma.refundRequest.create.mockResolvedValue({
+      id: 'ref-1',
+      orderId: 'ord-processing',
+      status: RefundStatus.REQUESTED,
+      reason: 'Ordered wrong item by mistake',
+      amount: 29.99,
+    });
+
+    const created = await service.requestRefund(
+      'ord-processing',
+      customer,
+      'Ordered wrong item by mistake',
+    );
+    expect(created.id).toBe('ref-1');
+    expect(created.status).toBe(RefundStatus.REQUESTED);
   });
 });

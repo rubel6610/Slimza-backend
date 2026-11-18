@@ -58,6 +58,7 @@ export const ModelName = {
   CmsSection: 'CmsSection',
   NewsletterLead: 'NewsletterLead',
   Order: 'Order',
+  RefundRequest: 'RefundRequest',
   OrderItem: 'OrderItem',
   Product: 'Product',
   Coupon: 'Coupon'
@@ -203,6 +204,26 @@ export const OrderScalarFieldEnum = {
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
+export const RefundRequestScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  userId: 'userId',
+  customerEmail: 'customerEmail',
+  customerName: 'customerName',
+  amount: 'amount',
+  currency: 'currency',
+  reason: 'reason',
+  status: 'status',
+  adminNote: 'adminNote',
+  stripeRefundId: 'stripeRefundId',
+  processedAt: 'processedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RefundRequestScalarFieldEnum = (typeof RefundRequestScalarFieldEnum)[keyof typeof RefundRequestScalarFieldEnum]
 
 
 export const OrderItemScalarFieldEnum = {
@@ -409,6 +430,21 @@ export const OrderOrderByRelevanceFieldEnum = {
 } as const
 
 export type OrderOrderByRelevanceFieldEnum = (typeof OrderOrderByRelevanceFieldEnum)[keyof typeof OrderOrderByRelevanceFieldEnum]
+
+
+export const RefundRequestOrderByRelevanceFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  userId: 'userId',
+  customerEmail: 'customerEmail',
+  customerName: 'customerName',
+  currency: 'currency',
+  reason: 'reason',
+  adminNote: 'adminNote',
+  stripeRefundId: 'stripeRefundId'
+} as const
+
+export type RefundRequestOrderByRelevanceFieldEnum = (typeof RefundRequestOrderByRelevanceFieldEnum)[keyof typeof RefundRequestOrderByRelevanceFieldEnum]
 
 
 export const OrderItemOrderByRelevanceFieldEnum = {

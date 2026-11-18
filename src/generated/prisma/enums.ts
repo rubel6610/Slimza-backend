@@ -44,3 +44,13 @@ export const PaymentStatus = {
 } as const
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const RefundStatus = {
+  REQUESTED: 'REQUESTED',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  REFUNDED: 'REFUNDED'
+} as const
+
+export type RefundStatus = (typeof RefundStatus)[keyof typeof RefundStatus]

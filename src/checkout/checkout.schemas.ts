@@ -62,4 +62,19 @@ export const updateOrderStatusSchema = z.object({
 });
 export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
 
+export const requestRefundSchema = z.object({
+  reason: z
+    .string()
+    .trim()
+    .min(5, 'Please provide a reason for your refund request (at least 5 characters).')
+    .max(1000, 'Refund reason must be 1000 characters or less.'),
+});
+export type RequestRefundInput = z.infer<typeof requestRefundSchema>;
+
+export const processRefundSchema = z.object({
+  action: z.enum(['APPROVE_REFUND', 'REJECT']),
+  adminNote: z.string().trim().max(500).optional().default(''),
+});
+export type ProcessRefundInput = z.infer<typeof processRefundSchema>;
+
 export const orderIdParamSchema = z.string().trim().min(1);
