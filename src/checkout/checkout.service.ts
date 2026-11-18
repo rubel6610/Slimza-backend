@@ -1,14 +1,17 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
-import { OrderStatus, PaymentStatus } from '../generated/prisma/enums.js';
+import { OrderStatus, PaymentStatus, UserRole } from '../generated/prisma/enums.js';
 import { evaluateCouponStatus } from '../coupons/coupons.service.js';
+import { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
   CartBundleInput,
@@ -61,6 +64,7 @@ export class CheckoutService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    @Optional() private readonly mailService?: MailService,
   ) {
     const secretKey =
       this.configService.get<string>('STRIPE_SECRET_KEY') ??
@@ -261,9 +265,34 @@ export class CheckoutService {
     };
   }
 
+  private async assertPurchaserIsNotAdmin(
+    email?: string,
+    userRole?: UserRole,
+  ): Promise<void> {
+    if (userRole === UserRole.ADMIN) {
+      throw new ForbiddenException(
+        'Admin accounts are not allowed to purchase products. Please sign in with a customer account.',
+      );
+    }
+
+    const normalizedEmail = email?.trim().toLowerCase();
+    if (normalizedEmail && this.prisma.user?.findUnique) {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: normalizedEmail },
+        select: { role: true },
+      });
+      if (existingUser?.role === UserRole.ADMIN) {
+        throw new ForbiddenException(
+          'Admin accounts are not allowed to purchase products. Please use a customer account.',
+        );
+      }
+    }
+  }
+
   async createPaymentIntent(
     input: CreatePaymentIntentInput,
     userId?: string,
+    userRole?: UserRole,
   ): Promise<{
     mode: 'stripe' | 'demo';
     clientSecret: string | null;
@@ -275,6 +304,8 @@ export class CheckoutService {
       shippingMethod: { id: string; name: string; fee: number; eta: string };
     };
   }> {
+    await this.assertPurchaserIsNotAdmin(input.shippingAddress?.email, userRole);
+
     const pricing = await this.calculatePricing(
       {
         lines: input.lines,
@@ -346,7 +377,10 @@ export class CheckoutService {
   async confirmOrder(
     input: ConfirmOrderInput,
     userId?: string,
+    userRole?: UserRole,
   ) {
+    await this.assertPurchaserIsNotAdmin(input.shippingAddress?.email, userRole);
+
     const pricing = await this.calculatePricing(
       {
         lines: input.lines,
@@ -472,6 +506,44 @@ export class CheckoutService {
     }
 
     this.logger.log(`Order ${order.orderNumber} successfully recorded in database.`);
+
+    // Send order confirmation email to admin & customer without blocking checkout response
+    if (this.mailService) {
+      const shippingAddr =
+        (order.shippingAddress as Record<string, string | undefined>) ?? {};
+      void this.mailService
+        .sendOrderConfirmationEmails({
+          id: order.id,
+          orderNumber: order.orderNumber,
+          customerName: order.customerName,
+          customerEmail: order.customerEmail,
+          customerPhone: order.customerPhone,
+          status: order.status,
+          paymentStatus: order.paymentStatus,
+          subtotal: order.subtotal,
+          discount: order.discount,
+          bundleReward: order.bundleReward,
+          promoCode: order.promoCode,
+          shippingFee: order.shippingFee,
+          shippingMethod: order.shippingMethod,
+          total: order.total,
+          shippingAddress: shippingAddr,
+          items: order.items.map((item) => ({
+            productName: item.productName,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice,
+            sizeLabel: item.sizeLabel,
+            planLabel: item.planLabel,
+          })),
+        })
+        .catch((err) => {
+          this.logger.warn(
+            `Order email dispatch failed for #${order.orderNumber}: ${err instanceof Error ? err.message : ''}`,
+          );
+        });
+    }
+
     return order;
   }
 
@@ -568,11 +640,7 @@ export class CheckoutService {
     return order;
   }
 
-  async updateOrderStatus(
-    orderId: string,
-    status?: OrderStatus,
-    paymentStatus?: PaymentStatus,
-  ) {
+  async updateOrderStatus(orderId: string, status: OrderStatus) {
     const order = await this.prisma.order.findFirst({
       where: {
         OR: [{ id: orderId }, { orderNumber: orderId }],
@@ -586,8 +654,7 @@ export class CheckoutService {
     return this.prisma.order.update({
       where: { id: order.id },
       data: {
-        ...(status ? { status } : {}),
-        ...(paymentStatus ? { paymentStatus } : {}),
+        status,
       },
       include: {
         items: true,

@@ -1,6 +1,8 @@
+import { ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { OrderStatus, PaymentStatus } from '../generated/prisma/enums.js';
+import { OrderStatus, PaymentStatus, UserRole } from '../generated/prisma/enums.js';
+import type { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CheckoutService } from './checkout.service.js';
 
@@ -8,6 +10,7 @@ describe('CheckoutService', () => {
   let service: CheckoutService;
   let mockPrisma: any;
   let mockConfig: any;
+  let mockMail: { sendOrderConfirmationEmails: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     mockPrisma = {
@@ -38,9 +41,14 @@ describe('CheckoutService', () => {
       }),
     };
 
+    mockMail = {
+      sendOrderConfirmationEmails: vi.fn().mockResolvedValue(undefined),
+    };
+
     service = new CheckoutService(
       mockPrisma as unknown as PrismaService,
       mockConfig as unknown as ConfigService,
+      mockMail as unknown as MailService,
     );
   });
 
@@ -120,10 +128,35 @@ describe('CheckoutService', () => {
     mockPrisma.order.create.mockResolvedValue({
       id: 'order-123',
       orderNumber: 'SLZ-99999',
+      customerName: 'Jane Doe',
+      customerEmail: 'jane@example.com',
+      customerPhone: '07123456789',
+      shippingAddress: {
+        name: 'Jane Doe',
+        line1: '10 Downing Street',
+        city: 'London',
+        postcode: 'SW1A 2AA',
+        country: 'United Kingdom',
+      },
+      shippingMethod: 'uk-standard',
+      shippingFee: 0,
+      subtotal: 39.99,
+      discount: 0,
+      bundleReward: 0,
+      promoCode: null,
       total: 39.99,
       status: OrderStatus.PROCESSING,
       paymentStatus: PaymentStatus.PAID,
-      items: [],
+      items: [
+        {
+          productName: 'Himalayan Shilajit Resin',
+          quantity: 1,
+          unitPrice: 39.99,
+          totalPrice: 39.99,
+          sizeLabel: '15g',
+          planLabel: '1 Month',
+        },
+      ],
     });
 
     const result = await service.confirmOrder({
@@ -145,5 +178,48 @@ describe('CheckoutService', () => {
 
     expect(result.id).toBe('order-123');
     expect(mockPrisma.order.create).toHaveBeenCalled();
+    expect(mockMail.sendOrderConfirmationEmails).toHaveBeenCalledTimes(1);
+    expect(mockMail.sendOrderConfirmationEmails).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderNumber: 'SLZ-99999',
+        customerEmail: 'jane@example.com',
+      }),
+    );
+  });
+
+  it('blocks admin accounts from purchasing products', async () => {
+    const sampleAddress = {
+      name: 'Slimza Admin',
+      email: 'admin@slimza.com',
+      phone: '07123456789',
+      line1: '10 Downing Street',
+      city: 'London',
+      postcode: 'SW1A 2AA',
+      country: 'United Kingdom',
+      deliveryNotes: '',
+    };
+
+    await expect(
+      service.confirmOrder(
+        {
+          paymentMode: 'demo',
+          shippingMethodId: 'uk-standard',
+          shippingAddress: sampleAddress,
+          lines: [{ productId: 'p02', sizeIndex: 0, months: 1, qty: 1 }],
+        },
+        'admin-id',
+        UserRole.ADMIN,
+      ),
+    ).rejects.toThrow(ForbiddenException);
+
+    mockPrisma.user.findUnique.mockResolvedValue({ role: UserRole.ADMIN });
+
+    await expect(
+      service.createPaymentIntent({
+        shippingMethodId: 'uk-standard',
+        shippingAddress: sampleAddress,
+        lines: [{ productId: 'p02', sizeIndex: 0, months: 1, qty: 1 }],
+      }),
+    ).rejects.toThrow(ForbiddenException);
   });
 });

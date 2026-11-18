@@ -464,11 +464,18 @@ export class AuthService {
       }),
     ]);
 
-    await this.mailService.sendOtpEmail({
-      to: email,
-      name,
-      code,
-      purpose: purpose === OtpPurpose.RESET ? 'reset' : 'signup',
+    // Dispatch OTP email asynchronously so slow/blocked SMTP never hangs signup or blocks navigation to /verify-email
+    void Promise.resolve(
+      this.mailService.sendOtpEmail({
+        to: email,
+        name,
+        code,
+        purpose: purpose === OtpPurpose.RESET ? 'reset' : 'signup',
+      }),
+    ).catch((err) => {
+      this.logger.warn(
+        `OTP email dispatch failed for ${email}: ${err instanceof Error ? err.message : ''}`,
+      );
     });
   }
 

@@ -46,7 +46,7 @@ export class CheckoutController {
     @Body({ schema: createPaymentIntentSchema }) body: CreatePaymentIntentInput,
     @CurrentUser() user?: AuthUserPayload,
   ) {
-    return this.checkoutService.createPaymentIntent(body, user?.sub);
+    return this.checkoutService.createPaymentIntent(body, user?.sub, user?.role);
   }
 
   @Public()
@@ -55,7 +55,7 @@ export class CheckoutController {
     @Body({ schema: confirmOrderSchema }) body: ConfirmOrderInput,
     @CurrentUser() user?: AuthUserPayload,
   ) {
-    return this.checkoutService.confirmOrder(body, user?.sub);
+    return this.checkoutService.confirmOrder(body, user?.sub, user?.role);
   }
 
   @Public()
@@ -95,11 +95,7 @@ export class CheckoutController {
     @Param('id', { schema: orderIdParamSchema }) id: string,
     @Body({ schema: updateOrderStatusSchema }) body: UpdateOrderStatusInput,
   ) {
-    return this.checkoutService.updateOrderStatus(
-      id,
-      body.status,
-      body.paymentStatus,
-    );
+    return this.checkoutService.updateOrderStatus(id, body.status);
   }
 
   @Get(':id')

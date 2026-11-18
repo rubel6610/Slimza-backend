@@ -27,20 +27,37 @@ export class JwtAuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (isPublic) return true;
 
     const request = context
       .switchToHttp()
       .getRequest<Request & { user?: AuthUserPayload }>();
     const token = this.extractToken(request);
+
+    if (isPublic) {
+      if (token) {
+        try {
+          const rawSecret =
+            this.config.get<string>('JWT_ACCESS_SECRET') ||
+            'dev-slimza-access-secret-change-in-production';
+          const secret = rawSecret.trim().replace(/^["']|["']$/g, '');
+          request.user = await this.jwtService.verifyAsync<AuthUserPayload>(
+            token,
+            { secret },
+          );
+        } catch {
+          // Ignore invalid/expired token on public routes
+        }
+      }
+      return true;
+    }
+
     if (!token) {
       throw new UnauthorizedException('Authentication required');
     }
 
     try {
       const rawSecret =
-        this.config.get<string>('JWT_ACCESS_SECRET') ||
-        'dev-slimza-access-secret-change-in-production';
+        this.config.get<string>('JWT_ACCESS_SECRET')!;
       const secret = rawSecret.trim().replace(/^["']|["']$/g, '');
       const payload = await this.jwtService.verifyAsync<AuthUserPayload>(token, {
         secret,
