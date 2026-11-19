@@ -101,3 +101,9 @@ export type Coupon = Prisma.CouponModel
  * 
  */
 export type MediaAsset = Prisma.MediaAssetModel
+/**
+ * Model FranchiseApplication
+ * Submitted from the public "Franchise with us" page (/franchise).
+ * Reviewed in the dashboard (Franchise). Follows the archive lifecycle.
+ */
+export type FranchiseApplication = Prisma.FranchiseApplicationModel

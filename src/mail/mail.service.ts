@@ -479,4 +479,74 @@ export class MailService {
       }
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Franchise applications (src/franchise). Best effort: failures are logged,
+  // never shown to the applicant.
+  // ---------------------------------------------------------------------------
+
+  async sendFranchiseApplicationEmails(app: {
+    id: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    address: string;
+    businessName: string | null;
+    country: string;
+    location: string;
+    interest: 'FRANCHISE' | 'SALES_REPRESENTATIVE';
+    channel: 'ONLINE' | 'RETAIL' | 'BOTH';
+    message: string | null;
+  }): Promise<void> {
+    const interestLabel = app.interest === 'FRANCHISE' ? 'Franchise partner' : 'Sales representative';
+    const channelLabel =
+      app.channel === 'ONLINE' ? 'Online' : app.channel === 'RETAIL' ? 'In a retailer' : 'Online and retail';
+
+    const rows: Array<[string, string]> = [
+      ['Name', app.fullName],
+      ['Email', app.email],
+      ['Telephone', app.phone],
+      ['Address', app.address],
+      ['Business name', app.businessName || '—'],
+      ['Wants to be', interestLabel],
+      ['Sells', channelLabel],
+      ['Country', app.country],
+      ['City / area', app.location],
+      ['Message', app.message || '—'],
+    ];
+    const text = rows.map(([k, v]) => `${k}: ${v}`).join('\n');
+    const htmlTable = rows
+      .map(
+        ([k, v]) =>
+          `<tr><td style="padding:6px 12px;color:#6B7280;vertical-align:top;">${escapeHtml(k)}</td><td style="padding:6px 12px;color:#111827;">${escapeHtml(v).replace(/\n/g, '<br/>')}</td></tr>`,
+      )
+      .join('');
+
+    const messages = [
+      {
+        to: this.adminNotificationEmail,
+        subject: `New franchise application — ${app.fullName} (${app.country})`,
+        text: `A new franchise application was submitted.\n\n${text}\n\nReview it in the dashboard: ${this.storeUrl}/dashboard/franchise`,
+        html: `<p>A new franchise application was submitted.</p><table>${htmlTable}</table><p><a href="${escapeHtml(`${this.storeUrl}/dashboard/franchise`)}">Review it in the dashboard</a></p>`,
+      },
+      {
+        to: app.email,
+        subject: 'We received your Slimza franchise application',
+        text: `Hi ${app.fullName},\n\nThank you for your interest in working with Slimza. Our team will review your application and get back to you within a few working days.\n\nWhat you sent us:\n${text}\n\nThe Slimza team`,
+        html: `<p>Hi ${escapeHtml(app.fullName)},</p><p>Thank you for your interest in working with Slimza. Our team will review your application and get back to you within a few working days.</p><p>What you sent us:</p><table>${htmlTable}</table><p>The Slimza team</p>`,
+      },
+    ];
+
+    for (const message of messages) {
+      if (!this.transporter) {
+        this.logger.log(`[DEV FRANCHISE EMAIL] To=${message.to} Subject="${message.subject}"`);
+        continue;
+      }
+      try {
+        await this.transporter.sendMail({ from: this.fromAddress, ...message });
+      } catch (err) {
+        this.logger.warn(`Failed to send franchise email to ${message.to}: ${String(err)}`);
+      }
+    }
+  }
 }

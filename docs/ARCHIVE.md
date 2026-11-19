@@ -24,6 +24,7 @@ The **backend** enforces the rule, not only the UI. A permanent delete of someth
 | Products                             | `Product.archivedAt`              | `PATCH /products/:id/archive` · `PATCH /products/:id/unarchive` · `DELETE /products/:id`<br>Bulk: `POST /products/bulk-archive` · `bulk-unarchive` · `bulk-delete` (body `{ ids }`) |
 | Orders                               | `Order.archivedAt`                | `PATCH /checkout/admin/orders/:id/archive` · `…/unarchive` · `DELETE /checkout/admin/orders/:id`<br>Bulk: `POST /checkout/admin/orders/bulk-archive` · `bulk-unarchive` · `bulk-delete` |
 | Coupons                              | `Coupon.archivedAt`               | `PATCH /coupons/:id/archive` · `…/unarchive` · `DELETE /coupons/:id` |
+| Franchise applications               | `FranchiseApplication.archivedAt` | `PATCH /franchise/applications/:id/archive` · `…/unarchive` · `DELETE /franchise/applications/:id` |
 | Users                                | `User.archivedAt`                 | `PATCH /users/:id/archive` · `…/unarchive` · `DELETE /users/:id` (see "User accounts" below) |
 | Newsletter leads                     | `NewsletterLead.archivedAt`       | `PATCH /cms/newsletter/leads/:id/archive` · `…/unarchive` · `DELETE /cms/newsletter/leads/:id` |
 | CMS → Banner slides                  | item in `banner_slides` JSON      | `PATCH /cms/:key/items/:itemId/archive`<br>`PATCH /cms/:key/items/:itemId/unarchive`<br>`DELETE /cms/:key/items/:itemId` |
