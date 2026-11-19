@@ -37,20 +37,6 @@ import {
 } from './cms.schemas.js';
 import { CmsService, type UploadedCmsFile } from './cms.service.js';
 
-/**
- * CMS sections + newsletter leads.
- *
- * Archive lifecycle (no direct deletes anywhere — see src/cms/cms-archive.ts):
- *  - Section list items (banner slides, nav links, features, categories,
- *    partners, return-policy cards):
- *        PATCH  /cms/:key/items/:itemId/archive
- *        PATCH  /cms/:key/items/:itemId/unarchive
- *        DELETE /cms/:key/items/:itemId          (archived items only)
- *  - Newsletter leads:
- *        PATCH  /cms/newsletter/leads/:id/archive
- *        PATCH  /cms/newsletter/leads/:id/unarchive
- *        DELETE /cms/newsletter/leads/:id        (archived leads only)
- */
 @Controller('cms')
 export class CmsController {
   constructor(private readonly cmsService: CmsService) {}
