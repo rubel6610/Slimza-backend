@@ -32,6 +32,7 @@ export type NewsletterLeadMinAggregateOutputType = {
   subscribedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
+  archivedAt: Date | null
 }
 
 export type NewsletterLeadMaxAggregateOutputType = {
@@ -42,6 +43,7 @@ export type NewsletterLeadMaxAggregateOutputType = {
   subscribedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
+  archivedAt: Date | null
 }
 
 export type NewsletterLeadCountAggregateOutputType = {
@@ -52,6 +54,7 @@ export type NewsletterLeadCountAggregateOutputType = {
   subscribedAt: number
   createdAt: number
   updatedAt: number
+  archivedAt: number
   _all: number
 }
 
@@ -64,6 +67,7 @@ export type NewsletterLeadMinAggregateInputType = {
   subscribedAt?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
 }
 
 export type NewsletterLeadMaxAggregateInputType = {
@@ -74,6 +78,7 @@ export type NewsletterLeadMaxAggregateInputType = {
   subscribedAt?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
 }
 
 export type NewsletterLeadCountAggregateInputType = {
@@ -84,6 +89,7 @@ export type NewsletterLeadCountAggregateInputType = {
   subscribedAt?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
   _all?: true
 }
 
@@ -167,6 +173,7 @@ export type NewsletterLeadGroupByOutputType = {
   subscribedAt: Date
   createdAt: Date
   updatedAt: Date
+  archivedAt: Date | null
   _count: NewsletterLeadCountAggregateOutputType | null
   _min: NewsletterLeadMinAggregateOutputType | null
   _max: NewsletterLeadMaxAggregateOutputType | null
@@ -198,6 +205,7 @@ export type NewsletterLeadWhereInput = {
   subscribedAt?: Prisma.DateTimeFilter<"NewsletterLead"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"NewsletterLead"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"NewsletterLead"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableFilter<"NewsletterLead"> | Date | string | null
 }
 
 export type NewsletterLeadOrderByWithRelationInput = {
@@ -208,6 +216,7 @@ export type NewsletterLeadOrderByWithRelationInput = {
   subscribedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _relevance?: Prisma.NewsletterLeadOrderByRelevanceInput
 }
 
@@ -222,6 +231,7 @@ export type NewsletterLeadWhereUniqueInput = Prisma.AtLeast<{
   subscribedAt?: Prisma.DateTimeFilter<"NewsletterLead"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"NewsletterLead"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"NewsletterLead"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableFilter<"NewsletterLead"> | Date | string | null
 }, "id" | "email">
 
 export type NewsletterLeadOrderByWithAggregationInput = {
@@ -232,6 +242,7 @@ export type NewsletterLeadOrderByWithAggregationInput = {
   subscribedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.NewsletterLeadCountOrderByAggregateInput
   _max?: Prisma.NewsletterLeadMaxOrderByAggregateInput
   _min?: Prisma.NewsletterLeadMinOrderByAggregateInput
@@ -248,6 +259,7 @@ export type NewsletterLeadScalarWhereWithAggregatesInput = {
   subscribedAt?: Prisma.DateTimeWithAggregatesFilter<"NewsletterLead"> | Date | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"NewsletterLead"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"NewsletterLead"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"NewsletterLead"> | Date | string | null
 }
 
 export type NewsletterLeadCreateInput = {
@@ -258,6 +270,7 @@ export type NewsletterLeadCreateInput = {
   subscribedAt?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type NewsletterLeadUncheckedCreateInput = {
@@ -268,6 +281,7 @@ export type NewsletterLeadUncheckedCreateInput = {
   subscribedAt?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type NewsletterLeadUpdateInput = {
@@ -278,6 +292,7 @@ export type NewsletterLeadUpdateInput = {
   subscribedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type NewsletterLeadUncheckedUpdateInput = {
@@ -288,6 +303,7 @@ export type NewsletterLeadUncheckedUpdateInput = {
   subscribedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type NewsletterLeadCreateManyInput = {
@@ -298,6 +314,7 @@ export type NewsletterLeadCreateManyInput = {
   subscribedAt?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type NewsletterLeadUpdateManyMutationInput = {
@@ -308,6 +325,7 @@ export type NewsletterLeadUpdateManyMutationInput = {
   subscribedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type NewsletterLeadUncheckedUpdateManyInput = {
@@ -318,6 +336,7 @@ export type NewsletterLeadUncheckedUpdateManyInput = {
   subscribedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type NewsletterLeadOrderByRelevanceInput = {
@@ -334,6 +353,7 @@ export type NewsletterLeadCountOrderByAggregateInput = {
   subscribedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type NewsletterLeadMaxOrderByAggregateInput = {
@@ -344,6 +364,7 @@ export type NewsletterLeadMaxOrderByAggregateInput = {
   subscribedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type NewsletterLeadMinOrderByAggregateInput = {
@@ -354,6 +375,7 @@ export type NewsletterLeadMinOrderByAggregateInput = {
   subscribedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 
@@ -366,6 +388,7 @@ export type NewsletterLeadSelect<ExtArgs extends runtime.Types.Extensions.Intern
   subscribedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  archivedAt?: boolean
 }, ExtArgs["result"]["newsletterLead"]>
 
 
@@ -378,9 +401,10 @@ export type NewsletterLeadSelectScalar = {
   subscribedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  archivedAt?: boolean
 }
 
-export type NewsletterLeadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "source" | "status" | "subscribedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["newsletterLead"]>
+export type NewsletterLeadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "source" | "status" | "subscribedAt" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["newsletterLead"]>
 
 export type $NewsletterLeadPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "NewsletterLead"
@@ -393,6 +417,10 @@ export type $NewsletterLeadPayload<ExtArgs extends runtime.Types.Extensions.Inte
     subscribedAt: Date
     createdAt: Date
     updatedAt: Date
+    /**
+     * Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
+     */
+    archivedAt: Date | null
   }, ExtArgs["result"]["newsletterLead"]>
   composites: {}
 }
@@ -769,6 +797,7 @@ export interface NewsletterLeadFieldRefs {
   readonly subscribedAt: Prisma.FieldRef<"NewsletterLead", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"NewsletterLead", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"NewsletterLead", 'DateTime'>
+  readonly archivedAt: Prisma.FieldRef<"NewsletterLead", 'DateTime'>
 }
     
 

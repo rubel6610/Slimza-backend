@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Headers,
   Param,
@@ -10,6 +11,12 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import {
+  archiveFilterSchema,
+  bulkIdsSchema,
+  type ArchiveFilter,
+  type BulkIdsInput,
+} from '../common/archive/archive.js';
 import {
   CurrentUser,
   type AuthUserPayload,
@@ -104,9 +111,11 @@ export class CheckoutController {
     return this.checkoutService.processRefund(id, body);
   }
 
+  /** `?archived=exclude|only|include` (default exclude). Stats should use `include`. */
   @Roles(UserRole.ADMIN)
   @Get('admin/orders')
   async getAllOrders(
+    @Query('archived', { schema: archiveFilterSchema }) archived: ArchiveFilter,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('status') status?: any,
@@ -117,7 +126,50 @@ export class CheckoutController {
       limit: limit ? parseInt(limit, 10) : undefined,
       status,
       search,
+      archived,
     });
+  }
+
+  // ---- Order archive lifecycle (src/common/archive/archive.ts) ------------
+  // Archiving only hides an order from the admin order list. Customers still
+  // see it in "My orders" until it is permanently deleted.
+
+  @Roles(UserRole.ADMIN)
+  @Post('admin/orders/bulk-archive')
+  async bulkArchiveOrders(@Body({ schema: bulkIdsSchema }) body: BulkIdsInput) {
+    return this.checkoutService.archiveOrders(body.ids);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Post('admin/orders/bulk-unarchive')
+  async bulkUnarchiveOrders(@Body({ schema: bulkIdsSchema }) body: BulkIdsInput) {
+    return this.checkoutService.unarchiveOrders(body.ids);
+  }
+
+  /** Permanent. Every order must already be archived, otherwise nothing is deleted (409). */
+  @Roles(UserRole.ADMIN)
+  @Post('admin/orders/bulk-delete')
+  async bulkDeleteOrders(@Body({ schema: bulkIdsSchema }) body: BulkIdsInput) {
+    return this.checkoutService.deleteArchivedOrders(body.ids);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Patch('admin/orders/:id/archive')
+  async archiveOrder(@Param('id', { schema: orderIdParamSchema }) id: string) {
+    return this.checkoutService.archiveOrder(id);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Patch('admin/orders/:id/unarchive')
+  async unarchiveOrder(@Param('id', { schema: orderIdParamSchema }) id: string) {
+    return this.checkoutService.unarchiveOrder(id);
+  }
+
+  /** Permanent delete (items + refund request cascade). Order must be archived first. */
+  @Roles(UserRole.ADMIN)
+  @Delete('admin/orders/:id')
+  async deleteOrder(@Param('id', { schema: orderIdParamSchema }) id: string) {
+    return this.checkoutService.deleteArchivedOrder(id);
   }
 
   @Roles(UserRole.ADMIN)

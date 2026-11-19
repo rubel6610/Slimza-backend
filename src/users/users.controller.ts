@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -24,11 +25,15 @@ import {
 } from '../auth/guards/jwt-auth.guard.js';
 import { UserRole } from '../generated/prisma/enums.js';
 import {
+  adminUsersQuerySchema,
   createAddressSchema,
+  suspendUserSchema,
   updateAddressSchema,
   updateProfileSchema,
   uuidParamSchema,
+  type AdminUsersQuery,
   type CreateAddressInput,
+  type SuspendUserInput,
   type UpdateAddressInput,
   type UpdateProfileInput,
 } from './users.schemas.js';
@@ -133,10 +138,15 @@ export class UsersController {
     return result;
   }
 
+  // ---- Admin: users list, account status, archive lifecycle ----------------
+  // Status rules: src/users/account-access.ts. Archive rules: src/common/archive/archive.ts.
+  // Admins can't act on their own account or on other admin accounts (403).
+
+  /** `?archived=exclude|only|include` (default exclude) `&status=ACTIVE|SUSPENDED`. */
   @Roles(UserRole.ADMIN)
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query({ schema: adminUsersQuerySchema }) query: AdminUsersQuery) {
+    return this.usersService.findAll(query);
   }
 
   @Roles(UserRole.ADMIN)
@@ -145,9 +155,51 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
+  /** Blocks sign-in, buying, paying and every other account action. Signs the user out. */
+  @Roles(UserRole.ADMIN)
+  @Patch(':id/suspend')
+  suspend(
+    @Param('id', { schema: uuidParamSchema }) id: string,
+    @Body({ schema: suspendUserSchema }) body: SuspendUserInput,
+    @CurrentUser() admin: AuthUserPayload,
+  ) {
+    return this.usersService.suspend(id, admin.sub, body.reason);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Patch(':id/activate')
+  activate(
+    @Param('id', { schema: uuidParamSchema }) id: string,
+    @CurrentUser() admin: AuthUserPayload,
+  ) {
+    return this.usersService.activate(id, admin.sub);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Patch(':id/archive')
+  archive(
+    @Param('id', { schema: uuidParamSchema }) id: string,
+    @CurrentUser() admin: AuthUserPayload,
+  ) {
+    return this.usersService.archive(id, admin.sub);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Patch(':id/unarchive')
+  unarchive(
+    @Param('id', { schema: uuidParamSchema }) id: string,
+    @CurrentUser() admin: AuthUserPayload,
+  ) {
+    return this.usersService.unarchive(id, admin.sub);
+  }
+
+  /** Permanent. The user must be archived first (409 otherwise). Orders are kept. */
   @Roles(UserRole.ADMIN)
   @Delete(':id')
-  remove(@Param('id', { schema: uuidParamSchema }) id: string) {
-    return this.usersService.remove(id);
+  remove(
+    @Param('id', { schema: uuidParamSchema }) id: string,
+    @CurrentUser() admin: AuthUserPayload,
+  ) {
+    return this.usersService.remove(id, admin.sub);
   }
 }

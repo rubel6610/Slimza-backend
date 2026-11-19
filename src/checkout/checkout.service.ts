@@ -12,12 +12,19 @@ import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import type { AuthUserPayload } from '../auth/decorators/current-user.decorator.js';
 import {
+  archiveWhere,
+  assertAllArchivedBeforeDelete,
+  assertArchivedBeforeDelete,
+  type ArchiveFilter,
+} from '../common/archive/archive.js';
+import {
   OrderStatus,
   PaymentStatus,
   RefundStatus,
   UserRole,
 } from '../generated/prisma/enums.js';
 import { evaluateCouponStatus } from '../coupons/coupons.service.js';
+import { ACCOUNT_ACCESS_SELECT, assertAccountUsable } from '../users/account-access.js';
 import { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
@@ -128,6 +135,13 @@ export class CheckoutService {
         const dbProduct = await this.prisma.product.findFirst({
           where: { OR: [{ id: line.productId }, { slug: line.productId }] },
         });
+        // Archived products are hidden from the shop and cannot be bought,
+        // even if a stale basket still references them.
+        if (dbProduct?.archivedAt) {
+          throw new BadRequestException(
+            `"${dbProduct.name}" is no longer available. Please remove it from your basket.`,
+          );
+        }
         if (dbProduct) {
           name = dbProduct.name;
           basePrice = dbProduct.price;
@@ -273,9 +287,18 @@ export class CheckoutService {
     };
   }
 
-  private async assertPurchaserIsNotAdmin(
+  /**
+   * Who may buy:
+   *  - not an admin (by role or by the order email), and
+   *  - not a suspended / archived account (src/users/account-access.ts),
+   *    checked by the signed-in user AND by the order email, so a suspended
+   *    customer can't sign out and buy "as a guest" with the same email.
+   * Runs before the PaymentIntent is created and again before the order is saved.
+   */
+  private async assertPurchaserCanBuy(
     email?: string,
     userRole?: UserRole,
+    userId?: string,
   ): Promise<void> {
     if (userRole === UserRole.ADMIN) {
       throw new ForbiddenException(
@@ -283,17 +306,28 @@ export class CheckoutService {
       );
     }
 
+    if (!this.prisma.user?.findUnique) return;
+
+    if (userId) {
+      const buyer = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: ACCOUNT_ACCESS_SELECT,
+      });
+      if (buyer) assertAccountUsable(buyer);
+    }
+
     const normalizedEmail = email?.trim().toLowerCase();
-    if (normalizedEmail && this.prisma.user?.findUnique) {
+    if (normalizedEmail) {
       const existingUser = await this.prisma.user.findUnique({
         where: { email: normalizedEmail },
-        select: { role: true },
+        select: { role: true, ...ACCOUNT_ACCESS_SELECT },
       });
       if (existingUser?.role === UserRole.ADMIN) {
         throw new ForbiddenException(
           'Admin accounts are not allowed to purchase products. Please use a customer account.',
         );
       }
+      if (existingUser) assertAccountUsable(existingUser);
     }
   }
 
@@ -312,7 +346,7 @@ export class CheckoutService {
       shippingMethod: { id: string; name: string; fee: number; eta: string };
     };
   }> {
-    await this.assertPurchaserIsNotAdmin(input.shippingAddress?.email, userRole);
+    await this.assertPurchaserCanBuy(input.shippingAddress?.email, userRole, userId);
 
     const pricing = await this.calculatePricing(
       {
@@ -387,7 +421,7 @@ export class CheckoutService {
     userId?: string,
     userRole?: UserRole,
   ) {
-    await this.assertPurchaserIsNotAdmin(input.shippingAddress?.email, userRole);
+    await this.assertPurchaserCanBuy(input.shippingAddress?.email, userRole, userId);
 
     const pricing = await this.calculatePricing(
       {
@@ -829,12 +863,14 @@ export class CheckoutService {
     limit?: number;
     status?: OrderStatus;
     search?: string;
+    /** exclude (default) | only | include */
+    archived?: ArchiveFilter;
   }) {
     const page = Math.max(1, params?.page ?? 1);
     const limit = Math.min(100, Math.max(1, params?.limit ?? 20));
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = { ...archiveWhere(params?.archived) };
     if (params?.status) {
       where.status = params.status;
     }
@@ -932,6 +968,89 @@ export class CheckoutService {
         refundRequest: true,
       },
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Order archive lifecycle: live -> archived -> permanently deleted.
+  // Orders are looked up by id OR order number, same as the other admin routes.
+  // ---------------------------------------------------------------------------
+
+  private async findOrderOrThrow(orderId: string) {
+    const order = await this.prisma.order.findFirst({
+      where: { OR: [{ id: orderId }, { orderNumber: orderId }] },
+    });
+    if (!order) {
+      throw new NotFoundException('Order not found.');
+    }
+    return order;
+  }
+
+  async archiveOrder(orderId: string) {
+    const order = await this.findOrderOrThrow(orderId);
+    if (order.archivedAt) return order;
+    const updated = await this.prisma.order.update({
+      where: { id: order.id },
+      data: { archivedAt: new Date() },
+    });
+    this.logger.log(`Archived order ${order.orderNumber}`);
+    return updated;
+  }
+
+  async unarchiveOrder(orderId: string) {
+    const order = await this.findOrderOrThrow(orderId);
+    if (!order.archivedAt) return order;
+    const updated = await this.prisma.order.update({
+      where: { id: order.id },
+      data: { archivedAt: null },
+    });
+    this.logger.log(`Restored order ${order.orderNumber}`);
+    return updated;
+  }
+
+  async archiveOrders(ids: string[]) {
+    const result = await this.prisma.order.updateMany({
+      where: { id: { in: ids }, archivedAt: null },
+      data: { archivedAt: new Date() },
+    });
+    return { ok: true as const, count: result.count };
+  }
+
+  async unarchiveOrders(ids: string[]) {
+    const result = await this.prisma.order.updateMany({
+      where: { id: { in: ids }, archivedAt: { not: null } },
+      data: { archivedAt: null },
+    });
+    return { ok: true as const, count: result.count };
+  }
+
+  /**
+   * Permanent delete. Order items and any refund request are removed with it
+   * (onDelete: Cascade). Throws 409 if the order is not archived.
+   */
+  async deleteArchivedOrder(orderId: string) {
+    const order = await this.findOrderOrThrow(orderId);
+    assertArchivedBeforeDelete(order, `Order ${order.orderNumber}`);
+
+    await this.prisma.order.delete({ where: { id: order.id } });
+    this.logger.warn(`Permanently deleted order ${order.orderNumber}`);
+    return { ok: true as const, id: order.id };
+  }
+
+  /** Permanent bulk delete. All-or-nothing: throws 409 if any order is still live. */
+  async deleteArchivedOrders(ids: string[]) {
+    const orders = await this.prisma.order.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, orderNumber: true, archivedAt: true },
+    });
+    assertAllArchivedBeforeDelete(
+      orders.map((o) => ({ archivedAt: o.archivedAt, label: o.orderNumber })),
+    );
+
+    const result = await this.prisma.order.deleteMany({
+      where: { id: { in: orders.map((o) => o.id) }, archivedAt: { not: null } },
+    });
+    this.logger.warn(`Permanently deleted ${result.count} archived orders`);
+    return { ok: true as const, count: result.count };
   }
 
   async handleWebhook(rawBody: string | Buffer, signature?: string) {

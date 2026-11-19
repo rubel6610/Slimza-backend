@@ -12,6 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { OtpPurpose, type Address, type User } from '../generated/prisma/client.js';
 import { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { accountBlockedException, getAccountBlock } from '../users/account-access.js';
 import type {
   ChangePasswordInput,
   ForgotPasswordInput,
@@ -67,6 +68,11 @@ export function serializeUser(user: User & { addresses?: Address[] }) {
     role: user.role,
     isEmailVerified: user.isEmailVerified,
     deletionRequestedAt: user.deletionRequestedAt,
+    /** ACTIVE | SUSPENDED — see src/users/account-access.ts */
+    status: user.status,
+    suspendedAt: user.suspendedAt,
+    suspensionReason: user.suspensionReason,
+    archivedAt: user.archivedAt,
     createdAt: user.createdAt,
     addresses: (user.addresses ?? []).map((a) => ({
       id: a.id,
@@ -349,6 +355,14 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    // Suspended / archived accounts can't sign in (src/users/account-access.ts).
+    // Checked after the password so the response doesn't reveal account state.
+    const block = getAccountBlock(user);
+    if (block) {
+      this.logger.warn(`Blocked sign-in for ${block.code}: ${input.email}`);
+      throw accountBlockedException(block);
+    }
+
     if (!user.isEmailVerified) {
       this.logger.warn(`Blocked sign-in for unverified email: ${input.email}`);
       throw new ForbiddenException({
@@ -397,6 +411,10 @@ export class AuthService {
       where: { id: existing.id },
       data: { revokedAt: new Date() },
     });
+
+    // A suspended / archived user's session can't be renewed.
+    const block = getAccountBlock(existing.user);
+    if (block) throw accountBlockedException(block);
 
     const tokens = await this.issueSessionTokens(
       existing.user,

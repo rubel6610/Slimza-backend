@@ -1273,6 +1273,10 @@ export const UserScalarFieldEnum = {
   isEmailVerified: 'isEmailVerified',
   emailVerifiedAt: 'emailVerifiedAt',
   deletionRequestedAt: 'deletionRequestedAt',
+  status: 'status',
+  suspendedAt: 'suspendedAt',
+  suspensionReason: 'suspensionReason',
+  archivedAt: 'archivedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1349,7 +1353,8 @@ export const NewsletterLeadScalarFieldEnum = {
   status: 'status',
   subscribedAt: 'subscribedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  archivedAt: 'archivedAt'
 } as const
 
 export type NewsletterLeadScalarFieldEnum = (typeof NewsletterLeadScalarFieldEnum)[keyof typeof NewsletterLeadScalarFieldEnum]
@@ -1379,7 +1384,8 @@ export const OrderScalarFieldEnum = {
   stripeChargeId: 'stripeChargeId',
   metadata: 'metadata',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  archivedAt: 'archivedAt'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
@@ -1453,7 +1459,8 @@ export const ProductScalarFieldEnum = {
   supplyDuration: 'supplyDuration',
   packsPerMonth: 'packsPerMonth',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  archivedAt: 'archivedAt'
 } as const
 
 export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
@@ -1469,7 +1476,8 @@ export const CouponScalarFieldEnum = {
   expiredDate: 'expiredDate',
   isActive: 'isActive',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  archivedAt: 'archivedAt'
 } as const
 
 export type CouponScalarFieldEnum = (typeof CouponScalarFieldEnum)[keyof typeof CouponScalarFieldEnum]
@@ -1528,7 +1536,8 @@ export const UserOrderByRelevanceFieldEnum = {
   passwordHash: 'passwordHash',
   phone: 'phone',
   birthday: 'birthday',
-  avatarUrl: 'avatarUrl'
+  avatarUrl: 'avatarUrl',
+  suspensionReason: 'suspensionReason'
 } as const
 
 export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
@@ -1719,6 +1728,13 @@ export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
  * Reference to a field of type 'DateTime'
  */
 export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+/**
+ * Reference to a field of type 'UserStatus'
+ */
+export type EnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserStatus'>
     
 
 

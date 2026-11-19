@@ -235,6 +235,43 @@ describe('CheckoutService', () => {
     ).rejects.toThrow(ForbiddenException);
   });
 
+  it('blocks suspended accounts from paying, signed in or as a guest with the same email', async () => {
+    const input = {
+      shippingMethodId: 'uk-standard',
+      shippingAddress: {
+        name: 'Sam Blocked',
+        email: 'sam@example.com',
+        phone: '07123456789',
+        line1: '1 High Street',
+        line2: '',
+        city: 'London',
+        postcode: 'E1 6AN',
+        country: 'United Kingdom',
+        deliveryNotes: '',
+      },
+      lines: [{ productId: 'p02', sizeIndex: 0, months: 1, qty: 1 }],
+      bundles: [],
+    };
+    mockPrisma.user.findUnique.mockResolvedValue({
+      role: UserRole.CUSTOMER,
+      status: 'SUSPENDED',
+      archivedAt: null,
+      suspensionReason: 'Chargeback',
+    });
+
+    // signed in
+    await expect(service.createPaymentIntent(input, 'user-sam', UserRole.CUSTOMER)).rejects.toMatchObject({
+      response: { code: 'ACCOUNT_SUSPENDED' },
+    });
+    // guest checkout using the suspended account's email
+    await expect(service.createPaymentIntent(input)).rejects.toMatchObject({
+      response: { code: 'ACCOUNT_SUSPENDED' },
+    });
+    await expect(
+      service.confirmOrder({ ...input, paymentMode: 'demo', paymentLabel: 'Paid securely' }),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
   it('allows customer refund request for non-delivered order and blocks delivered order', async () => {
     const customer = {
       sub: 'user-1',

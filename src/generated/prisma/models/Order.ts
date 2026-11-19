@@ -67,6 +67,7 @@ export type OrderMinAggregateOutputType = {
   stripeChargeId: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  archivedAt: Date | null
 }
 
 export type OrderMaxAggregateOutputType = {
@@ -92,6 +93,7 @@ export type OrderMaxAggregateOutputType = {
   stripeChargeId: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  archivedAt: Date | null
 }
 
 export type OrderCountAggregateOutputType = {
@@ -119,6 +121,7 @@ export type OrderCountAggregateOutputType = {
   metadata: number
   createdAt: number
   updatedAt: number
+  archivedAt: number
   _all: number
 }
 
@@ -164,6 +167,7 @@ export type OrderMinAggregateInputType = {
   stripeChargeId?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
 }
 
 export type OrderMaxAggregateInputType = {
@@ -189,6 +193,7 @@ export type OrderMaxAggregateInputType = {
   stripeChargeId?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
 }
 
 export type OrderCountAggregateInputType = {
@@ -216,6 +221,7 @@ export type OrderCountAggregateInputType = {
   metadata?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
   _all?: true
 }
 
@@ -330,6 +336,7 @@ export type OrderGroupByOutputType = {
   metadata: runtime.JsonValue | null
   createdAt: Date
   updatedAt: Date
+  archivedAt: Date | null
   _count: OrderCountAggregateOutputType | null
   _avg: OrderAvgAggregateOutputType | null
   _sum: OrderSumAggregateOutputType | null
@@ -380,6 +387,7 @@ export type OrderWhereInput = {
   metadata?: Prisma.JsonNullableFilter<"Order">
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   items?: Prisma.OrderItemListRelationFilter
   refundRequest?: Prisma.XOR<Prisma.RefundRequestNullableScalarRelationFilter, Prisma.RefundRequestWhereInput> | null
@@ -410,6 +418,7 @@ export type OrderOrderByWithRelationInput = {
   metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   items?: Prisma.OrderItemOrderByRelationAggregateInput
   refundRequest?: Prisma.RefundRequestOrderByWithRelationInput
@@ -444,6 +453,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   metadata?: Prisma.JsonNullableFilter<"Order">
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   items?: Prisma.OrderItemListRelationFilter
   refundRequest?: Prisma.XOR<Prisma.RefundRequestNullableScalarRelationFilter, Prisma.RefundRequestWhereInput> | null
@@ -474,6 +484,7 @@ export type OrderOrderByWithAggregationInput = {
   metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.OrderCountOrderByAggregateInput
   _avg?: Prisma.OrderAvgOrderByAggregateInput
   _max?: Prisma.OrderMaxOrderByAggregateInput
@@ -509,6 +520,7 @@ export type OrderScalarWhereWithAggregatesInput = {
   metadata?: Prisma.JsonNullableWithAggregatesFilter<"Order">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
 }
 
 export type OrderCreateInput = {
@@ -535,6 +547,7 @@ export type OrderCreateInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
   user?: Prisma.UserCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   refundRequest?: Prisma.RefundRequestCreateNestedOneWithoutOrderInput
@@ -565,6 +578,7 @@ export type OrderUncheckedCreateInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   refundRequest?: Prisma.RefundRequestUncheckedCreateNestedOneWithoutOrderInput
 }
@@ -593,6 +607,7 @@ export type OrderUpdateInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   refundRequest?: Prisma.RefundRequestUpdateOneWithoutOrderNestedInput
@@ -623,6 +638,7 @@ export type OrderUncheckedUpdateInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   refundRequest?: Prisma.RefundRequestUncheckedUpdateOneWithoutOrderNestedInput
 }
@@ -652,6 +668,7 @@ export type OrderCreateManyInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type OrderUpdateManyMutationInput = {
@@ -678,6 +695,7 @@ export type OrderUpdateManyMutationInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type OrderUncheckedUpdateManyInput = {
@@ -705,6 +723,7 @@ export type OrderUncheckedUpdateManyInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type OrderListRelationFilter = {
@@ -748,6 +767,7 @@ export type OrderCountOrderByAggregateInput = {
   metadata?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type OrderAvgOrderByAggregateInput = {
@@ -782,6 +802,7 @@ export type OrderMaxOrderByAggregateInput = {
   stripeChargeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type OrderMinOrderByAggregateInput = {
@@ -807,6 +828,7 @@ export type OrderMinOrderByAggregateInput = {
   stripeChargeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type OrderSumOrderByAggregateInput = {
@@ -933,6 +955,7 @@ export type OrderCreateWithoutUserInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   refundRequest?: Prisma.RefundRequestCreateNestedOneWithoutOrderInput
 }
@@ -961,6 +984,7 @@ export type OrderUncheckedCreateWithoutUserInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   refundRequest?: Prisma.RefundRequestUncheckedCreateNestedOneWithoutOrderInput
 }
@@ -1019,6 +1043,7 @@ export type OrderScalarWhereInput = {
   metadata?: Prisma.JsonNullableFilter<"Order">
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
 }
 
 export type OrderCreateWithoutRefundRequestInput = {
@@ -1045,6 +1070,7 @@ export type OrderCreateWithoutRefundRequestInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
   user?: Prisma.UserCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
 }
@@ -1074,6 +1100,7 @@ export type OrderUncheckedCreateWithoutRefundRequestInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
 }
 
@@ -1117,6 +1144,7 @@ export type OrderUpdateWithoutRefundRequestInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
 }
@@ -1146,6 +1174,7 @@ export type OrderUncheckedUpdateWithoutRefundRequestInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
 }
 
@@ -1173,6 +1202,7 @@ export type OrderCreateWithoutItemsInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
   user?: Prisma.UserCreateNestedOneWithoutOrdersInput
   refundRequest?: Prisma.RefundRequestCreateNestedOneWithoutOrderInput
 }
@@ -1202,6 +1232,7 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
   refundRequest?: Prisma.RefundRequestUncheckedCreateNestedOneWithoutOrderInput
 }
 
@@ -1245,6 +1276,7 @@ export type OrderUpdateWithoutItemsInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneWithoutOrdersNestedInput
   refundRequest?: Prisma.RefundRequestUpdateOneWithoutOrderNestedInput
 }
@@ -1274,6 +1306,7 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundRequest?: Prisma.RefundRequestUncheckedUpdateOneWithoutOrderNestedInput
 }
 
@@ -1301,6 +1334,7 @@ export type OrderCreateManyUserInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type OrderUpdateWithoutUserInput = {
@@ -1327,6 +1361,7 @@ export type OrderUpdateWithoutUserInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   refundRequest?: Prisma.RefundRequestUpdateOneWithoutOrderNestedInput
 }
@@ -1355,6 +1390,7 @@ export type OrderUncheckedUpdateWithoutUserInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   refundRequest?: Prisma.RefundRequestUncheckedUpdateOneWithoutOrderNestedInput
 }
@@ -1383,6 +1419,7 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -1441,6 +1478,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   metadata?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  archivedAt?: boolean
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
   refundRequest?: boolean | Prisma.Order$refundRequestArgs<ExtArgs>
@@ -1474,9 +1512,10 @@ export type OrderSelectScalar = {
   metadata?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  archivedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "userId" | "customerEmail" | "customerName" | "customerPhone" | "shippingAddress" | "shippingMethod" | "shippingFee" | "subtotal" | "discount" | "bundleSavings" | "bundleReward" | "promoCode" | "total" | "currency" | "status" | "paymentStatus" | "paymentMode" | "paymentIntentId" | "stripeChargeId" | "metadata" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "userId" | "customerEmail" | "customerName" | "customerPhone" | "shippingAddress" | "shippingMethod" | "shippingFee" | "subtotal" | "discount" | "bundleSavings" | "bundleReward" | "promoCode" | "total" | "currency" | "status" | "paymentStatus" | "paymentMode" | "paymentIntentId" | "stripeChargeId" | "metadata" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
@@ -1516,6 +1555,10 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     metadata: runtime.JsonValue | null
     createdAt: Date
     updatedAt: Date
+    /**
+     * Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
+     */
+    archivedAt: Date | null
   }, ExtArgs["result"]["order"]>
   composites: {}
 }
@@ -1912,6 +1955,7 @@ export interface OrderFieldRefs {
   readonly metadata: Prisma.FieldRef<"Order", 'Json'>
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly archivedAt: Prisma.FieldRef<"Order", 'DateTime'>
 }
     
 

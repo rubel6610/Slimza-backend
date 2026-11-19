@@ -73,6 +73,7 @@ export type ProductMinAggregateOutputType = {
   packsPerMonth: number | null
   createdAt: Date | null
   updatedAt: Date | null
+  archivedAt: Date | null
 }
 
 export type ProductMaxAggregateOutputType = {
@@ -100,6 +101,7 @@ export type ProductMaxAggregateOutputType = {
   packsPerMonth: number | null
   createdAt: Date | null
   updatedAt: Date | null
+  archivedAt: Date | null
 }
 
 export type ProductCountAggregateOutputType = {
@@ -132,6 +134,7 @@ export type ProductCountAggregateOutputType = {
   packsPerMonth: number
   createdAt: number
   updatedAt: number
+  archivedAt: number
   _all: number
 }
 
@@ -183,6 +186,7 @@ export type ProductMinAggregateInputType = {
   packsPerMonth?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
 }
 
 export type ProductMaxAggregateInputType = {
@@ -210,6 +214,7 @@ export type ProductMaxAggregateInputType = {
   packsPerMonth?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
 }
 
 export type ProductCountAggregateInputType = {
@@ -242,6 +247,7 @@ export type ProductCountAggregateInputType = {
   packsPerMonth?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
   _all?: true
 }
 
@@ -361,6 +367,7 @@ export type ProductGroupByOutputType = {
   packsPerMonth: number | null
   createdAt: Date
   updatedAt: Date
+  archivedAt: Date | null
   _count: ProductCountAggregateOutputType | null
   _avg: ProductAvgAggregateOutputType | null
   _sum: ProductSumAggregateOutputType | null
@@ -416,6 +423,7 @@ export type ProductWhereInput = {
   packsPerMonth?: Prisma.IntNullableFilter<"Product"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableFilter<"Product"> | Date | string | null
 }
 
 export type ProductOrderByWithRelationInput = {
@@ -448,6 +456,7 @@ export type ProductOrderByWithRelationInput = {
   packsPerMonth?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _relevance?: Prisma.ProductOrderByRelevanceInput
 }
 
@@ -484,6 +493,7 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   packsPerMonth?: Prisma.IntNullableFilter<"Product"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableFilter<"Product"> | Date | string | null
 }, "id" | "slug">
 
 export type ProductOrderByWithAggregationInput = {
@@ -516,6 +526,7 @@ export type ProductOrderByWithAggregationInput = {
   packsPerMonth?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ProductCountOrderByAggregateInput
   _avg?: Prisma.ProductAvgOrderByAggregateInput
   _max?: Prisma.ProductMaxOrderByAggregateInput
@@ -556,6 +567,7 @@ export type ProductScalarWhereWithAggregatesInput = {
   packsPerMonth?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Product"> | Date | string | null
 }
 
 export type ProductCreateInput = {
@@ -588,6 +600,7 @@ export type ProductCreateInput = {
   packsPerMonth?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type ProductUncheckedCreateInput = {
@@ -620,6 +633,7 @@ export type ProductUncheckedCreateInput = {
   packsPerMonth?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type ProductUpdateInput = {
@@ -652,6 +666,7 @@ export type ProductUpdateInput = {
   packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ProductUncheckedUpdateInput = {
@@ -684,6 +699,7 @@ export type ProductUncheckedUpdateInput = {
   packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ProductCreateManyInput = {
@@ -716,6 +732,7 @@ export type ProductCreateManyInput = {
   packsPerMonth?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type ProductUpdateManyMutationInput = {
@@ -748,6 +765,7 @@ export type ProductUpdateManyMutationInput = {
   packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ProductUncheckedUpdateManyInput = {
@@ -780,6 +798,7 @@ export type ProductUncheckedUpdateManyInput = {
   packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ProductOrderByRelevanceInput = {
@@ -818,6 +837,7 @@ export type ProductCountOrderByAggregateInput = {
   packsPerMonth?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type ProductAvgOrderByAggregateInput = {
@@ -856,6 +876,7 @@ export type ProductMaxOrderByAggregateInput = {
   packsPerMonth?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type ProductMinOrderByAggregateInput = {
@@ -883,6 +904,7 @@ export type ProductMinOrderByAggregateInput = {
   packsPerMonth?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type ProductSumOrderByAggregateInput = {
@@ -944,6 +966,7 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   packsPerMonth?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  archivedAt?: boolean
 }, ExtArgs["result"]["product"]>
 
 
@@ -978,9 +1001,10 @@ export type ProductSelectScalar = {
   packsPerMonth?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  archivedAt?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "price" | "originalPrice" | "discountPercent" | "taxIncluded" | "unlimitedStock" | "stockQuantity" | "stockStatus" | "category" | "categories" | "brand" | "tags" | "publishStatus" | "featured" | "featuredRank" | "offered" | "rating" | "reviewCount" | "image" | "gallery" | "sizes" | "variations" | "supplyDuration" | "packsPerMonth" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "price" | "originalPrice" | "discountPercent" | "taxIncluded" | "unlimitedStock" | "stockQuantity" | "stockStatus" | "category" | "categories" | "brand" | "tags" | "publishStatus" | "featured" | "featuredRank" | "offered" | "rating" | "reviewCount" | "image" | "gallery" | "sizes" | "variations" | "supplyDuration" | "packsPerMonth" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["product"]>
 
 export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Product"
@@ -1015,6 +1039,10 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     packsPerMonth: number | null
     createdAt: Date
     updatedAt: Date
+    /**
+     * Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
+     */
+    archivedAt: Date | null
   }, ExtArgs["result"]["product"]>
   composites: {}
 }
@@ -1413,6 +1441,7 @@ export interface ProductFieldRefs {
   readonly packsPerMonth: Prisma.FieldRef<"Product", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Product", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Product", 'DateTime'>
+  readonly archivedAt: Prisma.FieldRef<"Product", 'DateTime'>
 }
     
 

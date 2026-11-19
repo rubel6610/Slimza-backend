@@ -7,6 +7,12 @@ import {
 } from '@nestjs/common';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import {
+  archiveWhere,
+  assertAllArchivedBeforeDelete,
+  assertArchivedBeforeDelete,
+  resolveArchiveFilter,
+} from '../common/archive/archive.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -427,8 +433,14 @@ export class ProductsService implements OnModuleInit {
     }
   }
 
-  async findAll(query: Partial<QueryProductInput> = {}) {
-    const where: Prisma.ProductWhereInput = {};
+  /**
+   * @param isAdmin Only admins may list archived products (`query.archived`).
+   *                Everyone else always gets live products only.
+   */
+  async findAll(query: Partial<QueryProductInput> = {}, isAdmin = false) {
+    const where: Prisma.ProductWhereInput = {
+      ...archiveWhere(resolveArchiveFilter(query.archived, isAdmin)),
+    };
 
     if (query.q) {
       where.OR = [
@@ -507,7 +519,8 @@ export class ProductsService implements OnModuleInit {
     };
   }
 
-  async findOne(idOrSlug: string) {
+  /** Archived products are invisible (404) unless `isAdmin` is true. */
+  async findOne(idOrSlug: string, isAdmin = false) {
     const isUuid =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
         idOrSlug,
@@ -517,7 +530,7 @@ export class ProductsService implements OnModuleInit {
       ? await this.prisma.product.findUnique({ where: { id: idOrSlug } })
       : await this.prisma.product.findUnique({ where: { slug: idOrSlug } });
 
-    if (!product) {
+    if (!product || (product.archivedAt && !isAdmin)) {
       throw new NotFoundException(`Product "${idOrSlug}" not found`);
     }
 
@@ -623,22 +636,87 @@ export class ProductsService implements OnModuleInit {
     return updated;
   }
 
-  async remove(id: string) {
-    const existing = await this.prisma.product.findUnique({ where: { id } });
-    if (!existing) {
+  // ---------------------------------------------------------------------------
+  // Archive lifecycle: live -> archived -> permanently deleted.
+  // See src/common/archive/archive.ts for the rules shared by every resource.
+  // ---------------------------------------------------------------------------
+
+  private async findByIdOrThrow(id: string) {
+    const product = await this.prisma.product.findUnique({ where: { id } });
+    if (!product) {
       throw new NotFoundException(`Product with ID "${id}" not found`);
     }
+    return product;
+  }
+
+  /** Hide a product from the storefront. Idempotent. */
+  async archive(id: string) {
+    const existing = await this.findByIdOrThrow(id);
+    if (existing.archivedAt) return existing;
+
+    const archived = await this.prisma.product.update({
+      where: { id },
+      data: { archivedAt: new Date() },
+    });
+    this.logger.log(`Archived product "${existing.name}" (${id})`);
+    return archived;
+  }
+
+  /** Restore an archived product to the storefront. Idempotent. */
+  async unarchive(id: string) {
+    const existing = await this.findByIdOrThrow(id);
+    if (!existing.archivedAt) return existing;
+
+    const restored = await this.prisma.product.update({
+      where: { id },
+      data: { archivedAt: null },
+    });
+    this.logger.log(`Restored product "${existing.name}" (${id})`);
+    return restored;
+  }
+
+  async archiveMany(ids: string[]) {
+    const result = await this.prisma.product.updateMany({
+      where: { id: { in: ids }, archivedAt: null },
+      data: { archivedAt: new Date() },
+    });
+    this.logger.log(`Archived ${result.count} products`);
+    return { ok: true as const, count: result.count };
+  }
+
+  async unarchiveMany(ids: string[]) {
+    const result = await this.prisma.product.updateMany({
+      where: { id: { in: ids }, archivedAt: { not: null } },
+      data: { archivedAt: null },
+    });
+    this.logger.log(`Restored ${result.count} products`);
+    return { ok: true as const, count: result.count };
+  }
+
+  /** Permanent delete. Throws 409 if the product is not archived. */
+  async remove(id: string) {
+    const existing = await this.findByIdOrThrow(id);
+    assertArchivedBeforeDelete(existing, `Product "${existing.name}"`);
 
     await this.prisma.product.delete({ where: { id } });
-    this.logger.log(`Deleted product "${existing.name}" (${id})`);
+    this.logger.log(`Permanently deleted product "${existing.name}" (${id})`);
     return { ok: true as const, id };
   }
 
+  /** Permanent bulk delete. All-or-nothing: throws 409 if any product is still live. */
   async deleteMany(ids: string[]) {
-    const result = await this.prisma.product.deleteMany({
+    const products = await this.prisma.product.findMany({
       where: { id: { in: ids } },
+      select: { id: true, name: true, archivedAt: true },
     });
-    this.logger.log(`Deleted ${result.count} products`);
+    assertAllArchivedBeforeDelete(
+      products.map((p) => ({ archivedAt: p.archivedAt, label: `"${p.name}"` })),
+    );
+
+    const result = await this.prisma.product.deleteMany({
+      where: { id: { in: products.map((p) => p.id) }, archivedAt: { not: null } },
+    });
+    this.logger.log(`Permanently deleted ${result.count} archived products`);
     return { ok: true as const, count: result.count };
   }
 

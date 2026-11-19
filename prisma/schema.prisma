@@ -14,6 +14,12 @@ enum UserRole {
   ADMIN
 }
 
+/// Whether a user may use their account. See src/users/account-access.ts.
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
 enum OtpPurpose {
   SIGNUP
   RESET
@@ -33,12 +39,21 @@ model User {
   isEmailVerified     Boolean        @default(false)
   emailVerifiedAt     DateTime?
   deletionRequestedAt DateTime?
+  /// SUSPENDED = cannot sign in, buy or pay. Set by an admin; reversible.
+  status              UserStatus     @default(ACTIVE)
+  suspendedAt         DateTime?
+  suspensionReason    String?        @db.Text
+  /// Archive lifecycle (src/common/archive/archive.ts). Archived users cannot sign in either.
+  archivedAt          DateTime?
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
   addresses           Address[]
   otpCodes            OtpCode[]
   refreshTokens       RefreshToken[]
   orders              Order[]
+
+  @@index([status])
+  @@index([archivedAt])
 }
 
 model Address {
@@ -102,13 +117,17 @@ model CmsSection {
 }
 
 model NewsletterLead {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  source       String   @default("Footer Newsletter")
-  status       String   @default("Subscribed")
-  subscribedAt DateTime @default(now())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id           String    @id @default(uuid())
+  email        String    @unique
+  source       String    @default("Footer Newsletter")
+  status       String    @default("Subscribed")
+  subscribedAt DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  /// Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
+  archivedAt   DateTime?
+
+  @@index([archivedAt])
 }
 
 enum OrderStatus {
@@ -158,15 +177,18 @@ model Order {
   metadata        Json?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+  /// Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
+  archivedAt      DateTime?
 
-  user            User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
-  items           OrderItem[]
-  refundRequest   RefundRequest?
+  user          User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items         OrderItem[]
+  refundRequest RefundRequest?
 
   @@index([userId])
   @@index([customerEmail])
   @@index([paymentIntentId])
   @@index([orderNumber])
+  @@index([archivedAt])
 }
 
 model RefundRequest {
@@ -185,7 +207,7 @@ model RefundRequest {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  order          Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([status])
   @@index([customerEmail])
@@ -207,62 +229,68 @@ model OrderItem {
   bundleData   Json?
   createdAt    DateTime @default(now())
 
-  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
   @@index([productId])
 }
 
 model Product {
-  id              String   @id @default(uuid())
-  slug            String   @unique
+  id              String    @id @default(uuid())
+  slug            String    @unique
   name            String
-  description     String   @db.Text
+  description     String    @db.Text
   price           Float
   originalPrice   Float?
-  discountPercent Float    @default(0)
-  taxIncluded     Boolean  @default(true)
-  unlimitedStock  Boolean  @default(false)
-  stockQuantity   Int      @default(50)
-  stockStatus     String   @default("In Stock") // "In Stock" | "Low Stock" | "Out of Stock"
-  category        String   @default("cleanse-reset")
+  discountPercent Float     @default(0)
+  taxIncluded     Boolean   @default(true)
+  unlimitedStock  Boolean   @default(false)
+  stockQuantity   Int       @default(50)
+  stockStatus     String    @default("In Stock") // "In Stock" | "Low Stock" | "Out of Stock"
+  category        String    @default("cleanse-reset")
   categories      Json?
-  brand           String   @default("slimza-teas")
+  brand           String    @default("slimza-teas")
   tags            Json?
-  publishStatus   String   @default("published") // "published" | "draft"
-  featured        Boolean  @default(false)
-  featuredRank    Int      @default(99)
-  offered         Boolean  @default(false)
-  rating          Float    @default(5.0)
-  reviewCount     Int      @default(12)
-  image           String   @default("/products/tea/teatox-green.png")
+  publishStatus   String    @default("published") // "published" | "draft"
+  featured        Boolean   @default(false)
+  featuredRank    Int       @default(99)
+  offered         Boolean   @default(false)
+  rating          Float     @default(5.0)
+  reviewCount     Int       @default(12)
+  image           String    @default("/products/tea/teatox-green.png")
   gallery         Json?
   sizes           Json?
   variations      Json?
-  supplyDuration  String?  @default("1 Month")
-  packsPerMonth   Int?     @default(1)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  supplyDuration  String?   @default("1 Month")
+  packsPerMonth   Int?      @default(1)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  /// Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
+  archivedAt      DateTime?
 
   @@index([slug])
   @@index([category])
   @@index([publishStatus])
   @@index([featured])
+  @@index([archivedAt])
 }
 
 model Coupon {
-  id              String   @id @default(uuid())
-  code            String   @unique
+  id              String    @id @default(uuid())
+  code            String    @unique
   discountPercent Float
-  customerRange   Int      @default(100)
-  uses            Int      @default(0)
+  customerRange   Int       @default(100)
+  uses            Int       @default(0)
   generateDate    String
   expiredDate     String
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  /// Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
+  archivedAt      DateTime?
 
   @@index([code])
+  @@index([archivedAt])
 }
 
 model MediaAsset {

@@ -49,6 +49,7 @@ export type CouponMinAggregateOutputType = {
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
+  archivedAt: Date | null
 }
 
 export type CouponMaxAggregateOutputType = {
@@ -62,6 +63,7 @@ export type CouponMaxAggregateOutputType = {
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
+  archivedAt: Date | null
 }
 
 export type CouponCountAggregateOutputType = {
@@ -75,6 +77,7 @@ export type CouponCountAggregateOutputType = {
   isActive: number
   createdAt: number
   updatedAt: number
+  archivedAt: number
   _all: number
 }
 
@@ -102,6 +105,7 @@ export type CouponMinAggregateInputType = {
   isActive?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
 }
 
 export type CouponMaxAggregateInputType = {
@@ -115,6 +119,7 @@ export type CouponMaxAggregateInputType = {
   isActive?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
 }
 
 export type CouponCountAggregateInputType = {
@@ -128,6 +133,7 @@ export type CouponCountAggregateInputType = {
   isActive?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
   _all?: true
 }
 
@@ -228,6 +234,7 @@ export type CouponGroupByOutputType = {
   isActive: boolean
   createdAt: Date
   updatedAt: Date
+  archivedAt: Date | null
   _count: CouponCountAggregateOutputType | null
   _avg: CouponAvgAggregateOutputType | null
   _sum: CouponSumAggregateOutputType | null
@@ -264,6 +271,7 @@ export type CouponWhereInput = {
   isActive?: Prisma.BoolFilter<"Coupon"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Coupon"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Coupon"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableFilter<"Coupon"> | Date | string | null
 }
 
 export type CouponOrderByWithRelationInput = {
@@ -277,6 +285,7 @@ export type CouponOrderByWithRelationInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _relevance?: Prisma.CouponOrderByRelevanceInput
 }
 
@@ -294,6 +303,7 @@ export type CouponWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"Coupon"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Coupon"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Coupon"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableFilter<"Coupon"> | Date | string | null
 }, "id" | "code">
 
 export type CouponOrderByWithAggregationInput = {
@@ -307,6 +317,7 @@ export type CouponOrderByWithAggregationInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.CouponCountOrderByAggregateInput
   _avg?: Prisma.CouponAvgOrderByAggregateInput
   _max?: Prisma.CouponMaxOrderByAggregateInput
@@ -328,6 +339,7 @@ export type CouponScalarWhereWithAggregatesInput = {
   isActive?: Prisma.BoolWithAggregatesFilter<"Coupon"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Coupon"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Coupon"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Coupon"> | Date | string | null
 }
 
 export type CouponCreateInput = {
@@ -341,6 +353,7 @@ export type CouponCreateInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type CouponUncheckedCreateInput = {
@@ -354,6 +367,7 @@ export type CouponUncheckedCreateInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type CouponUpdateInput = {
@@ -367,6 +381,7 @@ export type CouponUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type CouponUncheckedUpdateInput = {
@@ -380,6 +395,7 @@ export type CouponUncheckedUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type CouponCreateManyInput = {
@@ -393,6 +409,7 @@ export type CouponCreateManyInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type CouponUpdateManyMutationInput = {
@@ -406,6 +423,7 @@ export type CouponUpdateManyMutationInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type CouponUncheckedUpdateManyInput = {
@@ -419,6 +437,7 @@ export type CouponUncheckedUpdateManyInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type CouponOrderByRelevanceInput = {
@@ -438,6 +457,7 @@ export type CouponCountOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type CouponAvgOrderByAggregateInput = {
@@ -457,6 +477,7 @@ export type CouponMaxOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type CouponMinOrderByAggregateInput = {
@@ -470,6 +491,7 @@ export type CouponMinOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type CouponSumOrderByAggregateInput = {
@@ -491,6 +513,7 @@ export type CouponSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  archivedAt?: boolean
 }, ExtArgs["result"]["coupon"]>
 
 
@@ -506,9 +529,10 @@ export type CouponSelectScalar = {
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  archivedAt?: boolean
 }
 
-export type CouponOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "discountPercent" | "customerRange" | "uses" | "generateDate" | "expiredDate" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["coupon"]>
+export type CouponOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "discountPercent" | "customerRange" | "uses" | "generateDate" | "expiredDate" | "isActive" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["coupon"]>
 
 export type $CouponPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Coupon"
@@ -524,6 +548,10 @@ export type $CouponPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     isActive: boolean
     createdAt: Date
     updatedAt: Date
+    /**
+     * Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
+     */
+    archivedAt: Date | null
   }, ExtArgs["result"]["coupon"]>
   composites: {}
 }
@@ -903,6 +931,7 @@ export interface CouponFieldRefs {
   readonly isActive: Prisma.FieldRef<"Coupon", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Coupon", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Coupon", 'DateTime'>
+  readonly archivedAt: Prisma.FieldRef<"Coupon", 'DateTime'>
 }
     
 

@@ -8,7 +8,12 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
+import {
+  archiveFilterSchema,
+  type ArchiveFilter,
+} from '../common/archive/archive.js';
 import { Public } from '../auth/decorators/public.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { UserRole } from '../generated/prisma/enums.js';
@@ -39,10 +44,11 @@ export class CouponsController {
     return this.couponsService.validateCode(body.code);
   }
 
+  /** Admin list. `?archived=exclude|only|include` (default exclude). */
   @Roles(UserRole.ADMIN)
   @Get()
-  findAll() {
-    return this.couponsService.findAll();
+  findAll(@Query('archived', { schema: archiveFilterSchema }) archived: ArchiveFilter) {
+    return this.couponsService.findAll(archived);
   }
 
   @Roles(UserRole.ADMIN)
@@ -60,6 +66,21 @@ export class CouponsController {
     return this.couponsService.update(id, body);
   }
 
+  // ---- Archive lifecycle (src/common/archive/archive.ts) ------------------
+
+  @Roles(UserRole.ADMIN)
+  @Patch(':id/archive')
+  archive(@Param('id') id: string) {
+    return this.couponsService.archive(id);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Patch(':id/unarchive')
+  unarchive(@Param('id') id: string) {
+    return this.couponsService.unarchive(id);
+  }
+
+  /** Permanent delete. The coupon must be archived first (409 otherwise). */
   @Roles(UserRole.ADMIN)
   @Delete(':id')
   remove(@Param('id') id: string) {

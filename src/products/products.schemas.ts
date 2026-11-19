@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { archiveFilterSchema } from '../common/archive/archive.js';
 
 export const createProductSchema = z.object({
   name: z.string().trim().min(1, 'Product name is required'),
@@ -41,10 +42,11 @@ export const queryProductSchema = z.object({
   sort: z.string().trim().optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
   limit: z.coerce.number().int().min(1).max(100).optional().default(50),
+  /** exclude (default) | only | include — honoured for admins only. */
+  archived: archiveFilterSchema,
 });
 export type QueryProductInput = z.infer<typeof queryProductSchema>;
 
-export const bulkDeleteProductsSchema = z.object({
-  ids: z.array(z.string()),
-});
-export type BulkDeleteProductsInput = z.infer<typeof bulkDeleteProductsSchema>;
+/** Bulk archive / unarchive / permanent delete all share the same `{ ids }` body. */
+export { bulkIdsSchema as bulkProductIdsSchema } from '../common/archive/archive.js';
+export type { BulkIdsInput as BulkProductIdsInput } from '../common/archive/archive.js';

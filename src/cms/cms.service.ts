@@ -7,9 +7,22 @@ import {
 } from '@nestjs/common';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import {
+  archiveWhere,
+  assertArchivedBeforeDelete,
+  type ArchiveFilter,
+} from '../common/archive/archive.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import {
+  mergeCmsSectionUpdate,
+  removeArchivedCmsItem,
+  resetCmsSectionKeepingCustomItems,
+  setCmsItemArchived,
+  stripArchivedItems,
+  type CmsItem,
+} from './cms-archive.js';
 
 export interface UploadedCmsFile {
   buffer: Buffer;
@@ -53,6 +66,20 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
   banner_slides: [
     {
       id: 'slide-1',
+      slug: 'total-wellness',
+      eyebrow: 'NATURAL. EFFECTIVE. SUSTAINABLE.',
+      title: ['FUEL YOUR DAY', 'THE NATURAL WAY'],
+      description: 'Pure. Nourishing. Effective.',
+      cta: 'Shop Now',
+      ctaHref: '/shop',
+      image: '/banner/banner-image.png',
+      alt: 'Slimza Super Greens, Collagen, Slim Fit and Detox pouches with fresh fruit, nuts and herbs',
+      mobileFocus: 'object-[64%_center] sm:object-[92%_center]',
+      showTextOverlay: true,
+      active: true,
+    },
+    {
+      id: 'slide-2',
       slug: 'teatox',
       eyebrow: 'Cleanse & Reset',
       title: ['Start fresh,', 'every day'],
@@ -62,10 +89,11 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
       image: '/banner/slides/teatox-banner-slide.jpg',
       alt: 'Teatox detox herbal blends',
       mobileFocus: 'object-right',
+      showTextOverlay: true,
       active: true,
     },
     {
-      id: 'slide-2',
+      id: 'slide-3',
       slug: 'shilajit',
       eyebrow: 'Pure Vitality',
       title: ['Pure Himalayan', 'Power'],
@@ -78,7 +106,7 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
       active: true,
     },
     {
-      id: 'slide-3',
+      id: 'slide-4',
       slug: 'slimming-tea',
       eyebrow: 'Body & Balance',
       title: ['Feel light,', 'stay energized'],
@@ -91,7 +119,7 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
       active: true,
     },
     {
-      id: 'slide-4',
+      id: 'slide-5',
       slug: 'matcha',
       eyebrow: 'Focused Calm',
       title: ['Ceremonial grade,', 'pure focus'],
@@ -117,6 +145,50 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
     { id: 'feat-4', icon: '/features/secure-checkout.svg', title: 'Secure & Encrypted Checkout', active: true },
     { id: 'feat-5', icon: '/features/5.png', title: 'Mental Clarity', active: true },
     { id: 'feat-6', icon: '/features/money-back.svg', title: '30-Day Money Back Guarantee', active: true },
+  ],
+  categories: [
+    {
+      id: 'cat-1',
+      slug: 'cleanse-reset',
+      name: 'Cleanse & Reset',
+      image: '/shop-categories/wellness.jpg',
+      active: true,
+    },
+    {
+      id: 'cat-2',
+      slug: 'daily-energy',
+      name: 'Daily Energy',
+      image: '/shop-categories/Functional Coffee.png',
+      active: true,
+    },
+    {
+      id: 'cat-3',
+      slug: 'peak-performance',
+      name: 'Peak Performance',
+      image: '/shop-categories/Pure Shilajit Resin.png',
+      active: true,
+    },
+    {
+      id: 'cat-4',
+      slug: 'radiance-beauty',
+      name: 'Radiance & Beauty',
+      image: '/shop-categories/sleep.png',
+      active: true,
+    },
+    {
+      id: 'cat-5',
+      slug: 'total-wellness',
+      name: 'Total Wellness',
+      image: '/shop-categories/Wellness Supplements.png',
+      active: true,
+    },
+    {
+      id: 'cat-6',
+      slug: 'restore-renew',
+      name: 'Restore & Renew',
+      image: '/shop-categories/Ceremonial Matcha.png',
+      active: true,
+    },
   ],
   trusted_by: {
     title: 'Featured In & Trusted By Retailers Across the UK',
@@ -351,7 +423,11 @@ export class CmsService implements OnModuleInit {
     }
   }
 
-  async getAllSections(): Promise<Record<string, unknown>> {
+  /**
+   * @param includeArchived Return archived list items too. Only the controller
+   *        decides this (admins only); the storefront always gets `false`.
+   */
+  async getAllSections(includeArchived = false): Promise<Record<string, unknown>> {
     const records = await this.prisma.cmsSection.findMany();
     const result: Record<string, unknown> = { ...DEFAULT_CMS_DATA };
 
@@ -359,10 +435,22 @@ export class CmsService implements OnModuleInit {
       result[record.key] = record.data;
     }
 
+    if (!includeArchived) {
+      for (const key of Object.keys(result)) {
+        result[key] = stripArchivedItems(key, result[key]);
+      }
+    }
+
     return result;
   }
 
-  async getSection(key: string): Promise<unknown> {
+  async getSection(key: string, includeArchived = false): Promise<unknown> {
+    const data = await this.getStoredSectionData(key);
+    return includeArchived ? data : stripArchivedItems(key, data);
+  }
+
+  /** Raw stored data (archived items included), falling back to defaults. */
+  private async getStoredSectionData(key: string): Promise<unknown> {
     const record = await this.prisma.cmsSection.findUnique({ where: { key } });
     if (record) return record.data;
 
@@ -373,28 +461,64 @@ export class CmsService implements OnModuleInit {
     throw new NotFoundException(`CMS section "${key}" not found`);
   }
 
-  async updateSection(key: string, data: unknown): Promise<{ ok: true; key: string; data: unknown }> {
+  private async writeSection(key: string, data: unknown) {
     const updated = await this.prisma.cmsSection.upsert({
       where: { key },
-      create: {
-        key,
-        data: data as Prisma.InputJsonValue,
-      },
-      update: {
-        data: data as Prisma.InputJsonValue,
-      },
+      create: { key, data: data as Prisma.InputJsonValue },
+      update: { data: data as Prisma.InputJsonValue },
     });
-
-    return { ok: true, key: updated.key, data: updated.data };
+    return { ok: true as const, key: updated.key, data: updated.data as unknown };
   }
 
+  /**
+   * Full-section save from the dashboard. For sections with item lists this can
+   * edit / add / reorder / archive / restore items, but never remove one: a
+   * missing live item → 409. See cms-archive.ts.
+   */
+  async updateSection(key: string, data: unknown): Promise<{ ok: true; key: string; data: unknown }> {
+    const current = await this.getStoredSectionData(key).catch(() => undefined);
+    const next = current === undefined ? data : mergeCmsSectionUpdate(key, current, data);
+    return this.writeSection(key, next);
+  }
+
+  /** Restores default content. Custom items are moved to the archive, not deleted. */
   async resetSection(key: string): Promise<{ ok: true; key: string; data: unknown }> {
     if (!(key in DEFAULT_CMS_DATA)) {
       throw new NotFoundException(`No default template for CMS section "${key}"`);
     }
 
-    const defaultVal = DEFAULT_CMS_DATA[key];
-    return this.updateSection(key, defaultVal);
+    const current = await this.getStoredSectionData(key);
+    return this.writeSection(
+      key,
+      resetCmsSectionKeepingCustomItems(key, current, DEFAULT_CMS_DATA[key]),
+    );
+  }
+
+  // ---- CMS item archive lifecycle (see cms-archive.ts) ----------------------
+
+  async archiveSectionItem(key: string, itemId: string) {
+    return this.setSectionItemArchived(key, itemId, true);
+  }
+
+  async unarchiveSectionItem(key: string, itemId: string) {
+    return this.setSectionItemArchived(key, itemId, false);
+  }
+
+  private async setSectionItemArchived(
+    key: string,
+    itemId: string,
+    archived: boolean,
+  ): Promise<{ ok: true; key: string; data: unknown; item: CmsItem }> {
+    const current = await this.getStoredSectionData(key);
+    const { data, item } = setCmsItemArchived(key, current, itemId, archived);
+    const saved = await this.writeSection(key, data);
+    return { ...saved, item };
+  }
+
+  /** Permanent delete of one archived item. 409 if the item is still live. */
+  async deleteArchivedSectionItem(key: string, itemId: string) {
+    const current = await this.getStoredSectionData(key);
+    return this.writeSection(key, removeArchivedCmsItem(key, current, itemId));
   }
 
   async saveUploadedFile(file?: UploadedCmsFile): Promise<{ url: string }> {
@@ -434,6 +558,8 @@ export class CmsService implements OnModuleInit {
       update: {
         status: 'Subscribed',
         source,
+        // Subscribing again is fresh consent, so an archived lead comes back.
+        archivedAt: null,
       },
     });
 
@@ -444,15 +570,22 @@ export class CmsService implements OnModuleInit {
     };
   }
 
-  async getNewsletterLeads() {
+  /** `archived` = exclude (default) | only | include. */
+  async getNewsletterLeads(archived: ArchiveFilter = 'exclude') {
     return this.prisma.newsletterLead.findMany({
+      where: archiveWhere(archived),
       orderBy: { subscribedAt: 'desc' },
     });
   }
 
-  async updateNewsletterLeadStatus(id: string, status: string) {
+  private async findNewsletterLeadOrThrow(id: string) {
     const existing = await this.prisma.newsletterLead.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Newsletter lead not found');
+    return existing;
+  }
+
+  async updateNewsletterLeadStatus(id: string, status: string) {
+    await this.findNewsletterLeadOrThrow(id);
 
     return this.prisma.newsletterLead.update({
       where: { id },
@@ -460,9 +593,30 @@ export class CmsService implements OnModuleInit {
     });
   }
 
+  // ---- Newsletter lead archive lifecycle (src/common/archive/archive.ts) ----
+
+  async archiveNewsletterLead(id: string) {
+    const existing = await this.findNewsletterLeadOrThrow(id);
+    if (existing.archivedAt) return existing;
+    return this.prisma.newsletterLead.update({
+      where: { id },
+      data: { archivedAt: new Date() },
+    });
+  }
+
+  async unarchiveNewsletterLead(id: string) {
+    const existing = await this.findNewsletterLeadOrThrow(id);
+    if (!existing.archivedAt) return existing;
+    return this.prisma.newsletterLead.update({
+      where: { id },
+      data: { archivedAt: null },
+    });
+  }
+
+  /** Permanent delete. Throws 409 if the lead is not archived. */
   async deleteNewsletterLead(id: string) {
-    const existing = await this.prisma.newsletterLead.findUnique({ where: { id } });
-    if (!existing) throw new NotFoundException('Newsletter lead not found');
+    const existing = await this.findNewsletterLeadOrThrow(id);
+    assertArchivedBeforeDelete(existing, `Lead ${existing.email}`);
 
     await this.prisma.newsletterLead.delete({ where: { id } });
     return { ok: true as const };

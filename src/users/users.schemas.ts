@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { archiveFilterSchema } from '../common/archive/archive.js';
 
 export const uuidParamSchema = z.string().uuid('Invalid identifier');
 
@@ -29,3 +30,16 @@ export const updateAddressSchema = createAddressSchema.partial();
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 export type CreateAddressInput = z.infer<typeof createAddressSchema>;
 export type UpdateAddressInput = z.infer<typeof updateAddressSchema>;
+
+/** Admin user list: `?archived=exclude|only|include&status=ACTIVE|SUSPENDED`. */
+export const adminUsersQuerySchema = z.object({
+  archived: archiveFilterSchema,
+  status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),
+});
+export type AdminUsersQuery = z.infer<typeof adminUsersQuerySchema>;
+
+/** Optional reason, shown to the user when they try to sign in or act. */
+export const suspendUserSchema = z.object({
+  reason: z.string().trim().max(500).optional(),
+});
+export type SuspendUserInput = z.infer<typeof suspendUserSchema>;

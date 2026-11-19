@@ -34,6 +34,7 @@ import {
   CurrentUser,
   type AuthUserPayload,
 } from './decorators/current-user.decorator.js';
+import { AllowBlockedAccount } from './decorators/allow-blocked-account.decorator.js';
 import { Public } from './decorators/public.decorator.js';
 import {
   ACCESS_COOKIE_NAME,
@@ -50,6 +51,7 @@ export class AuthController {
   ) {}
 
   @Public()
+  @AllowBlockedAccount()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   register(@Body({ schema: registerSchema }) body: RegisterInput) {
@@ -57,6 +59,7 @@ export class AuthController {
   }
 
   @Public()
+  @AllowBlockedAccount()
   @Post('verify-code')
   @HttpCode(HttpStatus.OK)
   verifyCode(@Body({ schema: verifyCodeSchema }) body: VerifyCodeInput) {
@@ -64,6 +67,7 @@ export class AuthController {
   }
 
   @Public()
+  @AllowBlockedAccount()
   @Post('resend-code')
   @HttpCode(HttpStatus.OK)
   resendCode(@Body({ schema: resendCodeSchema }) body: ResendCodeInput) {
@@ -71,6 +75,7 @@ export class AuthController {
   }
 
   @Public()
+  @AllowBlockedAccount()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async signIn(
@@ -99,6 +104,7 @@ export class AuthController {
   }
 
   @Public()
+  @AllowBlockedAccount()
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   forgotPassword(
@@ -108,6 +114,7 @@ export class AuthController {
   }
 
   @Public()
+  @AllowBlockedAccount()
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   resetPassword(
@@ -126,6 +133,7 @@ export class AuthController {
   }
 
   @Public()
+  @AllowBlockedAccount()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refresh(
@@ -160,6 +168,7 @@ export class AuthController {
   }
 
   @Public()
+  @AllowBlockedAccount()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @Header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')

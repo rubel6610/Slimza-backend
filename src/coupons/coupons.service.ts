@@ -4,6 +4,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import {
+  archiveWhere,
+  assertArchivedBeforeDelete,
+  type ArchiveFilter,
+} from '../common/archive/archive.js';
 import type { Coupon } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CreateCouponInput, UpdateCouponInput } from './coupons.schemas.js';
@@ -29,6 +34,8 @@ export interface SerializedCoupon {
   isNotStarted: boolean;
   isLimitReached: boolean;
   isValid: boolean;
+  /** ISO timestamp when archived, or null when live. */
+  archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -48,7 +55,7 @@ export function evaluateCouponStatus(
   coupon: Pick<
     Coupon,
     'isActive' | 'generateDate' | 'expiredDate' | 'customerRange' | 'uses'
-  >,
+  > & { archivedAt?: Date | null },
   now: Date = new Date(),
 ): CouponEvaluation {
   const today = getTodayIsoDate(now);
@@ -56,11 +63,15 @@ export function evaluateCouponStatus(
   const isNotStarted = coupon.generateDate > today;
   const isLimitReached =
     coupon.customerRange > 0 && coupon.uses >= coupon.customerRange;
+  const isArchived = Boolean(coupon.archivedAt);
   const isValid =
-    coupon.isActive && !isExpired && !isNotStarted && !isLimitReached;
+    !isArchived && coupon.isActive && !isExpired && !isNotStarted && !isLimitReached;
 
   let reason: string | null = null;
-  if (!coupon.isActive) {
+  if (isArchived) {
+    // Archived coupons behave exactly like deleted ones for shoppers.
+    reason = 'Invalid coupon code.';
+  } else if (!coupon.isActive) {
     reason = 'This coupon is currently inactive.';
   } else if (isExpired) {
     reason = 'This coupon has expired and can no longer be used.';
@@ -97,6 +108,7 @@ export function serializeCoupon(
     isNotStarted: evalStatus.isNotStarted,
     isLimitReached: evalStatus.isLimitReached,
     isValid: evalStatus.isValid,
+    archivedAt: coupon.archivedAt ? coupon.archivedAt.toISOString() : null,
     createdAt: coupon.createdAt.toISOString(),
     updatedAt: coupon.updatedAt.toISOString(),
   };
@@ -106,8 +118,10 @@ export function serializeCoupon(
 export class CouponsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(): Promise<SerializedCoupon[]> {
+  /** Admin list. `archived` = exclude (default) | only | include. */
+  async findAll(archived: ArchiveFilter = 'exclude'): Promise<SerializedCoupon[]> {
     const coupons = await this.prisma.coupon.findMany({
+      where: archiveWhere(archived),
       orderBy: { createdAt: 'desc' },
     });
     const now = new Date();
@@ -116,7 +130,7 @@ export class CouponsService {
 
   async findActive(): Promise<SerializedCoupon[]> {
     const coupons = await this.prisma.coupon.findMany({
-      where: { isActive: true },
+      where: { isActive: true, archivedAt: null },
       orderBy: { createdAt: 'desc' },
     });
     const now = new Date();
@@ -168,7 +182,9 @@ export class CouponsService {
     const existing = await this.prisma.coupon.findUnique({ where: { code } });
     if (existing) {
       throw new ConflictException(
-        `A coupon with code "${code}" already exists.`,
+        existing.archivedAt
+          ? `A coupon with code "${code}" is in the archive. Restore it, or delete it permanently first.`
+          : `A coupon with code "${code}" already exists.`,
       );
     }
 
@@ -208,7 +224,9 @@ export class CouponsService {
       });
       if (duplicate) {
         throw new ConflictException(
-          `A coupon with code "${nextCode}" already exists.`,
+          duplicate.archivedAt
+            ? `A coupon with code "${nextCode}" is in the archive. Restore it, or delete it permanently first.`
+            : `A coupon with code "${nextCode}" already exists.`,
         );
       }
     }
@@ -228,11 +246,43 @@ export class CouponsService {
     return serializeCoupon(updated);
   }
 
-  async remove(id: string): Promise<{ deleted: true; id: string }> {
-    const existing = await this.prisma.coupon.findUnique({ where: { id } });
-    if (!existing) {
+  // ---------------------------------------------------------------------------
+  // Archive lifecycle: live -> archived -> permanently deleted.
+  // Archived coupons are rejected at checkout and hidden from the header promo.
+  // ---------------------------------------------------------------------------
+
+  private async findByIdOrThrow(id: string): Promise<Coupon> {
+    const coupon = await this.prisma.coupon.findUnique({ where: { id } });
+    if (!coupon) {
       throw new NotFoundException('Coupon not found.');
     }
+    return coupon;
+  }
+
+  async archive(id: string): Promise<SerializedCoupon> {
+    const existing = await this.findByIdOrThrow(id);
+    if (existing.archivedAt) return serializeCoupon(existing);
+    const updated = await this.prisma.coupon.update({
+      where: { id },
+      data: { archivedAt: new Date() },
+    });
+    return serializeCoupon(updated);
+  }
+
+  async unarchive(id: string): Promise<SerializedCoupon> {
+    const existing = await this.findByIdOrThrow(id);
+    if (!existing.archivedAt) return serializeCoupon(existing);
+    const updated = await this.prisma.coupon.update({
+      where: { id },
+      data: { archivedAt: null },
+    });
+    return serializeCoupon(updated);
+  }
+
+  /** Permanent delete. Throws 409 if the coupon is not archived. */
+  async remove(id: string): Promise<{ deleted: true; id: string }> {
+    const existing = await this.findByIdOrThrow(id);
+    assertArchivedBeforeDelete(existing, `Coupon "${existing.code}"`);
 
     await this.prisma.coupon.delete({ where: { id } });
     return { deleted: true, id };

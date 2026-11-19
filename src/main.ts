@@ -26,6 +26,7 @@ async function bootstrap() {
 const allowedOrigins = [
   process.env.CORS_ORIGIN || 'http://localhost:3000',
   'https://slimza.vercel.app',
+  'https://arfanrubel3000.ilmifygroup.com',
 ];
 
 
