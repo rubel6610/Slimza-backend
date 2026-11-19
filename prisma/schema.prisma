@@ -305,3 +305,54 @@ model MediaAsset {
   @@unique([folder, filename])
   @@index([folder])
 }
+
+/// What the applicant wants to become. See src/franchise/franchise.schemas.ts.
+enum FranchiseInterest {
+  FRANCHISE
+  SALES_REPRESENTATIVE
+}
+
+/// Where they want to sell.
+enum FranchiseChannel {
+  ONLINE
+  RETAIL
+  BOTH
+}
+
+/// Admin pipeline for an application.
+enum FranchiseApplicationStatus {
+  NEW
+  CONTACTED
+  APPROVED
+  REJECTED
+}
+
+/// Submitted from the public "Franchise with us" page (/franchise).
+/// Reviewed in the dashboard (Franchise). Follows the archive lifecycle.
+model FranchiseApplication {
+  id           String                     @id @default(uuid())
+  fullName     String
+  email        String
+  phone        String
+  address      String                     @db.Text
+  businessName String?
+  /// Country they want to sell in
+  country      String
+  /// City / region / area within that country
+  location     String
+  interest     FranchiseInterest
+  channel      FranchiseChannel
+  message      String?                    @db.Text
+  status       FranchiseApplicationStatus @default(NEW)
+  /// Internal note, never shown to the applicant
+  adminNote    String?                    @db.Text
+  /// Archive lifecycle (src/common/archive/archive.ts)
+  archivedAt   DateTime?
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+
+  @@index([status])
+  @@index([archivedAt])
+  @@index([createdAt])
+  @@index([email])
+}

@@ -62,3 +62,30 @@ export const RefundStatus = {
 } as const
 
 export type RefundStatus = (typeof RefundStatus)[keyof typeof RefundStatus]
+
+
+export const FranchiseInterest = {
+  FRANCHISE: 'FRANCHISE',
+  SALES_REPRESENTATIVE: 'SALES_REPRESENTATIVE'
+} as const
+
+export type FranchiseInterest = (typeof FranchiseInterest)[keyof typeof FranchiseInterest]
+
+
+export const FranchiseChannel = {
+  ONLINE: 'ONLINE',
+  RETAIL: 'RETAIL',
+  BOTH: 'BOTH'
+} as const
+
+export type FranchiseChannel = (typeof FranchiseChannel)[keyof typeof FranchiseChannel]
+
+
+export const FranchiseApplicationStatus = {
+  NEW: 'NEW',
+  CONTACTED: 'CONTACTED',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type FranchiseApplicationStatus = (typeof FranchiseApplicationStatus)[keyof typeof FranchiseApplicationStatus]

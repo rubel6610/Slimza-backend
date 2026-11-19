@@ -408,7 +408,8 @@ export const ModelName = {
   OrderItem: 'OrderItem',
   Product: 'Product',
   Coupon: 'Coupon',
-  MediaAsset: 'MediaAsset'
+  MediaAsset: 'MediaAsset',
+  FranchiseApplication: 'FranchiseApplication'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -424,7 +425,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "address" | "otpCode" | "refreshToken" | "cmsSection" | "newsletterLead" | "order" | "refundRequest" | "orderItem" | "product" | "coupon" | "mediaAsset"
+    modelProps: "user" | "address" | "otpCode" | "refreshToken" | "cmsSection" | "newsletterLead" | "order" | "refundRequest" | "orderItem" | "product" | "coupon" | "mediaAsset" | "franchiseApplication"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1220,6 +1221,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FranchiseApplication: {
+      payload: Prisma.$FranchiseApplicationPayload<ExtArgs>
+      fields: Prisma.FranchiseApplicationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FranchiseApplicationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FranchiseApplicationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FranchiseApplicationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FranchiseApplicationPayload>
+        }
+        findFirst: {
+          args: Prisma.FranchiseApplicationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FranchiseApplicationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FranchiseApplicationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FranchiseApplicationPayload>
+        }
+        findMany: {
+          args: Prisma.FranchiseApplicationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FranchiseApplicationPayload>[]
+        }
+        create: {
+          args: Prisma.FranchiseApplicationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FranchiseApplicationPayload>
+        }
+        createMany: {
+          args: Prisma.FranchiseApplicationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.FranchiseApplicationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FranchiseApplicationPayload>
+        }
+        update: {
+          args: Prisma.FranchiseApplicationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FranchiseApplicationPayload>
+        }
+        deleteMany: {
+          args: Prisma.FranchiseApplicationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FranchiseApplicationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.FranchiseApplicationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FranchiseApplicationPayload>
+        }
+        aggregate: {
+          args: Prisma.FranchiseApplicationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFranchiseApplication>
+        }
+        groupBy: {
+          args: Prisma.FranchiseApplicationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FranchiseApplicationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FranchiseApplicationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FranchiseApplicationCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1496,6 +1563,28 @@ export const MediaAssetScalarFieldEnum = {
 export type MediaAssetScalarFieldEnum = (typeof MediaAssetScalarFieldEnum)[keyof typeof MediaAssetScalarFieldEnum]
 
 
+export const FranchiseApplicationScalarFieldEnum = {
+  id: 'id',
+  fullName: 'fullName',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  businessName: 'businessName',
+  country: 'country',
+  location: 'location',
+  interest: 'interest',
+  channel: 'channel',
+  message: 'message',
+  status: 'status',
+  adminNote: 'adminNote',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FranchiseApplicationScalarFieldEnum = (typeof FranchiseApplicationScalarFieldEnum)[keyof typeof FranchiseApplicationScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1697,6 +1786,22 @@ export const MediaAssetOrderByRelevanceFieldEnum = {
 export type MediaAssetOrderByRelevanceFieldEnum = (typeof MediaAssetOrderByRelevanceFieldEnum)[keyof typeof MediaAssetOrderByRelevanceFieldEnum]
 
 
+export const FranchiseApplicationOrderByRelevanceFieldEnum = {
+  id: 'id',
+  fullName: 'fullName',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  businessName: 'businessName',
+  country: 'country',
+  location: 'location',
+  message: 'message',
+  adminNote: 'adminNote'
+} as const
+
+export type FranchiseApplicationOrderByRelevanceFieldEnum = (typeof FranchiseApplicationOrderByRelevanceFieldEnum)[keyof typeof FranchiseApplicationOrderByRelevanceFieldEnum]
+
+
 
 /**
  * Field references
@@ -1798,6 +1903,27 @@ export type EnumRefundStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
  * Reference to a field of type 'Bytes'
  */
 export type BytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes'>
+    
+
+
+/**
+ * Reference to a field of type 'FranchiseInterest'
+ */
+export type EnumFranchiseInterestFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FranchiseInterest'>
+    
+
+
+/**
+ * Reference to a field of type 'FranchiseChannel'
+ */
+export type EnumFranchiseChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FranchiseChannel'>
+    
+
+
+/**
+ * Reference to a field of type 'FranchiseApplicationStatus'
+ */
+export type EnumFranchiseApplicationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FranchiseApplicationStatus'>
     
 
 /**
@@ -1963,6 +2089,7 @@ export type GlobalOmitConfig = {
   product?: Prisma.ProductOmit
   coupon?: Prisma.CouponOmit
   mediaAsset?: Prisma.MediaAssetOmit
+  franchiseApplication?: Prisma.FranchiseApplicationOmit
 }
 
 /* Types for Logging */

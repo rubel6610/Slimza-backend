@@ -477,6 +477,57 @@ export type BytesWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedBytesFilter<$PrismaModel>
 }
 
+export type EnumFranchiseInterestFilter<$PrismaModel = never> = {
+  equals?: $Enums.FranchiseInterest | Prisma.EnumFranchiseInterestFieldRefInput<$PrismaModel>
+  in?: $Enums.FranchiseInterest[]
+  notIn?: $Enums.FranchiseInterest[]
+  not?: Prisma.NestedEnumFranchiseInterestFilter<$PrismaModel> | $Enums.FranchiseInterest
+}
+
+export type EnumFranchiseChannelFilter<$PrismaModel = never> = {
+  equals?: $Enums.FranchiseChannel | Prisma.EnumFranchiseChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.FranchiseChannel[]
+  notIn?: $Enums.FranchiseChannel[]
+  not?: Prisma.NestedEnumFranchiseChannelFilter<$PrismaModel> | $Enums.FranchiseChannel
+}
+
+export type EnumFranchiseApplicationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.FranchiseApplicationStatus | Prisma.EnumFranchiseApplicationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.FranchiseApplicationStatus[]
+  notIn?: $Enums.FranchiseApplicationStatus[]
+  not?: Prisma.NestedEnumFranchiseApplicationStatusFilter<$PrismaModel> | $Enums.FranchiseApplicationStatus
+}
+
+export type EnumFranchiseInterestWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FranchiseInterest | Prisma.EnumFranchiseInterestFieldRefInput<$PrismaModel>
+  in?: $Enums.FranchiseInterest[]
+  notIn?: $Enums.FranchiseInterest[]
+  not?: Prisma.NestedEnumFranchiseInterestWithAggregatesFilter<$PrismaModel> | $Enums.FranchiseInterest
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFranchiseInterestFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFranchiseInterestFilter<$PrismaModel>
+}
+
+export type EnumFranchiseChannelWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FranchiseChannel | Prisma.EnumFranchiseChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.FranchiseChannel[]
+  notIn?: $Enums.FranchiseChannel[]
+  not?: Prisma.NestedEnumFranchiseChannelWithAggregatesFilter<$PrismaModel> | $Enums.FranchiseChannel
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFranchiseChannelFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFranchiseChannelFilter<$PrismaModel>
+}
+
+export type EnumFranchiseApplicationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FranchiseApplicationStatus | Prisma.EnumFranchiseApplicationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.FranchiseApplicationStatus[]
+  notIn?: $Enums.FranchiseApplicationStatus[]
+  not?: Prisma.NestedEnumFranchiseApplicationStatusWithAggregatesFilter<$PrismaModel> | $Enums.FranchiseApplicationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFranchiseApplicationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFranchiseApplicationStatusFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[]
@@ -879,6 +930,57 @@ export type NestedBytesWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedBytesFilter<$PrismaModel>
   _max?: Prisma.NestedBytesFilter<$PrismaModel>
+}
+
+export type NestedEnumFranchiseInterestFilter<$PrismaModel = never> = {
+  equals?: $Enums.FranchiseInterest | Prisma.EnumFranchiseInterestFieldRefInput<$PrismaModel>
+  in?: $Enums.FranchiseInterest[]
+  notIn?: $Enums.FranchiseInterest[]
+  not?: Prisma.NestedEnumFranchiseInterestFilter<$PrismaModel> | $Enums.FranchiseInterest
+}
+
+export type NestedEnumFranchiseChannelFilter<$PrismaModel = never> = {
+  equals?: $Enums.FranchiseChannel | Prisma.EnumFranchiseChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.FranchiseChannel[]
+  notIn?: $Enums.FranchiseChannel[]
+  not?: Prisma.NestedEnumFranchiseChannelFilter<$PrismaModel> | $Enums.FranchiseChannel
+}
+
+export type NestedEnumFranchiseApplicationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.FranchiseApplicationStatus | Prisma.EnumFranchiseApplicationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.FranchiseApplicationStatus[]
+  notIn?: $Enums.FranchiseApplicationStatus[]
+  not?: Prisma.NestedEnumFranchiseApplicationStatusFilter<$PrismaModel> | $Enums.FranchiseApplicationStatus
+}
+
+export type NestedEnumFranchiseInterestWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FranchiseInterest | Prisma.EnumFranchiseInterestFieldRefInput<$PrismaModel>
+  in?: $Enums.FranchiseInterest[]
+  notIn?: $Enums.FranchiseInterest[]
+  not?: Prisma.NestedEnumFranchiseInterestWithAggregatesFilter<$PrismaModel> | $Enums.FranchiseInterest
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFranchiseInterestFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFranchiseInterestFilter<$PrismaModel>
+}
+
+export type NestedEnumFranchiseChannelWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FranchiseChannel | Prisma.EnumFranchiseChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.FranchiseChannel[]
+  notIn?: $Enums.FranchiseChannel[]
+  not?: Prisma.NestedEnumFranchiseChannelWithAggregatesFilter<$PrismaModel> | $Enums.FranchiseChannel
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFranchiseChannelFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFranchiseChannelFilter<$PrismaModel>
+}
+
+export type NestedEnumFranchiseApplicationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FranchiseApplicationStatus | Prisma.EnumFranchiseApplicationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.FranchiseApplicationStatus[]
+  notIn?: $Enums.FranchiseApplicationStatus[]
+  not?: Prisma.NestedEnumFranchiseApplicationStatusWithAggregatesFilter<$PrismaModel> | $Enums.FranchiseApplicationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFranchiseApplicationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFranchiseApplicationStatusFilter<$PrismaModel>
 }
 
 
