@@ -1,40 +1,4 @@
-/**
- * ============================================================================
- *  ARCHIVE LIFECYCLE (soft delete) — shared rules for every admin resource
- * ============================================================================
- *
- * Nothing in the admin dashboard is deleted in one step. Every deletable
- * thing follows the same three-state lifecycle:
- *
- *      ┌────────┐   archive    ┌──────────┐   delete (permanent)   ┌──────┐
- *      │  LIVE  │ ───────────▶ │ ARCHIVED │ ─────────────────────▶ │ GONE │
- *      └────────┘ ◀─────────── └──────────┘                        └──────┘
- *                   unarchive
- *
- *  - LIVE      `archivedAt = null`. Visible on the storefront and in the
- *              normal admin lists.
- *  - ARCHIVED  `archivedAt = <timestamp>`. Hidden from the storefront and the
- *              normal admin lists; shown only in the "Archived" view. Can be
- *              restored (unarchive) or permanently deleted.
- *  - GONE      Row removed from the database. Cannot be undone.
- *
- * The server enforces this, not just the UI: a DELETE on a live record fails
- * with 409 Conflict (see `assertArchivedBeforeDelete`).
- *
- * Where it applies
- *  - Database records with an `archivedAt` column: Product, Order, Coupon,
- *    NewsletterLead. Endpoints for each resource:
- *        PATCH  /<resource>/:id/archive
- *        PATCH  /<resource>/:id/unarchive
- *        DELETE /<resource>/:id              (archived records only)
- *    List endpoints take `?archived=exclude|only|include` (default `exclude`).
- *  - CMS list items (banner slides, nav links, features, categories, partners,
- *    return-policy cards) live inside JSON sections. They use the same
- *    lifecycle via an `archivedAt` field on each item; see
- *    `src/cms/cms-archive.ts`.
- *
- * Full guide: docs/ARCHIVE.md
- */
+
 import { ConflictException } from '@nestjs/common';
 import { z } from 'zod';
 

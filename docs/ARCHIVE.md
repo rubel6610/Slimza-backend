@@ -33,6 +33,7 @@ The **backend** enforces the rule, not only the UI. A permanent delete of someth
 | CMS → Categories                     | item in `categories`              | same, with `key = categories` |
 | CMS → Trusted By partners            | item in `trusted_by.partners`     | same, with `key = trusted_by` |
 | CMS → Return policy cards            | item in `return_policy.cards`     | same, with `key = return_policy` |
+| Bundle → Discount tiers              | item in `bundle.tiers`            | same, with `key = bundle` |
 
 All of these endpoints are admin-only (`@Roles(UserRole.ADMIN)`). Archive and restore are idempotent: archiving something that is already archived returns it unchanged.
 
@@ -129,6 +130,7 @@ export const CMS_ARCHIVABLE_LISTS = {
   categories:    { path: null,       label: 'Category' },
   trusted_by:    { path: 'partners', label: 'Partner' },
   return_policy: { path: 'cards',    label: 'Policy card' },
+  bundle:        { path: 'tiers',    label: 'Discount tier' },
 };
 ```
 

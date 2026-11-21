@@ -148,16 +148,8 @@ export const BACKEND_CATALOG: Record<string, BackendProduct> = {
   },
 };
 
-export const BACKEND_BUNDLE_PRODUCTS: Record<
-  string,
-  { name: string; price: number; image: string }
-> = {
-  tea: { name: 'Tea', price: 10, image: '/shop-categories/Herbal Wellness Tea.png' },
-  matcha: { name: 'Matcha', price: 15, image: '/shop-categories/Ceremonial Matcha.png' },
-  shilajit: { name: 'Shilajit Resin', price: 40, image: '/shop-categories/Pure Shilajit Resin.png' },
-  collagen: { name: 'Collagen', price: 30, image: '/shop-categories/sleep.png' },
-  'coffee-shilajit': { name: 'Shilajit Coffee', price: 25, image: '/shop-categories/Functional Coffee.png' },
-};
+// Bundle products, rules and discounts are managed from the dashboard:
+// see src/bundle/bundle-config.ts.
 
 export const SHIPPING_METHODS: Record<
   string,
@@ -185,11 +177,6 @@ export const SHIPPING_METHODS: Record<
 
 export const PROMO_CODES: Record<string, number> = {
   SLIMZAX2: 0.1,
-};
-
-export const BUNDLE_SPEND_REWARD = {
-  threshold: 500,
-  amount: 5,
 };
 
 export const round2 = (num: number): number =>

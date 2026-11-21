@@ -35,9 +35,14 @@ import type {
   ProcessRefundInput,
 } from './checkout.schemas.js';
 import {
-  BACKEND_BUNDLE_PRODUCTS,
+  BUNDLE_CMS_KEY,
+  DEFAULT_BUNDLE_CONFIG,
+  readBundleConfig,
+  type BundleConfig,
+} from '../bundle/bundle-config.js';
+import { bundleRuleError, priceBundle, type BundleLine } from '../bundle/bundle-pricing.js';
+import {
   BACKEND_CATALOG,
-  BUNDLE_SPEND_REWARD,
   SHIPPING_METHODS,
   SIZE_TABLES,
   SUPPLY_PLAN_DISCOUNTS,
@@ -177,48 +182,13 @@ export class CheckoutService {
       });
     }
 
-    let rawBundlesSubtotal = 0;
-    let bundleSpend = 0;
+    // ---- Bundles: rules + prices from the dashboard (CMS section "bundle") ----
+    const bundlePricing = await this.priceBundles(bundles);
+    lineItems.push(...bundlePricing.lineItems);
+    const { config: bundleConfig, bundleSpend, bundleSavings } = bundlePricing;
 
-    for (const b of bundles) {
-      if (!b.qty || b.qty <= 0 || !Array.isArray(b.items)) continue;
-      let singleBundleTotal = 0;
-      const parsedItems: Array<{ productId: string; name: string; price: number; qty: number }> = [];
-
-      for (const item of b.items) {
-        const bp = BACKEND_BUNDLE_PRODUCTS[item.productId];
-        const itemPrice = bp ? bp.price : 10;
-        const itemQty = item.qty && item.qty > 0 ? item.qty : 1;
-        const itemName = bp ? bp.name : item.productId;
-        singleBundleTotal += itemPrice * itemQty;
-        parsedItems.push({
-          productId: item.productId,
-          name: itemName,
-          price: itemPrice,
-          qty: itemQty,
-        });
-      }
-
-      const bundleTotal = round2(singleBundleTotal * b.qty);
-      rawBundlesSubtotal += bundleTotal;
-      bundleSpend += bundleTotal;
-
-      lineItems.push({
-        productId: `bundle-${b.items.map((i) => i.productId).join('+')}`,
-        productName: `Custom Bundle (${parsedItems.map((i) => i.name).join(', ')})`,
-        productImage: '/shop-categories/Herbal Wellness Tea.png',
-        sizeLabel: 'Custom Bundle',
-        planLabel: `${b.items.length} items`,
-        quantity: b.qty,
-        unitPrice: round2(singleBundleTotal),
-        totalPrice: bundleTotal,
-        isBundle: true,
-        bundleData: { items: parsedItems },
-      });
-    }
-
-    const subtotal = round2(rawLinesSubtotal + rawBundlesSubtotal);
-    const bundleSavings = 0; // Currently full price with bundle spend reward
+    // Bundle totals are already after the tier discount.
+    const subtotal = round2(rawLinesSubtotal + bundleSpend);
 
     const normalizedPromo = input.promoCode
       ? input.promoCode.trim().toUpperCase()
@@ -251,11 +221,14 @@ export class CheckoutService {
       }
     }
 
-    const discount = round2(subtotal * promoRate);
+    // "Allow coupons on bundles" off → the coupon only reduces the non-bundle items.
+    const couponBase = bundleConfig.discounts.allowCoupons ? subtotal : round2(rawLinesSubtotal);
+    const discount = round2(couponBase * promoRate);
 
+    const { spendReward } = bundleConfig;
     const bundleReward =
-      bundleSpend >= BUNDLE_SPEND_REWARD.threshold
-        ? BUNDLE_SPEND_REWARD.amount
+      spendReward.enabled && bundleSpend > 0 && bundleSpend >= spendReward.threshold
+        ? spendReward.amount
         : 0;
 
     const selectedShipping =
@@ -285,6 +258,115 @@ export class CheckoutService {
       promoCode: appliedPromoCode,
       lineItems,
     };
+  }
+
+  /** Reads the dashboard's bundle settings (CMS section "bundle"), falling back to the defaults. */
+  private async loadBundleConfig(): Promise<BundleConfig> {
+    if (!this.prisma.cmsSection?.findUnique) return DEFAULT_BUNDLE_CONFIG;
+    const record = await this.prisma.cmsSection.findUnique({ where: { key: BUNDLE_CMS_KEY } });
+    return readBundleConfig(record?.data);
+  }
+
+  /**
+   * Prices "make your own bundle" entries against the database, never the
+   * browser's numbers. Each bundle must satisfy the dashboard rules
+   * (min/max items, per-category limit, allowed categories) or checkout fails
+   * with 400 and a message the customer can act on.
+   */
+  private async priceBundles(bundles: CartBundleInput[]): Promise<{
+    config: BundleConfig;
+    bundleSpend: number;
+    bundleSavings: number;
+    lineItems: CalculatedPricing['lineItems'];
+  }> {
+    const config = await this.loadBundleConfig();
+    const active = bundles.filter((b) => b.qty > 0 && Array.isArray(b.items) && b.items.length > 0);
+    if (active.length === 0) return { config, bundleSpend: 0, bundleSavings: 0, lineItems: [] };
+
+    if (!config.enabled) {
+      throw new BadRequestException(
+        'Bundles are not available right now. Please remove the bundle from your basket.',
+      );
+    }
+
+    const ids = [...new Set(active.flatMap((b) => b.items.map((i) => i.productId)))];
+    const products = this.prisma.product?.findMany
+      ? await this.prisma.product.findMany({ where: { id: { in: ids } } })
+      : [];
+    const byId = new Map(products.map((p) => [p.id, p]));
+    const categoryName = await this.categoryNameResolver();
+
+    let bundleSpend = 0;
+    let bundleSavings = 0;
+    const lineItems: CalculatedPricing['lineItems'] = [];
+
+    for (const b of active) {
+      const lines: BundleLine[] = b.items.map((item) => {
+        const p = byId.get(item.productId);
+        if (!p || p.archivedAt || p.publishStatus !== 'published') {
+          throw new BadRequestException(
+            `${p ? `"${p.name}"` : 'A product in your bundle'} is no longer available. Please rebuild your bundle.`,
+          );
+        }
+        if (!p.unlimitedStock && p.stockStatus === 'Out of Stock') {
+          throw new BadRequestException(`"${p.name}" is out of stock. Please rebuild your bundle.`);
+        }
+        return {
+          product: {
+            id: p.id,
+            name: p.name,
+            image: p.image ?? '',
+            price: p.price,
+            originalPrice: p.originalPrice ?? null,
+            category: p.category,
+          },
+          qty: item.qty ?? 1,
+        };
+      });
+
+      const ruleError = bundleRuleError(config, lines, categoryName);
+      if (ruleError) throw new BadRequestException(ruleError);
+
+      const priced = priceBundle(config, lines);
+      const bundleTotal = round2(priced.total * b.qty);
+      bundleSpend += bundleTotal;
+      bundleSavings += round2(priced.discount * b.qty);
+
+      lineItems.push({
+        productId: `bundle-${priced.items.map((i) => i.productId).join('+')}`,
+        productName: `Custom Bundle (${priced.items.map((i) => i.name).join(', ')})`,
+        productImage: priced.items[0]?.image ?? '',
+        sizeLabel: 'Custom Bundle',
+        planLabel: `${priced.units} items${priced.percent ? ` · ${priced.percent}% off` : ''}`,
+        quantity: b.qty,
+        unitPrice: priced.total,
+        totalPrice: bundleTotal,
+        isBundle: true,
+        bundleData: {
+          items: priced.items,
+          subtotal: priced.subtotal,
+          discountPercent: priced.percent,
+          discount: priced.discount,
+          total: priced.total,
+        },
+      });
+    }
+
+    return { config, bundleSpend: round2(bundleSpend), bundleSavings: round2(bundleSavings), lineItems };
+  }
+
+  /** slug → category display name (from the CMS categories section), for error messages. */
+  private async categoryNameResolver(): Promise<(slug: string) => string> {
+    const record = this.prisma.cmsSection?.findUnique
+      ? await this.prisma.cmsSection.findUnique({ where: { key: 'categories' } })
+      : null;
+    const list = Array.isArray(record?.data) ? (record.data as Array<{ slug?: unknown; name?: unknown }>) : [];
+    const names = new Map(
+      list
+        .filter((c) => typeof c.slug === 'string' && typeof c.name === 'string')
+        .map((c) => [c.slug as string, c.name as string]),
+    );
+    return (slug) => names.get(slug) ?? slug;
   }
 
   /**

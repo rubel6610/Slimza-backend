@@ -13,6 +13,11 @@ import {
   type ArchiveFilter,
 } from '../common/archive/archive.js';
 import type { Prisma } from '../generated/prisma/client.js';
+import {
+  BUNDLE_CMS_KEY,
+  DEFAULT_BUNDLE_CONFIG,
+  parseBundleConfigForSave,
+} from '../bundle/bundle-config.js';
 import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
@@ -132,6 +137,7 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
       active: true,
     },
   ],
+  bundle: DEFAULT_BUNDLE_CONFIG,
   bundle_banner: {
     imageUrl: '/banner/bundle-reward-banner.png',
     altText: 'Spend £500+ on bundles, get £5 off your order - Bundle Reward',
@@ -476,6 +482,12 @@ export class CmsService implements OnModuleInit {
    * missing live item → 409. See cms-archive.ts.
    */
   async updateSection(key: string, data: unknown): Promise<{ ok: true; key: string; data: unknown }> {
+    if (key === BUNDLE_CMS_KEY) {
+      // Bundle settings drive checkout pricing, so they are validated strictly.
+      const parsed = parseBundleConfigForSave(data);
+      if (!parsed.ok) throw new BadRequestException(parsed.message);
+      data = parsed.data;
+    }
     const current = await this.getStoredSectionData(key).catch(() => undefined);
     const next = current === undefined ? data : mergeCmsSectionUpdate(key, current, data);
     return this.writeSection(key, next);

@@ -24,7 +24,7 @@ export type CartLineInput = z.infer<typeof cartLineInputSchema>;
 export const bundleItemInputSchema = z.object({
   productId: z.string().trim(),
   optionId: z.string().trim().optional(),
-  qty: z.number().int().positive().optional().default(1),
+  qty: z.number().int().positive().max(1000).optional().default(1),
 });
 export type BundleItemInput = z.infer<typeof bundleItemInputSchema>;
 
