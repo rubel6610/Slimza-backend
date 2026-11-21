@@ -138,6 +138,15 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
     },
   ],
   bundle: DEFAULT_BUNDLE_CONFIG,
+  /** Blog categories (Dashboard → Blogs → Categories). Posts reference `slug`. */
+  blog_categories: [
+    { id: 'blogcat-1', slug: 'wellness-tips', name: 'Wellness Tips', archivedAt: null },
+    { id: 'blogcat-2', slug: 'natural-ingredients', name: 'Natural Ingredients', archivedAt: null },
+    { id: 'blogcat-3', slug: 'nutrition', name: 'Nutrition', archivedAt: null },
+    { id: 'blogcat-4', slug: 'lifestyle', name: 'Lifestyle', archivedAt: null },
+    { id: 'blogcat-5', slug: 'product-guides', name: 'Product Guides', archivedAt: null },
+    { id: 'blogcat-6', slug: 'sleep-recovery', name: 'Sleep & Recovery', archivedAt: null },
+  ],
   bundle_banner: {
     imageUrl: '/banner/bundle-reward-banner.png',
     altText: 'Spend £500+ on bundles, get £5 off your order - Bundle Reward',

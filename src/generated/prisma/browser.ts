@@ -83,3 +83,9 @@ export type MediaAsset = Prisma.MediaAssetModel
  * Reviewed in the dashboard (Franchise). Follows the archive lifecycle.
  */
 export type FranchiseApplication = Prisma.FranchiseApplicationModel
+/**
+ * Model Blog
+ * Blog posts, managed from Dashboard → Blogs. `content` is Markdown.
+ * Archive lifecycle (src/common/archive/archive.ts): archived posts are hidden from the shop.
+ */
+export type Blog = Prisma.BlogModel

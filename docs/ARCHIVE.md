@@ -25,6 +25,7 @@ The **backend** enforces the rule, not only the UI. A permanent delete of someth
 | Orders                               | `Order.archivedAt`                | `PATCH /checkout/admin/orders/:id/archive` · `…/unarchive` · `DELETE /checkout/admin/orders/:id`<br>Bulk: `POST /checkout/admin/orders/bulk-archive` · `bulk-unarchive` · `bulk-delete` |
 | Coupons                              | `Coupon.archivedAt`               | `PATCH /coupons/:id/archive` · `…/unarchive` · `DELETE /coupons/:id` |
 | Franchise applications               | `FranchiseApplication.archivedAt` | `PATCH /franchise/applications/:id/archive` · `…/unarchive` · `DELETE /franchise/applications/:id` |
+| Blog posts                           | `Blog.archivedAt`                 | `PATCH /blogs/:id/archive` · `…/unarchive` · `DELETE /blogs/:id` |
 | Users                                | `User.archivedAt`                 | `PATCH /users/:id/archive` · `…/unarchive` · `DELETE /users/:id` (see "User accounts" below) |
 | Newsletter leads                     | `NewsletterLead.archivedAt`       | `PATCH /cms/newsletter/leads/:id/archive` · `…/unarchive` · `DELETE /cms/newsletter/leads/:id` |
 | CMS → Banner slides                  | item in `banner_slides` JSON      | `PATCH /cms/:key/items/:itemId/archive`<br>`PATCH /cms/:key/items/:itemId/unarchive`<br>`DELETE /cms/:key/items/:itemId` |
@@ -34,6 +35,7 @@ The **backend** enforces the rule, not only the UI. A permanent delete of someth
 | CMS → Trusted By partners            | item in `trusted_by.partners`     | same, with `key = trusted_by` |
 | CMS → Return policy cards            | item in `return_policy.cards`     | same, with `key = return_policy` |
 | Bundle → Discount tiers              | item in `bundle.tiers`            | same, with `key = bundle` |
+| Blogs → Categories                   | item in `blog_categories`         | same, with `key = blog_categories` |
 
 All of these endpoints are admin-only (`@Roles(UserRole.ADMIN)`). Archive and restore are idempotent: archiving something that is already archived returns it unchanged.
 
@@ -131,6 +133,7 @@ export const CMS_ARCHIVABLE_LISTS = {
   trusted_by:    { path: 'partners', label: 'Partner' },
   return_policy: { path: 'cards',    label: 'Policy card' },
   bundle:        { path: 'tiers',    label: 'Discount tier' },
+  blog_categories: { path: null,     label: 'Blog category' },
 };
 ```
 

@@ -356,3 +356,27 @@ model FranchiseApplication {
   @@index([createdAt])
   @@index([email])
 }
+
+/// Blog posts, managed from Dashboard → Blogs. `content` is Markdown.
+/// Archive lifecycle (src/common/archive/archive.ts): archived posts are hidden from the shop.
+model Blog {
+  id          String    @id @default(uuid())
+  slug        String    @unique
+  title       String    @db.VarChar(300)
+  /// Short summary for cards and SEO
+  excerpt     String    @db.Text
+  /// Article body in Markdown (## heading, ### subheading, - list, > quote, **bold**)
+  content     String    @db.LongText
+  image       String    @db.VarChar(1000)
+  author      String    @default("Slimza")
+  /// Blog category slug (CMS section "blog_categories")
+  category    String    @default("")
+  publishedAt DateTime
+  archivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([category])
+  @@index([publishedAt])
+  @@index([archivedAt])
+}
