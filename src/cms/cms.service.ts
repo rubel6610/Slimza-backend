@@ -18,6 +18,11 @@ import {
   DEFAULT_BUNDLE_CONFIG,
   parseBundleConfigForSave,
 } from '../bundle/bundle-config.js';
+import {
+  DEFAULT_LOYALTY_CONFIG,
+  LOYALTY_CMS_KEY,
+  parseLoyaltyConfigForSave,
+} from '../loyalty/loyalty-config.js';
 import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
@@ -138,6 +143,8 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
     },
   ],
   bundle: DEFAULT_BUNDLE_CONFIG,
+  /** Slimza Rewards settings (Dashboard → Loyalty). See src/loyalty/loyalty-config.ts. */
+  loyalty: DEFAULT_LOYALTY_CONFIG,
   /** Blog categories (Dashboard → Blogs → Categories). Posts reference `slug`. */
   blog_categories: [
     { id: 'blogcat-1', slug: 'wellness-tips', name: 'Wellness Tips', archivedAt: null },
@@ -494,6 +501,12 @@ export class CmsService implements OnModuleInit {
     if (key === BUNDLE_CMS_KEY) {
       // Bundle settings drive checkout pricing, so they are validated strictly.
       const parsed = parseBundleConfigForSave(data);
+      if (!parsed.ok) throw new BadRequestException(parsed.message);
+      data = parsed.data;
+    }
+    if (key === LOYALTY_CMS_KEY) {
+      // Loyalty settings drive checkout discounts, so they are validated strictly too.
+      const parsed = parseLoyaltyConfigForSave(data);
       if (!parsed.ok) throw new BadRequestException(parsed.message);
       data = parsed.data;
     }

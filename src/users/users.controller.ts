@@ -25,12 +25,14 @@ import {
 } from '../auth/guards/jwt-auth.guard.js';
 import { UserRole } from '../generated/prisma/enums.js';
 import {
+  adminUsersPageQuerySchema,
   adminUsersQuerySchema,
   createAddressSchema,
   suspendUserSchema,
   updateAddressSchema,
   updateProfileSchema,
   uuidParamSchema,
+  type AdminUsersPageQuery,
   type AdminUsersQuery,
   type CreateAddressInput,
   type SuspendUserInput,
@@ -142,7 +144,18 @@ export class UsersController {
   // Status rules: src/users/account-access.ts. Archive rules: src/common/archive/archive.ts.
   // Admins can't act on their own account or on other admin accounts (403).
 
-  /** `?archived=exclude|only|include` (default exclude) `&status=ACTIVE|SUSPENDED`. */
+  /**
+   * Paginated version (new): `?page=&limit=&q=&sort=name:asc&archived=&status=&role=`
+   * → `{ items, meta }`. Declared before `:id` so "paged" isn't read as a user id.
+   * See docs/PAGINATION.md.
+   */
+  @Roles(UserRole.ADMIN)
+  @Get('paged')
+  findPage(@Query({ schema: adminUsersPageQuerySchema }) query: AdminUsersPageQuery) {
+    return this.usersService.findPage(query);
+  }
+
+  /** Legacy: every user as one array. Kept until the dashboard uses /users/paged. */
   @Roles(UserRole.ADMIN)
   @Get()
   findAll(@Query({ schema: adminUsersQuerySchema }) query: AdminUsersQuery) {

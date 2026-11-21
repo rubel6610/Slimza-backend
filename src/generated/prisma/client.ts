@@ -113,3 +113,9 @@ export type FranchiseApplication = Prisma.FranchiseApplicationModel
  * Archive lifecycle (src/common/archive/archive.ts): archived posts are hidden from the shop.
  */
 export type Blog = Prisma.BlogModel
+/**
+ * Model LoyaltyTransaction
+ * Loyalty points ledger (src/loyalty). One row per change; `points` is signed.
+ * `referenceKey` is unique, so the same bonus / order can never be applied twice.
+ */
+export type LoyaltyTransaction = Prisma.LoyaltyTransactionModel

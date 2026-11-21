@@ -64,8 +64,10 @@ export const bundleConfigSchema = z
       minItems: z.number().int().min(1).max(100),
       /** Most products in one bundle. 0 = no limit. */
       maxItems: z.number().int().min(0).max(200),
-      /** Most products from the same category in one bundle. 0 = no limit. */
+      /** Most products from the same category in one bundle (counting QTY). 0 = no limit. */
       perCategoryLimit: z.number().int().min(0).max(100),
+      /** true = customers pick one product per category (a dropdown per category row). */
+      oneProductPerCategory: z.boolean(),
       /** Most of one product in a bundle. 0 = no limit. */
       maxQtyPerProduct: z.number().int().min(0).max(1000),
       /** Category slugs customers can pick from. Empty = every category. */
@@ -156,6 +158,7 @@ export const DEFAULT_BUNDLE_CONFIG: BundleConfig = {
     minItems: 2,
     maxItems: 0,
     perCategoryLimit: 0,
+    oneProductPerCategory: true,
     maxQtyPerProduct: 10,
     categories: [],
     excludedProductIds: [],

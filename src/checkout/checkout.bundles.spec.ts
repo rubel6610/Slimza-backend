@@ -85,7 +85,7 @@ describe('CheckoutService — make your own bundle', () => {
   });
 
   it('enforces the per-category limit with the category name', async () => {
-    const service = makeService({ rules: { ...DEFAULT_BUNDLE_CONFIG.rules, perCategoryLimit: 1 } });
+    const service = makeService({ rules: { ...DEFAULT_BUNDLE_CONFIG.rules, perCategoryLimit: 1, oneProductPerCategory: false } });
     await expect(
       service.calculatePricing({ bundles: [bundle([['tea1', 1], ['tea2', 1]])] }),
     ).rejects.toThrow(/at most 1 item from Tea/);
@@ -122,6 +122,14 @@ describe('CheckoutService — make your own bundle', () => {
       promoCode: 'SAVE10',
     });
     expect(off.discount).toBe(0);
+    expect(off.promoCode).toBeNull();
+  });
+
+  it('refuses a coupon on a bundle-only basket at the payment step when coupons are off', async () => {
+    const service = makeService({ discounts: { ...DEFAULT_BUNDLE_CONFIG.discounts, allowCoupons: false } });
+    await expect(
+      service.calculatePricing({ bundles: [bundle([['tea1', 1], ['cof1', 1]])], promoCode: 'SAVE10' }, { strictPromo: true }),
+    ).rejects.toThrow(/can't be used on bundles/);
   });
 
   it('applies the spend reward only when enabled', async () => {

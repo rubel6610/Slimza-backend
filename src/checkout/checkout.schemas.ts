@@ -40,6 +40,8 @@ export const createPaymentIntentSchema = z.object({
   promoCode: z.string().trim().nullable().optional(),
   shippingMethodId: z.string().trim().optional().default('uk-standard'),
   shippingAddress: shippingAddressSchema,
+  /** Loyalty points to spend (signed-in customers only). 0 = none. */
+  pointsToRedeem: z.number().int().min(0).max(10_000_000).optional().default(0),
 });
 export type CreatePaymentIntentInput = z.infer<
   typeof createPaymentIntentSchema
@@ -54,6 +56,8 @@ export const confirmOrderSchema = z.object({
   promoCode: z.string().trim().nullable().optional(),
   shippingMethodId: z.string().trim().optional().default('uk-standard'),
   shippingAddress: shippingAddressSchema,
+  /** Must match what was sent to create-payment-intent. */
+  pointsToRedeem: z.number().int().min(0).max(10_000_000).optional().default(0),
 });
 export type ConfirmOrderInput = z.infer<typeof confirmOrderSchema>;
 

@@ -64,7 +64,8 @@ export const ModelName = {
   Coupon: 'Coupon',
   MediaAsset: 'MediaAsset',
   FranchiseApplication: 'FranchiseApplication',
-  Blog: 'Blog'
+  Blog: 'Blog',
+  LoyaltyTransaction: 'LoyaltyTransaction'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -101,6 +102,8 @@ export const UserScalarFieldEnum = {
   suspendedAt: 'suspendedAt',
   suspensionReason: 'suspensionReason',
   archivedAt: 'archivedAt',
+  loyaltyPoints: 'loyaltyPoints',
+  loyaltyLifetime: 'loyaltyLifetime',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -198,6 +201,9 @@ export const OrderScalarFieldEnum = {
   discount: 'discount',
   bundleSavings: 'bundleSavings',
   bundleReward: 'bundleReward',
+  pointsRedeemed: 'pointsRedeemed',
+  pointsDiscount: 'pointsDiscount',
+  pointsEarned: 'pointsEarned',
   promoCode: 'promoCode',
   total: 'total',
   currency: 'currency',
@@ -358,6 +364,22 @@ export const BlogScalarFieldEnum = {
 } as const
 
 export type BlogScalarFieldEnum = (typeof BlogScalarFieldEnum)[keyof typeof BlogScalarFieldEnum]
+
+
+export const LoyaltyTransactionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  status: 'status',
+  points: 'points',
+  description: 'description',
+  orderId: 'orderId',
+  referenceKey: 'referenceKey',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LoyaltyTransactionScalarFieldEnum = (typeof LoyaltyTransactionScalarFieldEnum)[keyof typeof LoyaltyTransactionScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -589,4 +611,15 @@ export const BlogOrderByRelevanceFieldEnum = {
 } as const
 
 export type BlogOrderByRelevanceFieldEnum = (typeof BlogOrderByRelevanceFieldEnum)[keyof typeof BlogOrderByRelevanceFieldEnum]
+
+
+export const LoyaltyTransactionOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  description: 'description',
+  orderId: 'orderId',
+  referenceKey: 'referenceKey'
+} as const
+
+export type LoyaltyTransactionOrderByRelevanceFieldEnum = (typeof LoyaltyTransactionOrderByRelevanceFieldEnum)[keyof typeof LoyaltyTransactionOrderByRelevanceFieldEnum]
 

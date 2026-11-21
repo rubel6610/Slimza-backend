@@ -41,8 +41,8 @@ total      = subtotal × (1 − percent / 100)
 
 ## Rules
 
-`minItems`, `maxItems` (0 = no limit), `perCategoryLimit` (products allowed from each
-category, 0 = no limit), `maxQtyPerProduct` (0 = no limit), `categories` (empty = all) and
+`minItems`, `maxItems` (0 = no limit), `oneProductPerCategory` (one dropdown per category
+row; default on), `perCategoryLimit` (items allowed from each category counting QTY, 0 = no limit), `maxQtyPerProduct` (0 = no limit), `categories` (empty = all) and
 `excludedProductIds`.
 
 ## Changing a rule

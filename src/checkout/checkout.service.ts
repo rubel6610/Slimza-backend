@@ -25,6 +25,7 @@ import {
 } from '../generated/prisma/enums.js';
 import { evaluateCouponStatus } from '../coupons/coupons.service.js';
 import { ACCOUNT_ACCESS_SELECT, assertAccountUsable } from '../users/account-access.js';
+import { LoyaltyService } from '../loyalty/loyalty.service.js';
 import { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
@@ -55,6 +56,11 @@ export interface CalculatedPricing {
   bundleSavings: number;
   bundleSpend: number;
   bundleReward: number;
+  /** Loyalty points spent on this order and the £ they took off. */
+  pointsRedeemed: number;
+  pointsDiscount: number;
+  /** Product spend that earns points (after every discount, excluding delivery). */
+  pointsEligibleSpend: number;
   shipping: number;
   shippingMethod: { id: string; name: string; fee: number; eta: string };
   total: number;
@@ -85,6 +91,7 @@ export class CheckoutService {
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
     @Optional() private readonly mailService?: MailService,
+    @Optional() private readonly loyaltyService?: LoyaltyService,
   ) {
     const secretKey =
       this.configService.get<string>('STRIPE_SECRET_KEY') ??
@@ -119,8 +126,12 @@ export class CheckoutService {
       bundles?: CartBundleInput[];
       promoCode?: string | null;
       shippingMethodId?: string;
+      /** Loyalty points the signed-in customer wants to use. */
+      pointsToRedeem?: number;
+      /** Required to use points. */
+      userId?: string | null;
     },
-    options?: { strictPromo?: boolean },
+    options?: { strictPromo?: boolean; strictPoints?: boolean },
   ): Promise<CalculatedPricing> {
     const lines = input.lines ?? [];
     const bundles = input.bundles ?? [];
@@ -221,7 +232,14 @@ export class CheckoutService {
       }
     }
 
-    // "Allow coupons on bundles" off → the coupon only reduces the non-bundle items.
+    // "Allow coupons on bundles" off → the coupon only reduces the non-bundle items,
+    // and a basket of only bundles can't use a coupon at all (refused at the payment step).
+    const bundlesOnly = bundleSpend > 0 && lineItems.every((l) => l.isBundle);
+    if (appliedPromoCode && !bundleConfig.discounts.allowCoupons && bundlesOnly) {
+      if (options?.strictPromo) throw new BadRequestException("Coupon codes can't be used on bundles.");
+      promoRate = 0;
+      appliedPromoCode = null;
+    }
     const couponBase = bundleConfig.discounts.allowCoupons ? subtotal : round2(rawLinesSubtotal);
     const discount = round2(couponBase * promoRate);
 
@@ -239,9 +257,13 @@ export class CheckoutService {
     const shipping =
       lineItems.length > 0 ? selectedShipping.fee : 0;
 
+    // ---- Loyalty points (Slimza Rewards): pay for products, never for delivery ----
+    const productsAfterDiscounts = Math.max(0, round2(subtotal - discount - bundleReward));
+    const points = await this.planPoints(input.pointsToRedeem ?? 0, input.userId ?? null, productsAfterDiscounts, options?.strictPoints);
+
     const total = Math.max(
       0,
-      round2(subtotal - discount - bundleReward + shipping),
+      round2(subtotal - discount - bundleReward - points.discount + shipping),
     );
     const totalInPence = Math.round(total * 100);
 
@@ -251,6 +273,9 @@ export class CheckoutService {
       bundleSavings,
       bundleSpend,
       bundleReward,
+      pointsRedeemed: points.points,
+      pointsDiscount: points.discount,
+      pointsEligibleSpend: Math.max(0, round2(productsAfterDiscounts - points.discount)),
       shipping,
       shippingMethod: selectedShipping,
       total,
@@ -258,6 +283,32 @@ export class CheckoutService {
       promoCode: appliedPromoCode,
       lineItems,
     };
+  }
+
+  /**
+   * How many loyalty points this order can use. Points need a signed-in customer.
+   * strict (payment step): explain why the request can't be honoured (400).
+   * lenient (order confirmation): use what is possible, never fail a paid order.
+   */
+  private async planPoints(requested: number, userId: string | null, eligibleAmount: number, strict = false) {
+    const none = { points: 0, discount: 0 };
+    if (!requested || requested <= 0) return none;
+    if (!userId || !this.loyaltyService) {
+      if (strict) throw new BadRequestException('Sign in to use your loyalty points.');
+      return none;
+    }
+    const { config, balance } = await this.loyaltyService.getRedeemContext(userId);
+    const plan = this.loyaltyService.planRedemption(config, requested, balance, eligibleAmount);
+    if (strict && plan.points < requested) {
+      const messages: Record<string, string> = {
+        disabled: `${config.programName} is paused, so points can't be used right now.`,
+        balance: `You have ${balance} points available.`,
+        minimum: `You can use points from ${config.redeem.minPoints} points.`,
+        order: 'That is more points than this order can use.',
+      };
+      throw new BadRequestException(messages[plan.limitedBy ?? 'order']);
+    }
+    return { points: plan.points, discount: plan.discount };
   }
 
   /** Reads the dashboard's bundle settings (CMS section "bundle"), falling back to the defaults. */
@@ -425,6 +476,8 @@ export class CheckoutService {
       total: number;
       shipping: number;
       discount: number;
+      pointsRedeemed: number;
+      pointsDiscount: number;
       shippingMethod: { id: string; name: string; fee: number; eta: string };
     };
   }> {
@@ -436,8 +489,10 @@ export class CheckoutService {
         bundles: input.bundles,
         promoCode: input.promoCode,
         shippingMethodId: input.shippingMethodId,
+        pointsToRedeem: input.pointsToRedeem,
+        userId,
       },
-      { strictPromo: true },
+      { strictPromo: true, strictPoints: true },
     );
 
     if (pricing.total <= 0) {
@@ -454,6 +509,8 @@ export class CheckoutService {
           total: pricing.total,
           shipping: pricing.shipping,
           discount: pricing.discount,
+          pointsRedeemed: pricing.pointsRedeemed,
+          pointsDiscount: pricing.pointsDiscount,
           shippingMethod: pricing.shippingMethod,
         },
       };
@@ -474,6 +531,7 @@ export class CheckoutService {
           shippingMethod: pricing.shippingMethod.id,
           promoCode: pricing.promoCode ?? '',
           userId: userId ?? '',
+          pointsRedeemed: String(pricing.pointsRedeemed),
         },
       });
 
@@ -485,6 +543,8 @@ export class CheckoutService {
           total: pricing.total,
           shipping: pricing.shipping,
           discount: pricing.discount,
+          pointsRedeemed: pricing.pointsRedeemed,
+          pointsDiscount: pricing.pointsDiscount,
           shippingMethod: pricing.shippingMethod,
         },
       };
@@ -511,8 +571,10 @@ export class CheckoutService {
         bundles: input.bundles,
         promoCode: input.promoCode,
         shippingMethodId: input.shippingMethodId,
+        pointsToRedeem: input.pointsToRedeem,
+        userId,
       },
-      { strictPromo: input.paymentMode === 'demo' },
+      { strictPromo: input.paymentMode === 'demo', strictPoints: input.paymentMode === 'demo' },
     );
 
     // Check if an order already exists for this paymentIntentId
@@ -580,6 +642,10 @@ export class CheckoutService {
       }
     }
 
+    const pointsEarned = this.loyaltyService
+      ? await this.loyaltyService.pointsForOrder(finalUserId, pricing.pointsEligibleSpend)
+      : 0;
+
     const order = await this.prisma.order.create({
       data: {
         orderNumber,
@@ -594,6 +660,9 @@ export class CheckoutService {
         discount: pricing.discount,
         bundleSavings: pricing.bundleSavings,
         bundleReward: pricing.bundleReward,
+        pointsRedeemed: pricing.pointsRedeemed,
+        pointsDiscount: pricing.pointsDiscount,
+        pointsEarned,
         promoCode: pricing.promoCode,
         total: pricing.total,
         currency: 'gbp',
@@ -630,6 +699,21 @@ export class CheckoutService {
     }
 
     this.logger.log(`Order ${order.orderNumber} successfully recorded in database.`);
+
+    // Loyalty: spend the redeemed points, book the points this order earns (pending until delivered).
+    if (this.loyaltyService) {
+      await this.loyaltyService
+        .recordOrder({
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          redeemUserId: userId ?? null,
+          pointsRedeemed: pricing.pointsRedeemed,
+          earnUserId: finalUserId,
+          pointsEarned,
+          paid: paymentStatus === PaymentStatus.PAID || paymentStatus === PaymentStatus.PENDING,
+        })
+        .catch((err) => this.logger.error(`Loyalty booking failed for #${order.orderNumber}: ${err instanceof Error ? err.message : err}`));
+    }
 
     // Send order confirmation email to admin & customer without blocking checkout response
     if (this.mailService) {
@@ -930,6 +1014,8 @@ export class CheckoutService {
       }),
     ]);
 
+    await this.syncLoyalty(order.id);
+
     return {
       ...updatedRefund,
       order: {
@@ -1040,7 +1126,7 @@ export class CheckoutService {
       throw new NotFoundException('Order not found.');
     }
 
-    return this.prisma.order.update({
+    const updated = await this.prisma.order.update({
       where: { id: order.id },
       data: {
         status,
@@ -1050,6 +1136,22 @@ export class CheckoutService {
         refundRequest: true,
       },
     });
+    // Delivered → pending points become spendable; cancelled → points reversed / returned.
+    await this.syncLoyalty(order.id);
+    return updated;
+  }
+
+  /** Re-checks an order's loyalty points after a status change. Never breaks the caller. */
+  private async syncLoyalty(orderId: string) {
+    if (!this.loyaltyService) return;
+    await this.loyaltyService
+      .syncOrder(orderId)
+      .catch((err) => this.logger.error(`Loyalty sync failed for order ${orderId}: ${err instanceof Error ? err.message : err}`));
+  }
+
+  private async syncLoyaltyForPaymentIntent(paymentIntentId: string) {
+    const orders = await this.prisma.order.findMany({ where: { paymentIntentId }, select: { id: true } });
+    for (const o of orders) await this.syncLoyalty(o.id);
   }
 
   // ---------------------------------------------------------------------------
@@ -1167,6 +1269,7 @@ export class CheckoutService {
             paymentStatus: PaymentStatus.FAILED,
           },
         });
+        await this.syncLoyaltyForPaymentIntent(intent.id);
       } else if (event.type === 'charge.refunded') {
         const charge = event.data.object as Stripe.Charge;
         const paymentIntentId =
@@ -1182,6 +1285,7 @@ export class CheckoutService {
               status: OrderStatus.CANCELLED,
             },
           });
+          await this.syncLoyaltyForPaymentIntent(paymentIntentId);
         }
       }
 

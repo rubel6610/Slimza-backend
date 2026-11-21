@@ -69,7 +69,7 @@ describe('bundle rules', () => {
   });
 
   it('limits how many items come from one category', () => {
-    const c = config({ rules: { ...DEFAULT_BUNDLE_CONFIG.rules, perCategoryLimit: 1 } });
+    const c = config({ rules: { ...DEFAULT_BUNDLE_CONFIG.rules, perCategoryLimit: 1, oneProductPerCategory: false } });
     const lines = [
       { product: product('a', 'tea'), qty: 1 },
       { product: product('b', 'tea'), qty: 1 },
@@ -132,5 +132,20 @@ describe('discount growth and cap', () => {
     const c = config({ rules: { ...DEFAULT_BUNDLE_CONFIG.rules, maxQtyPerProduct: 0 } });
     expect(bundleRuleError(c, [{ product: product('a', 'tea'), qty: 500 }])).toBeNull();
     expect(priceBundle(growing, [{ product: product('a', 'tea', 10), qty: 50 }])).toMatchObject({ percent: 25, total: 375 });
+  });
+});
+
+describe('one product per category', () => {
+  it('rejects two different products from the same category when enabled', () => {
+    const on = config({ rules: { ...DEFAULT_BUNDLE_CONFIG.rules, oneProductPerCategory: true } });
+    const off = config({ rules: { ...DEFAULT_BUNDLE_CONFIG.rules, oneProductPerCategory: false } });
+    const lines = [
+      { product: product('a', 'tea'), qty: 1 },
+      { product: product('b', 'tea'), qty: 1 },
+    ];
+    expect(bundleRuleError(on, lines, () => 'Tea')).toMatch(/one product from Tea/);
+    expect(bundleRuleError(off, lines)).toBeNull();
+    // Same product, more QTY, is fine.
+    expect(bundleRuleError(on, [{ product: product('a', 'tea'), qty: 3 }])).toBeNull();
   });
 });

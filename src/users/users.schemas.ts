@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { archiveFilterSchema } from '../common/archive/archive.js';
+import { listQuerySchema } from '../common/pagination/pagination.js';
 
 export const uuidParamSchema = z.string().uuid('Invalid identifier');
 
@@ -37,6 +38,21 @@ export const adminUsersQuerySchema = z.object({
   status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),
 });
 export type AdminUsersQuery = z.infer<typeof adminUsersQuerySchema>;
+
+/**
+ * GET /users/paged — the reusable list query (page, limit, q, sort) plus this
+ * endpoint's own filters. Example:
+ *   /users/paged?page=2&limit=20&q=rubel&sort=name:asc&status=ACTIVE&role=CUSTOMER
+ */
+export const adminUsersPageQuerySchema = listQuerySchema({
+  sortable: ['createdAt', 'name', 'email', 'loyaltyPoints'],
+  defaultSort: 'createdAt:desc',
+}).extend({
+  archived: archiveFilterSchema,
+  status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),
+  role: z.enum(['ADMIN', 'CUSTOMER']).optional(),
+});
+export type AdminUsersPageQuery = z.infer<typeof adminUsersPageQuerySchema>;
 
 /** Optional reason, shown to the user when they try to sign in or act. */
 export const suspendUserSchema = z.object({

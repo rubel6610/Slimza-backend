@@ -26,31 +26,36 @@ enum OtpPurpose {
 }
 
 model User {
-  id                  String         @id @default(uuid())
+  id                  String               @id @default(uuid())
   name                String
-  firstName           String         @default("")
-  lastName            String         @default("")
-  email               String         @unique
+  firstName           String               @default("")
+  lastName            String               @default("")
+  email               String               @unique
   passwordHash        String
-  phone               String         @default("")
-  birthday            String         @default("")
-  avatarUrl           String         @default("")
-  role                UserRole       @default(CUSTOMER)
-  isEmailVerified     Boolean        @default(false)
+  phone               String               @default("")
+  birthday            String               @default("")
+  avatarUrl           String               @default("")
+  role                UserRole             @default(CUSTOMER)
+  isEmailVerified     Boolean              @default(false)
   emailVerifiedAt     DateTime?
   deletionRequestedAt DateTime?
   /// SUSPENDED = cannot sign in, buy or pay. Set by an admin; reversible.
-  status              UserStatus     @default(ACTIVE)
+  status              UserStatus           @default(ACTIVE)
   suspendedAt         DateTime?
-  suspensionReason    String?        @db.Text
+  suspensionReason    String?              @db.Text
   /// Archive lifecycle (src/common/archive/archive.ts). Archived users cannot sign in either.
   archivedAt          DateTime?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  /// Loyalty: spendable points (sum of AVAILABLE ledger entries). Kept in sync by LoyaltyService.
+  loyaltyPoints       Int                  @default(0)
+  /// Loyalty: points ever earned (drives the tier). Redemptions don't lower it; reversals do.
+  loyaltyLifetime     Int                  @default(0)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
   addresses           Address[]
   otpCodes            OtpCode[]
   refreshTokens       RefreshToken[]
   orders              Order[]
+  loyaltyTransactions LoyaltyTransaction[]
 
   @@index([status])
   @@index([archivedAt])
@@ -166,6 +171,11 @@ model Order {
   discount        Float         @default(0)
   bundleSavings   Float         @default(0)
   bundleReward    Float         @default(0)
+  /// Loyalty points spent on this order, and the £ they took off
+  pointsRedeemed  Int           @default(0)
+  pointsDiscount  Float         @default(0)
+  /// Loyalty points this order earns (pending until delivered)
+  pointsEarned    Int           @default(0)
   promoCode       String?
   total           Float
   currency        String        @default("gbp")
@@ -273,6 +283,12 @@ model Product {
   @@index([publishStatus])
   @@index([featured])
   @@index([archivedAt])
+  @@index([price])
+  /// Full-text search (src/products/product-search.ts): one index per searchable column,
+  /// plus one on both for relevance ranking.
+  @@fulltext([name])
+  @@fulltext([description])
+  @@fulltext([name, description])
 }
 
 model Coupon {
@@ -379,4 +395,45 @@ model Blog {
   @@index([category])
   @@index([publishedAt])
   @@index([archivedAt])
+}
+
+enum LoyaltyEntryType {
+  WELCOME
+  PURCHASE
+  PURCHASE_REVERSAL
+  REDEEM
+  REDEEM_RETURN
+  BIRTHDAY
+  SOCIAL
+  ADMIN
+}
+
+enum LoyaltyEntryStatus {
+  /// Earned but not spendable yet (order not delivered)
+  PENDING
+  /// Counted in User.loyaltyPoints
+  AVAILABLE
+  /// Never became spendable (order cancelled before delivery)
+  CANCELLED
+}
+
+/// Loyalty points ledger (src/loyalty). One row per change; `points` is signed.
+/// `referenceKey` is unique, so the same bonus / order can never be applied twice.
+model LoyaltyTransaction {
+  id           String             @id @default(uuid())
+  userId       String
+  type         LoyaltyEntryType
+  status       LoyaltyEntryStatus @default(AVAILABLE)
+  points       Int
+  description  String             @db.VarChar(300)
+  orderId      String?
+  referenceKey String             @unique @db.VarChar(191)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([orderId])
+  @@index([type])
 }

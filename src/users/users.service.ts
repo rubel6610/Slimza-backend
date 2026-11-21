@@ -10,11 +10,14 @@ import {
   archiveWhere,
   assertArchivedBeforeDelete,
 } from '../common/archive/archive.js';
+import { paginate, searchWhere, toOrderBy } from '../common/pagination/pagination.js';
+import type { Prisma } from '../generated/prisma/client.js';
 import { UserRole, UserStatus } from '../generated/prisma/enums.js';
 import { serializeUser } from '../auth/auth.service.js';
 import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
+  AdminUsersPageQuery,
   AdminUsersQuery,
   CreateAddressInput,
   UpdateAddressInput,
@@ -306,6 +309,37 @@ export class UsersService {
       include: this.withAddresses,
     });
     return users.map(serializeUser);
+  }
+
+  /**
+   * Paginated, searchable, sortable user list — the worked example of
+   * src/common/pagination/pagination.ts. Read top to bottom:
+   */
+  async findPage(query: AdminUsersPageQuery) {
+    // 1. Filters → one Prisma `where`. Each piece is {} when not used, so spreading is safe.
+    const where: Prisma.UserWhereInput = {
+      ...archiveWhere(query.archived),
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.role ? { role: query.role } : {}),
+      ...searchWhere(query.q, ['name', 'email', 'phone']),
+    };
+
+    // 2. Count + fetch the page together; the same `where` is used for both,
+    //    so `total` always matches what the pages contain.
+    const result = await paginate(query, {
+      count: () => this.prisma.user.count({ where }),
+      findMany: ({ skip, take }) =>
+        this.prisma.user.findMany({
+          where,
+          orderBy: toOrderBy(query.sort),
+          skip,
+          take,
+          include: this.withAddresses,
+        }),
+    });
+
+    // 3. Never send raw rows (password hashes!) — serialise like every other endpoint.
+    return { ...result, items: result.items.map(serializeUser) };
   }
 
   async findOne(id: string) {

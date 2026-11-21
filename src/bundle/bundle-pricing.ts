@@ -118,6 +118,17 @@ export function bundleRuleError(
   if (units < minItems) return `A bundle needs at least ${minItems} items.`;
   if (maxItems > 0 && units > maxItems) return `A bundle can have at most ${maxItems} items.`;
 
+  if (config.rules.oneProductPerCategory) {
+    const picked = new Map<string, string>();
+    for (const { product } of lines) {
+      const other = picked.get(product.category);
+      if (other && other !== product.id) {
+        return `Choose one product from ${categoryName(product.category)} per bundle.`;
+      }
+      picked.set(product.category, product.id);
+    }
+  }
+
   if (perCategoryLimit > 0) {
     const perCategory = new Map<string, number>();
     for (const { product, qty } of lines) {

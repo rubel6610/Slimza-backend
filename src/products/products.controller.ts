@@ -28,6 +28,7 @@ import {
   type QueryProductInput,
   type UpdateProductInput,
 } from './products.schemas.js';
+import { productSearchQuerySchema, type ProductSearchQuery } from './product-search.js';
 import { ProductsService, type UploadedProductFile } from './products.service.js';
 
 /**
@@ -48,6 +49,17 @@ export class ProductsController {
     @CurrentUser() user?: AuthUserPayload,
   ) {
     return this.productsService.findAll(query, user?.role === UserRole.ADMIN);
+  }
+
+  /**
+   * Storefront search: full-text search + filters + sort + pagination + facet counts.
+   * `?q=&category=a,b&brand=&flag=&min=&max=&sort=relevance|price-asc|…&page=&limit=`
+   * Published, live products only. Engine: product-search.ts.
+   */
+  @Public()
+  @Get('search')
+  search(@Query({ schema: productSearchQuerySchema }) query: ProductSearchQuery) {
+    return this.productsService.search(query);
   }
 
   @Roles(UserRole.ADMIN)

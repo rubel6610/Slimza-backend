@@ -32,6 +32,9 @@ export type OrderAvgAggregateOutputType = {
   discount: number | null
   bundleSavings: number | null
   bundleReward: number | null
+  pointsRedeemed: number | null
+  pointsDiscount: number | null
+  pointsEarned: number | null
   total: number | null
 }
 
@@ -41,6 +44,9 @@ export type OrderSumAggregateOutputType = {
   discount: number | null
   bundleSavings: number | null
   bundleReward: number | null
+  pointsRedeemed: number | null
+  pointsDiscount: number | null
+  pointsEarned: number | null
   total: number | null
 }
 
@@ -57,6 +63,9 @@ export type OrderMinAggregateOutputType = {
   discount: number | null
   bundleSavings: number | null
   bundleReward: number | null
+  pointsRedeemed: number | null
+  pointsDiscount: number | null
+  pointsEarned: number | null
   promoCode: string | null
   total: number | null
   currency: string | null
@@ -83,6 +92,9 @@ export type OrderMaxAggregateOutputType = {
   discount: number | null
   bundleSavings: number | null
   bundleReward: number | null
+  pointsRedeemed: number | null
+  pointsDiscount: number | null
+  pointsEarned: number | null
   promoCode: string | null
   total: number | null
   currency: string | null
@@ -110,6 +122,9 @@ export type OrderCountAggregateOutputType = {
   discount: number
   bundleSavings: number
   bundleReward: number
+  pointsRedeemed: number
+  pointsDiscount: number
+  pointsEarned: number
   promoCode: number
   total: number
   currency: number
@@ -132,6 +147,9 @@ export type OrderAvgAggregateInputType = {
   discount?: true
   bundleSavings?: true
   bundleReward?: true
+  pointsRedeemed?: true
+  pointsDiscount?: true
+  pointsEarned?: true
   total?: true
 }
 
@@ -141,6 +159,9 @@ export type OrderSumAggregateInputType = {
   discount?: true
   bundleSavings?: true
   bundleReward?: true
+  pointsRedeemed?: true
+  pointsDiscount?: true
+  pointsEarned?: true
   total?: true
 }
 
@@ -157,6 +178,9 @@ export type OrderMinAggregateInputType = {
   discount?: true
   bundleSavings?: true
   bundleReward?: true
+  pointsRedeemed?: true
+  pointsDiscount?: true
+  pointsEarned?: true
   promoCode?: true
   total?: true
   currency?: true
@@ -183,6 +207,9 @@ export type OrderMaxAggregateInputType = {
   discount?: true
   bundleSavings?: true
   bundleReward?: true
+  pointsRedeemed?: true
+  pointsDiscount?: true
+  pointsEarned?: true
   promoCode?: true
   total?: true
   currency?: true
@@ -210,6 +237,9 @@ export type OrderCountAggregateInputType = {
   discount?: true
   bundleSavings?: true
   bundleReward?: true
+  pointsRedeemed?: true
+  pointsDiscount?: true
+  pointsEarned?: true
   promoCode?: true
   total?: true
   currency?: true
@@ -325,6 +355,9 @@ export type OrderGroupByOutputType = {
   discount: number
   bundleSavings: number
   bundleReward: number
+  pointsRedeemed: number
+  pointsDiscount: number
+  pointsEarned: number
   promoCode: string | null
   total: number
   currency: string
@@ -376,6 +409,9 @@ export type OrderWhereInput = {
   discount?: Prisma.FloatFilter<"Order"> | number
   bundleSavings?: Prisma.FloatFilter<"Order"> | number
   bundleReward?: Prisma.FloatFilter<"Order"> | number
+  pointsRedeemed?: Prisma.IntFilter<"Order"> | number
+  pointsDiscount?: Prisma.FloatFilter<"Order"> | number
+  pointsEarned?: Prisma.IntFilter<"Order"> | number
   promoCode?: Prisma.StringNullableFilter<"Order"> | string | null
   total?: Prisma.FloatFilter<"Order"> | number
   currency?: Prisma.StringFilter<"Order"> | string
@@ -407,6 +443,9 @@ export type OrderOrderByWithRelationInput = {
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
   bundleReward?: Prisma.SortOrder
+  pointsRedeemed?: Prisma.SortOrder
+  pointsDiscount?: Prisma.SortOrder
+  pointsEarned?: Prisma.SortOrder
   promoCode?: Prisma.SortOrderInput | Prisma.SortOrder
   total?: Prisma.SortOrder
   currency?: Prisma.SortOrder
@@ -443,6 +482,9 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   discount?: Prisma.FloatFilter<"Order"> | number
   bundleSavings?: Prisma.FloatFilter<"Order"> | number
   bundleReward?: Prisma.FloatFilter<"Order"> | number
+  pointsRedeemed?: Prisma.IntFilter<"Order"> | number
+  pointsDiscount?: Prisma.FloatFilter<"Order"> | number
+  pointsEarned?: Prisma.IntFilter<"Order"> | number
   promoCode?: Prisma.StringNullableFilter<"Order"> | string | null
   total?: Prisma.FloatFilter<"Order"> | number
   currency?: Prisma.StringFilter<"Order"> | string
@@ -473,6 +515,9 @@ export type OrderOrderByWithAggregationInput = {
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
   bundleReward?: Prisma.SortOrder
+  pointsRedeemed?: Prisma.SortOrder
+  pointsDiscount?: Prisma.SortOrder
+  pointsEarned?: Prisma.SortOrder
   promoCode?: Prisma.SortOrderInput | Prisma.SortOrder
   total?: Prisma.SortOrder
   currency?: Prisma.SortOrder
@@ -509,6 +554,9 @@ export type OrderScalarWhereWithAggregatesInput = {
   discount?: Prisma.FloatWithAggregatesFilter<"Order"> | number
   bundleSavings?: Prisma.FloatWithAggregatesFilter<"Order"> | number
   bundleReward?: Prisma.FloatWithAggregatesFilter<"Order"> | number
+  pointsRedeemed?: Prisma.IntWithAggregatesFilter<"Order"> | number
+  pointsDiscount?: Prisma.FloatWithAggregatesFilter<"Order"> | number
+  pointsEarned?: Prisma.IntWithAggregatesFilter<"Order"> | number
   promoCode?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   total?: Prisma.FloatWithAggregatesFilter<"Order"> | number
   currency?: Prisma.StringWithAggregatesFilter<"Order"> | string
@@ -536,6 +584,9 @@ export type OrderCreateInput = {
   discount?: number
   bundleSavings?: number
   bundleReward?: number
+  pointsRedeemed?: number
+  pointsDiscount?: number
+  pointsEarned?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -567,6 +618,9 @@ export type OrderUncheckedCreateInput = {
   discount?: number
   bundleSavings?: number
   bundleReward?: number
+  pointsRedeemed?: number
+  pointsDiscount?: number
+  pointsEarned?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -596,6 +650,9 @@ export type OrderUpdateInput = {
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleReward?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -627,6 +684,9 @@ export type OrderUncheckedUpdateInput = {
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleReward?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -657,6 +717,9 @@ export type OrderCreateManyInput = {
   discount?: number
   bundleSavings?: number
   bundleReward?: number
+  pointsRedeemed?: number
+  pointsDiscount?: number
+  pointsEarned?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -684,6 +747,9 @@ export type OrderUpdateManyMutationInput = {
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleReward?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -712,6 +778,9 @@ export type OrderUncheckedUpdateManyInput = {
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleReward?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -756,6 +825,9 @@ export type OrderCountOrderByAggregateInput = {
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
   bundleReward?: Prisma.SortOrder
+  pointsRedeemed?: Prisma.SortOrder
+  pointsDiscount?: Prisma.SortOrder
+  pointsEarned?: Prisma.SortOrder
   promoCode?: Prisma.SortOrder
   total?: Prisma.SortOrder
   currency?: Prisma.SortOrder
@@ -776,6 +848,9 @@ export type OrderAvgOrderByAggregateInput = {
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
   bundleReward?: Prisma.SortOrder
+  pointsRedeemed?: Prisma.SortOrder
+  pointsDiscount?: Prisma.SortOrder
+  pointsEarned?: Prisma.SortOrder
   total?: Prisma.SortOrder
 }
 
@@ -792,6 +867,9 @@ export type OrderMaxOrderByAggregateInput = {
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
   bundleReward?: Prisma.SortOrder
+  pointsRedeemed?: Prisma.SortOrder
+  pointsDiscount?: Prisma.SortOrder
+  pointsEarned?: Prisma.SortOrder
   promoCode?: Prisma.SortOrder
   total?: Prisma.SortOrder
   currency?: Prisma.SortOrder
@@ -818,6 +896,9 @@ export type OrderMinOrderByAggregateInput = {
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
   bundleReward?: Prisma.SortOrder
+  pointsRedeemed?: Prisma.SortOrder
+  pointsDiscount?: Prisma.SortOrder
+  pointsEarned?: Prisma.SortOrder
   promoCode?: Prisma.SortOrder
   total?: Prisma.SortOrder
   currency?: Prisma.SortOrder
@@ -837,6 +918,9 @@ export type OrderSumOrderByAggregateInput = {
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
   bundleReward?: Prisma.SortOrder
+  pointsRedeemed?: Prisma.SortOrder
+  pointsDiscount?: Prisma.SortOrder
+  pointsEarned?: Prisma.SortOrder
   total?: Prisma.SortOrder
 }
 
@@ -944,6 +1028,9 @@ export type OrderCreateWithoutUserInput = {
   discount?: number
   bundleSavings?: number
   bundleReward?: number
+  pointsRedeemed?: number
+  pointsDiscount?: number
+  pointsEarned?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -973,6 +1060,9 @@ export type OrderUncheckedCreateWithoutUserInput = {
   discount?: number
   bundleSavings?: number
   bundleReward?: number
+  pointsRedeemed?: number
+  pointsDiscount?: number
+  pointsEarned?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -1032,6 +1122,9 @@ export type OrderScalarWhereInput = {
   discount?: Prisma.FloatFilter<"Order"> | number
   bundleSavings?: Prisma.FloatFilter<"Order"> | number
   bundleReward?: Prisma.FloatFilter<"Order"> | number
+  pointsRedeemed?: Prisma.IntFilter<"Order"> | number
+  pointsDiscount?: Prisma.FloatFilter<"Order"> | number
+  pointsEarned?: Prisma.IntFilter<"Order"> | number
   promoCode?: Prisma.StringNullableFilter<"Order"> | string | null
   total?: Prisma.FloatFilter<"Order"> | number
   currency?: Prisma.StringFilter<"Order"> | string
@@ -1059,6 +1152,9 @@ export type OrderCreateWithoutRefundRequestInput = {
   discount?: number
   bundleSavings?: number
   bundleReward?: number
+  pointsRedeemed?: number
+  pointsDiscount?: number
+  pointsEarned?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -1089,6 +1185,9 @@ export type OrderUncheckedCreateWithoutRefundRequestInput = {
   discount?: number
   bundleSavings?: number
   bundleReward?: number
+  pointsRedeemed?: number
+  pointsDiscount?: number
+  pointsEarned?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -1133,6 +1232,9 @@ export type OrderUpdateWithoutRefundRequestInput = {
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleReward?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1163,6 +1265,9 @@ export type OrderUncheckedUpdateWithoutRefundRequestInput = {
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleReward?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1191,6 +1296,9 @@ export type OrderCreateWithoutItemsInput = {
   discount?: number
   bundleSavings?: number
   bundleReward?: number
+  pointsRedeemed?: number
+  pointsDiscount?: number
+  pointsEarned?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -1221,6 +1329,9 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   discount?: number
   bundleSavings?: number
   bundleReward?: number
+  pointsRedeemed?: number
+  pointsDiscount?: number
+  pointsEarned?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -1265,6 +1376,9 @@ export type OrderUpdateWithoutItemsInput = {
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleReward?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1295,6 +1409,9 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleReward?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1323,6 +1440,9 @@ export type OrderCreateManyUserInput = {
   discount?: number
   bundleSavings?: number
   bundleReward?: number
+  pointsRedeemed?: number
+  pointsDiscount?: number
+  pointsEarned?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -1350,6 +1470,9 @@ export type OrderUpdateWithoutUserInput = {
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleReward?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1379,6 +1502,9 @@ export type OrderUncheckedUpdateWithoutUserInput = {
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleReward?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1408,6 +1534,9 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleReward?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
+  pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1467,6 +1596,9 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   discount?: boolean
   bundleSavings?: boolean
   bundleReward?: boolean
+  pointsRedeemed?: boolean
+  pointsDiscount?: boolean
+  pointsEarned?: boolean
   promoCode?: boolean
   total?: boolean
   currency?: boolean
@@ -1501,6 +1633,9 @@ export type OrderSelectScalar = {
   discount?: boolean
   bundleSavings?: boolean
   bundleReward?: boolean
+  pointsRedeemed?: boolean
+  pointsDiscount?: boolean
+  pointsEarned?: boolean
   promoCode?: boolean
   total?: boolean
   currency?: boolean
@@ -1515,7 +1650,7 @@ export type OrderSelectScalar = {
   archivedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "userId" | "customerEmail" | "customerName" | "customerPhone" | "shippingAddress" | "shippingMethod" | "shippingFee" | "subtotal" | "discount" | "bundleSavings" | "bundleReward" | "promoCode" | "total" | "currency" | "status" | "paymentStatus" | "paymentMode" | "paymentIntentId" | "stripeChargeId" | "metadata" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "userId" | "customerEmail" | "customerName" | "customerPhone" | "shippingAddress" | "shippingMethod" | "shippingFee" | "subtotal" | "discount" | "bundleSavings" | "bundleReward" | "pointsRedeemed" | "pointsDiscount" | "pointsEarned" | "promoCode" | "total" | "currency" | "status" | "paymentStatus" | "paymentMode" | "paymentIntentId" | "stripeChargeId" | "metadata" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
@@ -1544,6 +1679,15 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     discount: number
     bundleSavings: number
     bundleReward: number
+    /**
+     * Loyalty points spent on this order, and the £ they took off
+     */
+    pointsRedeemed: number
+    pointsDiscount: number
+    /**
+     * Loyalty points this order earns (pending until delivered)
+     */
+    pointsEarned: number
     promoCode: string | null
     total: number
     currency: string
@@ -1944,6 +2088,9 @@ export interface OrderFieldRefs {
   readonly discount: Prisma.FieldRef<"Order", 'Float'>
   readonly bundleSavings: Prisma.FieldRef<"Order", 'Float'>
   readonly bundleReward: Prisma.FieldRef<"Order", 'Float'>
+  readonly pointsRedeemed: Prisma.FieldRef<"Order", 'Int'>
+  readonly pointsDiscount: Prisma.FieldRef<"Order", 'Float'>
+  readonly pointsEarned: Prisma.FieldRef<"Order", 'Int'>
   readonly promoCode: Prisma.FieldRef<"Order", 'String'>
   readonly total: Prisma.FieldRef<"Order", 'Float'>
   readonly currency: Prisma.FieldRef<"Order", 'String'>

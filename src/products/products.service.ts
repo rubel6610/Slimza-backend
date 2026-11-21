@@ -15,6 +15,21 @@ import {
 } from '../common/archive/archive.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { MediaService } from '../media/media.service.js';
+import {
+  PUBLIC_PRODUCT_WHERE,
+  brandWhere,
+  buildPageMeta,
+  categoryWhere,
+  flagWhere,
+  parseSearchTerms,
+  priceWhere,
+  searchOrderBy,
+  searchTermsWhere,
+  slugifyTag,
+  toSkipTake,
+  type ProductSearchQuery,
+  type SearchFacets,
+} from './product-search.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
   CreateProductInput,
@@ -437,53 +452,138 @@ export class ProductsService implements OnModuleInit {
    * @param isAdmin Only admins may list archived products (`query.archived`).
    *                Everyone else always gets live products only.
    */
-  async findAll(query: Partial<QueryProductInput> = {}, isAdmin = false) {
-    const where: Prisma.ProductWhereInput = {
-      ...archiveWhere(resolveArchiveFilter(query.archived, isAdmin)),
+  // ---- Storefront search (GET /products/search) -------------------------------------
+  // Engine: src/products/product-search.ts. Returns { items, meta, facets }.
+
+  /** Tag spellings per flag slug ("best-selling" → ["Best Selling"]), cached for a minute. */
+  private tagIndexCache: { at: number; map: Map<string, string[]> } | null = null;
+
+  private async tagIndex(): Promise<Map<string, string[]>> {
+    if (this.tagIndexCache && Date.now() - this.tagIndexCache.at < 60_000) return this.tagIndexCache.map;
+    const rows = await this.prisma.product.findMany({ where: PUBLIC_PRODUCT_WHERE, select: { tags: true } });
+    const map = new Map<string, Set<string>>();
+    for (const row of rows) {
+      for (const tag of Array.isArray(row.tags) ? row.tags : []) {
+        if (typeof tag !== 'string' || !tag.trim()) continue;
+        const slug = slugifyTag(tag);
+        if (!map.has(slug)) map.set(slug, new Set());
+        map.get(slug)!.add(tag);
+      }
+    }
+    const result = new Map([...map].map(([slug, tags]) => [slug, [...tags]]));
+    this.tagIndexCache = { at: Date.now(), map: result };
+    return result;
+  }
+
+  async search(query: ProductSearchQuery) {
+    const terms = parseSearchTerms(query.q);
+    const searching = terms.fulltext.length + terms.short.length > 0;
+    const sort = query.sort ?? (searching ? 'relevance' : 'default');
+    const tagsBySlug = await this.tagIndex();
+
+    // Each filter is built once; facets re-use them while leaving their own filter out
+    // ("how many products would I get if I ticked this brand too?").
+    const parts = {
+      base: [PUBLIC_PRODUCT_WHERE, ...searchTermsWhere(terms)],
+      category: categoryWhere(query.category),
+      brand: brandWhere(query.brand),
+      flags: flagWhere(query.flag, tagsBySlug),
+      price: priceWhere(query.min, query.max),
     };
+    const build = (omit?: 'category' | 'brand' | 'flags'): Prisma.ProductWhereInput => ({
+      AND: [
+        ...parts.base,
+        omit === 'category' ? {} : parts.category,
+        omit === 'brand' ? {} : parts.brand,
+        ...(omit === 'flags' ? [] : parts.flags),
+        parts.price,
+      ],
+    });
+    const where = build();
+
+    const [total, items, facets] = await Promise.all([
+      this.prisma.product.count({ where }),
+      this.prisma.product.findMany({ where, orderBy: searchOrderBy(sort, terms), ...toSkipTake(query) }),
+      this.searchFacets(build, tagsBySlug),
+    ]);
+
+    return {
+      items,
+      meta: buildPageMeta(query.page, query.limit, total),
+      facets,
+      sort,
+      terms: [...terms.fulltext, ...terms.short],
+    };
+  }
+
+  /** Counts for the filter sidebar, computed in the database. */
+  private async searchFacets(
+    build: (omit?: 'category' | 'brand' | 'flags') => Prisma.ProductWhereInput,
+    tagsBySlug: Map<string, string[]>,
+  ): Promise<SearchFacets> {
+    const [brandGroups, categoryGroups, cmsCategories] = await Promise.all([
+      this.prisma.product.groupBy({ by: ['brand'], where: build('brand'), _count: { _all: true } }),
+      this.prisma.product.groupBy({ by: ['category'], where: build('category'), _count: { _all: true } }),
+      this.prisma.cmsSection.findUnique({ where: { key: 'categories' } }),
+    ]);
+
+    // Products can sit in several categories (the `categories` JSON list), so each
+    // category is counted on its own: primary category OR listed in `categories`.
+    const cmsSlugs = Array.isArray(cmsCategories?.data)
+      ? (cmsCategories.data as Array<{ slug?: unknown }>).map((c) => c.slug).filter((s): s is string => typeof s === 'string')
+      : [];
+    const categorySlugs = [...new Set([...categoryGroups.map((g) => g.category), ...cmsSlugs])].filter(Boolean).slice(0, 40);
+    const flagSlugs = [...tagsBySlug.keys()].slice(0, 40);
+
+    const [categoryCounts, flagCounts] = await Promise.all([
+      Promise.all(categorySlugs.map((slug) => this.prisma.product.count({ where: { AND: [build('category'), categoryWhere([slug])] } }))),
+      Promise.all(flagSlugs.map((slug) => this.prisma.product.count({ where: { AND: [build('flags'), ...flagWhere([slug], tagsBySlug)] } }))),
+    ]);
+
+    return {
+      brands: Object.fromEntries(brandGroups.filter((g) => g.brand).map((g) => [g.brand, g._count._all])),
+      categories: Object.fromEntries(categorySlugs.map((slug, i) => [slug, categoryCounts[i]]).filter(([, n]) => (n as number) > 0)),
+      flags: Object.fromEntries(
+        flagSlugs
+          .map((slug, i) => [slug, { name: tagsBySlug.get(slug)?.[0] ?? slug, count: flagCounts[i] }] as const)
+          .filter(([, v]) => v.count > 0),
+      ),
+    };
+  }
+
+  async findAll(query: Partial<QueryProductInput> = {}, isAdmin = false) {
+    // Each condition is pushed into AND, so search + category + brand… all apply together.
+    // (Before, the category's OR replaced the search's OR and the search was ignored.)
+    const and: Prisma.ProductWhereInput[] = [archiveWhere(resolveArchiveFilter(query.archived, isAdmin))];
 
     if (query.q) {
-      where.OR = [
-        { name: { contains: query.q } },
-        { description: { contains: query.q } },
-      ];
+      and.push(...searchTermsWhere(parseSearchTerms(query.q)));
     }
 
     if (query.category) {
-      const cats = query.category.split(',').map((c) => c.trim()).filter(Boolean);
-      if (cats.length === 1) {
-        where.OR = [
-          { category: cats[0] },
-          { categories: { array_contains: cats[0] } },
-        ];
-      } else if (cats.length > 1) {
-        where.OR = [
-          { category: { in: cats } },
-          ...cats.map((c) => ({ categories: { array_contains: c } })),
-        ];
-      }
+      and.push(categoryWhere(query.category.split(',').map((c) => c.trim()).filter(Boolean)));
     }
 
     if (query.brand) {
-      const brands = query.brand.split(',').map((b) => b.trim()).filter(Boolean);
-      if (brands.length === 1) {
-        where.brand = brands[0];
-      } else if (brands.length > 1) {
-        where.brand = { in: brands };
-      }
+      and.push(brandWhere(query.brand.split(',').map((b) => b.trim()).filter(Boolean)));
     }
 
     if (query.tag) {
-      where.tags = { array_contains: query.tag };
+      and.push({ tags: { array_contains: query.tag } });
     }
 
-    if (query.publishStatus) {
-      where.publishStatus = query.publishStatus;
+    // Drafts are never public, whatever the request asks for.
+    if (!isAdmin) {
+      and.push({ publishStatus: 'published' });
+    } else if (query.publishStatus) {
+      and.push({ publishStatus: query.publishStatus });
     }
 
     if (query.featured) {
-      where.featured = query.featured === 'true';
+      and.push({ featured: query.featured === 'true' });
     }
+
+    const where: Prisma.ProductWhereInput = { AND: and };
 
     let orderBy: Prisma.ProductOrderByWithRelationInput = { featuredRank: 'asc' };
     if (query.sort === 'price-asc') {

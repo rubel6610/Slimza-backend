@@ -89,3 +89,26 @@ export const FranchiseApplicationStatus = {
 } as const
 
 export type FranchiseApplicationStatus = (typeof FranchiseApplicationStatus)[keyof typeof FranchiseApplicationStatus]
+
+
+export const LoyaltyEntryType = {
+  WELCOME: 'WELCOME',
+  PURCHASE: 'PURCHASE',
+  PURCHASE_REVERSAL: 'PURCHASE_REVERSAL',
+  REDEEM: 'REDEEM',
+  REDEEM_RETURN: 'REDEEM_RETURN',
+  BIRTHDAY: 'BIRTHDAY',
+  SOCIAL: 'SOCIAL',
+  ADMIN: 'ADMIN'
+} as const
+
+export type LoyaltyEntryType = (typeof LoyaltyEntryType)[keyof typeof LoyaltyEntryType]
+
+
+export const LoyaltyEntryStatus = {
+  PENDING: 'PENDING',
+  AVAILABLE: 'AVAILABLE',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type LoyaltyEntryStatus = (typeof LoyaltyEntryStatus)[keyof typeof LoyaltyEntryStatus]
