@@ -409,7 +409,8 @@ export const ModelName = {
   Product: 'Product',
   Coupon: 'Coupon',
   MediaAsset: 'MediaAsset',
-  FranchiseApplication: 'FranchiseApplication'
+  FranchiseApplication: 'FranchiseApplication',
+  Blog: 'Blog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -425,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "address" | "otpCode" | "refreshToken" | "cmsSection" | "newsletterLead" | "order" | "refundRequest" | "orderItem" | "product" | "coupon" | "mediaAsset" | "franchiseApplication"
+    modelProps: "user" | "address" | "otpCode" | "refreshToken" | "cmsSection" | "newsletterLead" | "order" | "refundRequest" | "orderItem" | "product" | "coupon" | "mediaAsset" | "franchiseApplication" | "blog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1287,6 +1288,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Blog: {
+      payload: Prisma.$BlogPayload<ExtArgs>
+      fields: Prisma.BlogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BlogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BlogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPayload>
+        }
+        findFirst: {
+          args: Prisma.BlogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BlogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPayload>
+        }
+        findMany: {
+          args: Prisma.BlogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPayload>[]
+        }
+        create: {
+          args: Prisma.BlogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPayload>
+        }
+        createMany: {
+          args: Prisma.BlogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.BlogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPayload>
+        }
+        update: {
+          args: Prisma.BlogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPayload>
+        }
+        deleteMany: {
+          args: Prisma.BlogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BlogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.BlogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BlogPayload>
+        }
+        aggregate: {
+          args: Prisma.BlogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBlog>
+        }
+        groupBy: {
+          args: Prisma.BlogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BlogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BlogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BlogCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1585,6 +1652,24 @@ export const FranchiseApplicationScalarFieldEnum = {
 export type FranchiseApplicationScalarFieldEnum = (typeof FranchiseApplicationScalarFieldEnum)[keyof typeof FranchiseApplicationScalarFieldEnum]
 
 
+export const BlogScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  excerpt: 'excerpt',
+  content: 'content',
+  image: 'image',
+  author: 'author',
+  category: 'category',
+  publishedAt: 'publishedAt',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BlogScalarFieldEnum = (typeof BlogScalarFieldEnum)[keyof typeof BlogScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1800,6 +1885,20 @@ export const FranchiseApplicationOrderByRelevanceFieldEnum = {
 } as const
 
 export type FranchiseApplicationOrderByRelevanceFieldEnum = (typeof FranchiseApplicationOrderByRelevanceFieldEnum)[keyof typeof FranchiseApplicationOrderByRelevanceFieldEnum]
+
+
+export const BlogOrderByRelevanceFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  excerpt: 'excerpt',
+  content: 'content',
+  image: 'image',
+  author: 'author',
+  category: 'category'
+} as const
+
+export type BlogOrderByRelevanceFieldEnum = (typeof BlogOrderByRelevanceFieldEnum)[keyof typeof BlogOrderByRelevanceFieldEnum]
 
 
 
@@ -2090,6 +2189,7 @@ export type GlobalOmitConfig = {
   coupon?: Prisma.CouponOmit
   mediaAsset?: Prisma.MediaAssetOmit
   franchiseApplication?: Prisma.FranchiseApplicationOmit
+  blog?: Prisma.BlogOmit
 }
 
 /* Types for Logging */

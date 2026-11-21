@@ -63,7 +63,8 @@ export const ModelName = {
   Product: 'Product',
   Coupon: 'Coupon',
   MediaAsset: 'MediaAsset',
-  FranchiseApplication: 'FranchiseApplication'
+  FranchiseApplication: 'FranchiseApplication',
+  Blog: 'Blog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -341,6 +342,24 @@ export const FranchiseApplicationScalarFieldEnum = {
 export type FranchiseApplicationScalarFieldEnum = (typeof FranchiseApplicationScalarFieldEnum)[keyof typeof FranchiseApplicationScalarFieldEnum]
 
 
+export const BlogScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  excerpt: 'excerpt',
+  content: 'content',
+  image: 'image',
+  author: 'author',
+  category: 'category',
+  publishedAt: 'publishedAt',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BlogScalarFieldEnum = (typeof BlogScalarFieldEnum)[keyof typeof BlogScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -556,4 +575,18 @@ export const FranchiseApplicationOrderByRelevanceFieldEnum = {
 } as const
 
 export type FranchiseApplicationOrderByRelevanceFieldEnum = (typeof FranchiseApplicationOrderByRelevanceFieldEnum)[keyof typeof FranchiseApplicationOrderByRelevanceFieldEnum]
+
+
+export const BlogOrderByRelevanceFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  excerpt: 'excerpt',
+  content: 'content',
+  image: 'image',
+  author: 'author',
+  category: 'category'
+} as const
+
+export type BlogOrderByRelevanceFieldEnum = (typeof BlogOrderByRelevanceFieldEnum)[keyof typeof BlogOrderByRelevanceFieldEnum]
 

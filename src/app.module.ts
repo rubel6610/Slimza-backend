@@ -15,6 +15,7 @@ import { RolesGuard } from './auth/guards/roles.guard.js';
 import { CmsModule } from './cms/cms.module.js';
 import { CheckoutModule } from './checkout/checkout.module.js';
 import { CouponsModule } from './coupons/coupons.module.js';
+import { BlogsModule } from './blogs/blogs.module.js';
 import { FranchiseModule } from './franchise/franchise.module.js';
 import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware.js';
 import { MailModule } from './mail/mail.module.js';
@@ -47,6 +48,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     CheckoutModule,
     ProductsModule,
     FranchiseModule,
+    BlogsModule,
   ],
   controllers: [AppController],
   providers: [
