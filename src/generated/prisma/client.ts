@@ -119,3 +119,9 @@ export type Blog = Prisma.BlogModel
  * `referenceKey` is unique, so the same bonus / order can never be applied twice.
  */
 export type LoyaltyTransaction = Prisma.LoyaltyTransactionModel
+/**
+ * Model ProductReview
+ * A customer's review of one product (src/reviews). One per customer per product; they can edit it.
+ * Product.rating / Product.reviewCount are recalculated from PUBLISHED, non-archived reviews.
+ */
+export type ProductReview = Prisma.ProductReviewModel

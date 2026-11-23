@@ -109,7 +109,7 @@ describe('UsersService admin account actions', () => {
       },
       refreshToken: { updateMany: vi.fn().mockResolvedValue({ count: 2 }) },
     };
-    service = new UsersService(prisma, {} as never);
+    service = new UsersService(prisma, {} as never, { sendAccountDeletedEmail: vi.fn(), sendAccountRestoredEmail: vi.fn() } as never);
   });
 
   it('suspends with a reason and signs the user out everywhere', async () => {

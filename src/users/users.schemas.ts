@@ -32,6 +32,13 @@ export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 export type CreateAddressInput = z.infer<typeof createAddressSchema>;
 export type UpdateAddressInput = z.infer<typeof updateAddressSchema>;
 
+/** Customer closes their own account (soft delete; an admin can restore it). */
+export const deleteMyAccountSchema = z.object({
+  password: z.string().min(1, 'Enter your password to confirm'),
+  reason: z.string().trim().max(500).optional().default(''),
+});
+export type DeleteMyAccountInput = z.infer<typeof deleteMyAccountSchema>;
+
 /** Admin user list: `?archived=exclude|only|include&status=ACTIVE|SUSPENDED`. */
 export const adminUsersQuerySchema = z.object({
   archived: archiveFilterSchema,

@@ -403,8 +403,9 @@ export class ProductsService implements OnModuleInit {
               price: item.price,
               originalPrice: item.originalPrice ?? null,
               discountPercent: item.discountPercent ?? 0,
-              rating: item.rating,
-              reviewCount: item.reviewCount,
+              // Ratings come from real customer reviews (src/reviews), so new shops start at 0.
+              rating: 0,
+              reviewCount: 0,
               stockQuantity: item.stockQuantity,
               stockStatus: item.stockStatus,
               publishStatus: item.publishStatus,

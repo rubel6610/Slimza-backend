@@ -411,7 +411,8 @@ export const ModelName = {
   MediaAsset: 'MediaAsset',
   FranchiseApplication: 'FranchiseApplication',
   Blog: 'Blog',
-  LoyaltyTransaction: 'LoyaltyTransaction'
+  LoyaltyTransaction: 'LoyaltyTransaction',
+  ProductReview: 'ProductReview'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -427,7 +428,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "address" | "otpCode" | "refreshToken" | "cmsSection" | "newsletterLead" | "order" | "refundRequest" | "orderItem" | "product" | "coupon" | "mediaAsset" | "franchiseApplication" | "blog" | "loyaltyTransaction"
+    modelProps: "user" | "address" | "otpCode" | "refreshToken" | "cmsSection" | "newsletterLead" | "order" | "refundRequest" | "orderItem" | "product" | "coupon" | "mediaAsset" | "franchiseApplication" | "blog" | "loyaltyTransaction" | "productReview"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1421,6 +1422,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ProductReview: {
+      payload: Prisma.$ProductReviewPayload<ExtArgs>
+      fields: Prisma.ProductReviewFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ProductReviewFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductReviewPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ProductReviewFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductReviewPayload>
+        }
+        findFirst: {
+          args: Prisma.ProductReviewFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductReviewPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ProductReviewFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductReviewPayload>
+        }
+        findMany: {
+          args: Prisma.ProductReviewFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductReviewPayload>[]
+        }
+        create: {
+          args: Prisma.ProductReviewCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductReviewPayload>
+        }
+        createMany: {
+          args: Prisma.ProductReviewCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.ProductReviewDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductReviewPayload>
+        }
+        update: {
+          args: Prisma.ProductReviewUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductReviewPayload>
+        }
+        deleteMany: {
+          args: Prisma.ProductReviewDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ProductReviewUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.ProductReviewUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductReviewPayload>
+        }
+        aggregate: {
+          args: Prisma.ProductReviewAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProductReview>
+        }
+        groupBy: {
+          args: Prisma.ProductReviewGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProductReviewGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ProductReviewCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProductReviewCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1474,6 +1541,8 @@ export const UserScalarFieldEnum = {
   isEmailVerified: 'isEmailVerified',
   emailVerifiedAt: 'emailVerifiedAt',
   deletionRequestedAt: 'deletionRequestedAt',
+  deletedAt: 'deletedAt',
+  deletionReason: 'deletionReason',
   status: 'status',
   suspendedAt: 'suspendedAt',
   suspensionReason: 'suspensionReason',
@@ -1758,6 +1827,29 @@ export const LoyaltyTransactionScalarFieldEnum = {
 export type LoyaltyTransactionScalarFieldEnum = (typeof LoyaltyTransactionScalarFieldEnum)[keyof typeof LoyaltyTransactionScalarFieldEnum]
 
 
+export const ProductReviewScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  userId: 'userId',
+  authorName: 'authorName',
+  rating: 'rating',
+  title: 'title',
+  body: 'body',
+  status: 'status',
+  verifiedPurchase: 'verifiedPurchase',
+  featured: 'featured',
+  featuredAt: 'featuredAt',
+  adminReply: 'adminReply',
+  adminReplyAt: 'adminReplyAt',
+  editedByAdmin: 'editedByAdmin',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  archivedAt: 'archivedAt'
+} as const
+
+export type ProductReviewScalarFieldEnum = (typeof ProductReviewScalarFieldEnum)[keyof typeof ProductReviewScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1799,6 +1891,7 @@ export const UserOrderByRelevanceFieldEnum = {
   phone: 'phone',
   birthday: 'birthday',
   avatarUrl: 'avatarUrl',
+  deletionReason: 'deletionReason',
   suspensionReason: 'suspensionReason'
 } as const
 
@@ -2000,6 +2093,19 @@ export const LoyaltyTransactionOrderByRelevanceFieldEnum = {
 export type LoyaltyTransactionOrderByRelevanceFieldEnum = (typeof LoyaltyTransactionOrderByRelevanceFieldEnum)[keyof typeof LoyaltyTransactionOrderByRelevanceFieldEnum]
 
 
+export const ProductReviewOrderByRelevanceFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  userId: 'userId',
+  authorName: 'authorName',
+  title: 'title',
+  body: 'body',
+  adminReply: 'adminReply'
+} as const
+
+export type ProductReviewOrderByRelevanceFieldEnum = (typeof ProductReviewOrderByRelevanceFieldEnum)[keyof typeof ProductReviewOrderByRelevanceFieldEnum]
+
+
 
 /**
  * Field references
@@ -2136,6 +2242,13 @@ export type EnumLoyaltyEntryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
  * Reference to a field of type 'LoyaltyEntryStatus'
  */
 export type EnumLoyaltyEntryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LoyaltyEntryStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ReviewStatus'
+ */
+export type EnumReviewStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReviewStatus'>
     
 
 /**
@@ -2304,6 +2417,7 @@ export type GlobalOmitConfig = {
   franchiseApplication?: Prisma.FranchiseApplicationOmit
   blog?: Prisma.BlogOmit
   loyaltyTransaction?: Prisma.LoyaltyTransactionOmit
+  productReview?: Prisma.ProductReviewOmit
 }
 
 /* Types for Logging */

@@ -65,7 +65,8 @@ export const ModelName = {
   MediaAsset: 'MediaAsset',
   FranchiseApplication: 'FranchiseApplication',
   Blog: 'Blog',
-  LoyaltyTransaction: 'LoyaltyTransaction'
+  LoyaltyTransaction: 'LoyaltyTransaction',
+  ProductReview: 'ProductReview'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -98,6 +99,8 @@ export const UserScalarFieldEnum = {
   isEmailVerified: 'isEmailVerified',
   emailVerifiedAt: 'emailVerifiedAt',
   deletionRequestedAt: 'deletionRequestedAt',
+  deletedAt: 'deletedAt',
+  deletionReason: 'deletionReason',
   status: 'status',
   suspendedAt: 'suspendedAt',
   suspensionReason: 'suspensionReason',
@@ -382,6 +385,29 @@ export const LoyaltyTransactionScalarFieldEnum = {
 export type LoyaltyTransactionScalarFieldEnum = (typeof LoyaltyTransactionScalarFieldEnum)[keyof typeof LoyaltyTransactionScalarFieldEnum]
 
 
+export const ProductReviewScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  userId: 'userId',
+  authorName: 'authorName',
+  rating: 'rating',
+  title: 'title',
+  body: 'body',
+  status: 'status',
+  verifiedPurchase: 'verifiedPurchase',
+  featured: 'featured',
+  featuredAt: 'featuredAt',
+  adminReply: 'adminReply',
+  adminReplyAt: 'adminReplyAt',
+  editedByAdmin: 'editedByAdmin',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  archivedAt: 'archivedAt'
+} as const
+
+export type ProductReviewScalarFieldEnum = (typeof ProductReviewScalarFieldEnum)[keyof typeof ProductReviewScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -423,6 +449,7 @@ export const UserOrderByRelevanceFieldEnum = {
   phone: 'phone',
   birthday: 'birthday',
   avatarUrl: 'avatarUrl',
+  deletionReason: 'deletionReason',
   suspensionReason: 'suspensionReason'
 } as const
 
@@ -622,4 +649,17 @@ export const LoyaltyTransactionOrderByRelevanceFieldEnum = {
 } as const
 
 export type LoyaltyTransactionOrderByRelevanceFieldEnum = (typeof LoyaltyTransactionOrderByRelevanceFieldEnum)[keyof typeof LoyaltyTransactionOrderByRelevanceFieldEnum]
+
+
+export const ProductReviewOrderByRelevanceFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  userId: 'userId',
+  authorName: 'authorName',
+  title: 'title',
+  body: 'body',
+  adminReply: 'adminReply'
+} as const
+
+export type ProductReviewOrderByRelevanceFieldEnum = (typeof ProductReviewOrderByRelevanceFieldEnum)[keyof typeof ProductReviewOrderByRelevanceFieldEnum]
 

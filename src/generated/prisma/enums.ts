@@ -112,3 +112,11 @@ export const LoyaltyEntryStatus = {
 } as const
 
 export type LoyaltyEntryStatus = (typeof LoyaltyEntryStatus)[keyof typeof LoyaltyEntryStatus]
+
+
+export const ReviewStatus = {
+  PUBLISHED: 'PUBLISHED',
+  HIDDEN: 'HIDDEN'
+} as const
+
+export type ReviewStatus = (typeof ReviewStatus)[keyof typeof ReviewStatus]

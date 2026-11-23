@@ -22,7 +22,7 @@ FROM node:26-alpine AS production
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=4000
+ENV PORT=5173
 
 COPY package*.json ./
 
@@ -35,6 +35,6 @@ RUN mkdir -p /app/uploads \
 
 USER node
 
-EXPOSE 4000
+EXPOSE 5173
 
 CMD ["node", "dist/main.js"]

@@ -68,6 +68,9 @@ export function serializeUser(user: User & { addresses?: Address[] }) {
     role: user.role,
     isEmailVerified: user.isEmailVerified,
     deletionRequestedAt: user.deletionRequestedAt,
+    /** The customer deleted their own account (soft delete; see UsersService.deleteMe) */
+    deletedAt: user.deletedAt,
+    deletionReason: user.deletionReason,
     /** ACTIVE | SUSPENDED — see src/users/account-access.ts */
     status: user.status,
     suspendedAt: user.suspendedAt,
@@ -104,6 +107,12 @@ export class AuthService {
     const existing = await this.prisma.user.findUnique({
       where: { email: input.email },
     });
+
+    if (existing?.deletedAt) {
+      throw new ConflictException(
+        'Your account has been deleted. If you want your account back, please contact info@slimza.com.',
+      );
+    }
 
     if (existing && existing.isEmailVerified) {
       throw new ConflictException('An account with this email already exists');

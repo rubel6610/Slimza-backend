@@ -8,7 +8,7 @@
   "type": "module",
   "main": "dist/main.js",
   "engines": {
-    "node": "22.x"
+    "node": "24.x"
   },
   "packageManager": "npm@11.17.0",
   "scripts": {
@@ -48,6 +48,7 @@
     "@prisma/client": "^7.10.1",
     "cookie-parser": "^1.4.7",
     "dotenv": "^8.2.0",
+    "ioredis": "^6.0.0",
     "mariadb": "^3.5.5",
     "node-fetch": "^3.3.2",
     "nodemailer": "^10.5.0",
@@ -75,5 +76,10 @@
     "supertest": "^7.0.0",
     "vite": "^8.0.0",
     "vitest": "^4.1.2"
+  },
+  "allowScripts": {
+    "prisma@7.10.1": true,
+    "@prisma/engines@7.10.1": true,
+    "fsevents@2.3.3": true
   }
 }

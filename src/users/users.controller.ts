@@ -28,6 +28,7 @@ import {
   adminUsersPageQuerySchema,
   adminUsersQuerySchema,
   createAddressSchema,
+  deleteMyAccountSchema,
   suspendUserSchema,
   updateAddressSchema,
   updateProfileSchema,
@@ -35,6 +36,7 @@ import {
   type AdminUsersPageQuery,
   type AdminUsersQuery,
   type CreateAddressInput,
+  type DeleteMyAccountInput,
   type SuspendUserInput,
   type UpdateAddressInput,
   type UpdateProfileInput,
@@ -120,12 +122,17 @@ export class UsersController {
     return this.usersService.requestAccountDeletion(user.sub);
   }
 
+  /**
+   * The customer deletes their own account: body `{ password, reason? }`.
+   * Soft delete (archived + `deletedAt`); an admin can restore it. Signs them out.
+   */
   @Delete('me')
   async deleteMe(
     @CurrentUser() user: AuthUserPayload,
+    @Body({ schema: deleteMyAccountSchema }) body: DeleteMyAccountInput,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.usersService.deleteMe(user.sub);
+    const result = await this.usersService.deleteMe(user.sub, body);
     const secure = this.config.get<string>('COOKIE_SECURE') === 'true';
     const sameSiteRaw = (
       this.config.get<string>('COOKIE_SAME_SITE') || 'lax'

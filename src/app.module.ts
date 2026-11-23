@@ -17,6 +17,7 @@ import { CheckoutModule } from './checkout/checkout.module.js';
 import { CouponsModule } from './coupons/coupons.module.js';
 import { BlogsModule } from './blogs/blogs.module.js';
 import { LoyaltyModule } from './loyalty/loyalty.module.js';
+import { ReviewsModule } from './reviews/reviews.module.js';
 import { FranchiseModule } from './franchise/franchise.module.js';
 import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware.js';
 import { MailModule } from './mail/mail.module.js';
@@ -24,6 +25,7 @@ import { MediaModule } from './media/media.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ProductsModule } from './products/products.module.js';
 import { UsersModule } from './users/users.module.js';
+import { RedisModule } from './redis/redis.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -51,6 +53,8 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     FranchiseModule,
     BlogsModule,
     LoyaltyModule,
+    ReviewsModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [

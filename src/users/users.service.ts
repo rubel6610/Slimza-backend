@@ -14,9 +14,12 @@ import { paginate, searchWhere, toOrderBy } from '../common/pagination/paginatio
 import type { Prisma } from '../generated/prisma/client.js';
 import { UserRole, UserStatus } from '../generated/prisma/enums.js';
 import { serializeUser } from '../auth/auth.service.js';
+import { verifyPassword } from '../auth/crypto.util.js';
+import { MailService } from '../mail/mail.service.js';
 import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
+  DeleteMyAccountInput,
   AdminUsersPageQuery,
   AdminUsersQuery,
   CreateAddressInput,
@@ -46,6 +49,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mediaService: MediaService,
+    private readonly mailService: MailService,
   ) {}
 
   async getMe(userId: string) {
@@ -284,9 +288,39 @@ export class UsersService {
     };
   }
 
-  async deleteMe(userId: string) {
-    await this.prisma.user.delete({ where: { id: userId } });
-    return { ok: true as const };
+  /**
+   * The customer deletes their own account (Account → Settings). This is a SOFT delete:
+   * the account is archived and marked `deletedAt`, so it is blocked everywhere and the
+   * customer is signed out, but orders, points and reviews are kept and an admin can
+   * restore it (Dashboard → Users → Archived → Restore). Permanent deletion stays an
+   * admin action (`remove`). Admin accounts can't be deleted this way.
+   */
+  async deleteMe(userId: string, input: DeleteMyAccountInput) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+    if (user.role === UserRole.ADMIN) {
+      throw new ForbiddenException('Admin accounts cannot be deleted from account settings.');
+    }
+    if (!(await verifyPassword(input.password, user.passwordHash))) {
+      throw new BadRequestException('Your password is incorrect');
+    }
+
+    const now = new Date();
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        deletedAt: now,
+        archivedAt: user.archivedAt ?? now,
+        deletionReason: input.reason || null,
+      },
+    });
+    await this.revokeSessions(user.id);
+    void this.mailService.sendAccountDeletedEmail({ to: user.email, name: user.firstName || user.name });
+    this.logger.warn(`User ${user.email} deleted their account${input.reason ? ` (reason: ${input.reason})` : ''}`);
+    return {
+      ok: true as const,
+      message: "Your account has been deleted. If you change your mind, contact us and we can restore it.",
+    };
   }
 
   // ===========================================================================
@@ -418,16 +452,20 @@ export class UsersService {
     return serializeUser(updated);
   }
 
-  /** Restore from the archive. A suspended user stays suspended. */
+  /**
+   * Restore from the archive. A suspended user stays suspended. Also recovers an
+   * account the customer deleted themselves: they can sign in again with their old password.
+   */
   async unarchive(id: string, actingAdminId: string) {
     const user = await this.findManageableUser(id, actingAdminId);
     if (!user.archivedAt) return this.findOne(user.id);
     const updated = await this.prisma.user.update({
       where: { id: user.id },
-      data: { archivedAt: null },
+      data: { archivedAt: null, deletedAt: null, deletionReason: null, deletionRequestedAt: null },
       include: this.withAddresses,
     });
-    this.logger.log(`Restored user ${user.email}`);
+    this.logger.log(`Restored user ${user.email}${user.deletedAt ? ' (had deleted their own account)' : ''}`);
+    void this.mailService.sendAccountRestoredEmail({ to: user.email, name: user.firstName || user.name });
     return serializeUser(updated);
   }
 

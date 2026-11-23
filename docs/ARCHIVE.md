@@ -33,6 +33,7 @@ The **backend** enforces the rule, not only the UI. A permanent delete of someth
 | CMS → Features                       | item in `features`                | same, with `key = features` |
 | CMS → Categories                     | item in `categories`              | same, with `key = categories` |
 | CMS → Trusted By partners            | item in `trusted_by.partners`     | same, with `key = trusted_by` |
+| CMS → Testimonials (customer reviews) | item in `testimonials.items`     | same, with `key = testimonials` |
 | CMS → Return policy cards            | item in `return_policy.cards`     | same, with `key = return_policy` |
 | Bundle → Discount tiers              | item in `bundle.tiers`            | same, with `key = bundle` |
 | Blogs → Categories                   | item in `blog_categories`         | same, with `key = blog_categories` |
@@ -131,6 +132,7 @@ export const CMS_ARCHIVABLE_LISTS = {
   features:      { path: null,       label: 'Feature' },
   categories:    { path: null,       label: 'Category' },
   trusted_by:    { path: 'partners', label: 'Partner' },
+  testimonials:  { path: 'items', label: 'Customer review' },
   return_policy: { path: 'cards',    label: 'Policy card' },
   bundle:        { path: 'tiers',    label: 'Discount tier' },
   blog_categories: { path: null,     label: 'Blog category' },
@@ -199,3 +201,17 @@ curl -X DELETE  -H "Authorization: Bearer $T" $API/products/<id>           # liv
 curl -X PATCH   -H "Authorization: Bearer $T" $API/products/<id>/archive   # → archivedAt set
 curl -X DELETE  -H "Authorization: Bearer $T" $API/products/<id>           # → { ok: true }
 ```
+
+## Customers deleting their own account
+
+`DELETE /users/me` with `{ password, reason? }` (Account → Settings → Delete account) is a **soft
+delete**:
+- **What it sets:** `archivedAt` and `deletedAt` (plus `deletionReason`), and every session is revoked.
+- **Sign-in and sign-up:** sign-in is blocked with "This account was deleted… contact support…".
+  Signing up again with the same email gets a 409 with the same hint.
+- **What's kept:** orders, reward points and reviews.
+- **Restoring:** admins see the account under Users → Archived, labelled "Deleted by customer" with
+  the reason. **Restore** (`PATCH /users/:id/unarchive`) clears `archivedAt`, `deletedAt` and
+  `deletionReason`, and the customer can sign in with their old password.
+- **Permanent removal:** archived accounts are still deleted only by an admin (`DELETE /users/:id`).
+- **Admin accounts** can't delete themselves this way.

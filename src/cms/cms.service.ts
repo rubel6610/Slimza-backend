@@ -23,6 +23,16 @@ import {
   LOYALTY_CMS_KEY,
   parseLoyaltyConfigForSave,
 } from '../loyalty/loyalty-config.js';
+import {
+  CURRENCY_CMS_KEY,
+  DEFAULT_CURRENCY_CONFIG,
+  parseCurrencyConfigForSave,
+} from '../currency/currency-config.js';
+import {
+  DEFAULT_TESTIMONIALS_CONFIG,
+  parseTestimonialsForSave,
+  TESTIMONIALS_CMS_KEY,
+} from '../testimonials/testimonials-config.js';
 import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
@@ -145,6 +155,10 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
   bundle: DEFAULT_BUNDLE_CONFIG,
   /** Slimza Rewards settings (Dashboard → Loyalty). See src/loyalty/loyalty-config.ts. */
   loyalty: DEFAULT_LOYALTY_CONFIG,
+  /** Display currencies + rates for the header switcher (Dashboard → Currencies). */
+  currencies: DEFAULT_CURRENCY_CONFIG,
+  /** Homepage "What Our Customers Say" (Dashboard → CMS → Testimonials). */
+  testimonials: DEFAULT_TESTIMONIALS_CONFIG,
   /** Blog categories (Dashboard → Blogs → Categories). Posts reference `slug`. */
   blog_categories: [
     { id: 'blogcat-1', slug: 'wellness-tips', name: 'Wellness Tips', archivedAt: null },
@@ -507,6 +521,16 @@ export class CmsService implements OnModuleInit {
     if (key === LOYALTY_CMS_KEY) {
       // Loyalty settings drive checkout discounts, so they are validated strictly too.
       const parsed = parseLoyaltyConfigForSave(data);
+      if (!parsed.ok) throw new BadRequestException(parsed.message);
+      data = parsed.data;
+    }
+    if (key === CURRENCY_CMS_KEY) {
+      const parsed = parseCurrencyConfigForSave(data);
+      if (!parsed.ok) throw new BadRequestException(parsed.message);
+      data = parsed.data;
+    }
+    if (key === TESTIMONIALS_CMS_KEY) {
+      const parsed = parseTestimonialsForSave(data);
       if (!parsed.ok) throw new BadRequestException(parsed.message);
       data = parsed.data;
     }

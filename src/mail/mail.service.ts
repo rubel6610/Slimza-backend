@@ -549,4 +549,46 @@ export class MailService {
       }
     }
   }
+
+  /** Sends one email; logs it in dev when SMTP isn't configured. Never throws. */
+  private async sendSimple(message: { to: string; subject: string; text: string; html: string }, tag: string) {
+    if (!this.transporter) {
+      this.logger.log(`[DEV ${tag} EMAIL] To=${message.to} Subject="${message.subject}"`);
+      return;
+    }
+    try {
+      await this.transporter.sendMail({ from: this.fromAddress, ...message });
+    } catch (err) {
+      this.logger.warn(`Failed to send ${tag.toLowerCase()} email to ${message.to}: ${String(err)}`);
+    }
+  }
+
+  /** The customer deleted their account (soft delete): confirm it and say how to get it back. */
+  async sendAccountDeletedEmail(params: { to: string; name: string }): Promise<void> {
+    const name = params.name || 'there';
+    await this.sendSimple(
+      {
+        to: params.to,
+        subject: 'Your Slimza account has been deleted',
+        text: `Hi ${name},\n\nYour Slimza account has been deleted and you've been signed out on every device.\n\nChanged your mind? Just reply to this email or contact info@slimza.com and we can restore your account.\n\nIf you didn't do this, contact us straight away.\n\nThe Slimza team`,
+        html: `<p>Hi ${escapeHtml(name)},</p><p>Your Slimza account has been deleted and you've been signed out on every device.</p><p><strong>Changed your mind?</strong> Just reply to this email or contact <a href="mailto:info@slimza.com">info@slimza.com</a> and we can restore your account.</p><p>If you didn't do this, contact us straight away.</p><p>The Slimza team</p>`,
+      },
+      'ACCOUNT DELETED',
+    );
+  }
+
+  /** An admin restored a deleted or archived account. */
+  async sendAccountRestoredEmail(params: { to: string; name: string }): Promise<void> {
+    const name = params.name || 'there';
+    const signIn = `${this.storeUrl}/signin`;
+    await this.sendSimple(
+      {
+        to: params.to,
+        subject: 'Your Slimza account has been restored',
+        text: `Hi ${name},\n\nGood news: your Slimza account has been restored. You can sign in again with your usual email and password: ${signIn}\n\nThe Slimza team`,
+        html: `<p>Hi ${escapeHtml(name)},</p><p>Good news: your Slimza account has been restored. You can sign in again with your usual email and password.</p><p><a href="${escapeHtml(signIn)}">Sign in to Slimza</a></p><p>The Slimza team</p>`,
+      },
+      'ACCOUNT RESTORED',
+    );
+  }
 }

@@ -47,6 +47,7 @@ export const CMS_ARCHIVABLE_LISTS: Record<string, CmsArchivableList> = {
   return_policy: { path: 'cards', label: 'Policy card' },
   bundle: { path: 'tiers', label: 'Discount tier' },
   blog_categories: { path: null, label: 'Blog category' },
+  testimonials: { path: 'items', label: 'Customer review' },
 };
 
 export type CmsItem = Record<string, unknown> & { id?: unknown; archivedAt?: unknown };

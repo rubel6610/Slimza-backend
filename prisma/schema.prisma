@@ -39,6 +39,11 @@ model User {
   isEmailVerified     Boolean              @default(false)
   emailVerifiedAt     DateTime?
   deletionRequestedAt DateTime?
+  /// The customer deleted their own account (Account → Settings). Soft delete: archivedAt is set
+  /// too, so the account is blocked and listed under Archived; an admin can restore it.
+  deletedAt           DateTime?
+  /// Optional reason the customer gave when deleting
+  deletionReason      String?              @db.Text
   /// SUSPENDED = cannot sign in, buy or pay. Set by an admin; reversible.
   status              UserStatus           @default(ACTIVE)
   suspendedAt         DateTime?
@@ -56,6 +61,7 @@ model User {
   refreshTokens       RefreshToken[]
   orders              Order[]
   loyaltyTransactions LoyaltyTransaction[]
+  productReviews      ProductReview[]
 
   @@index([status])
   @@index([archivedAt])
@@ -265,8 +271,10 @@ model Product {
   featured        Boolean   @default(false)
   featuredRank    Int       @default(99)
   offered         Boolean   @default(false)
-  rating          Float     @default(5.0)
-  reviewCount     Int       @default(12)
+  /// Average of PUBLISHED reviews (0 = none yet). Kept in sync by ReviewsService.
+  rating          Float     @default(0)
+  /// Number of PUBLISHED reviews. Kept in sync by ReviewsService.
+  reviewCount     Int       @default(0)
   image           String    @default("/products/tea/teatox-green.png")
   gallery         Json?
   sizes           Json?
@@ -277,6 +285,7 @@ model Product {
   updatedAt       DateTime  @updatedAt
   /// Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
   archivedAt      DateTime?
+  productReviews  ProductReview[]
 
   @@index([slug])
   @@index([category])
@@ -436,4 +445,47 @@ model LoyaltyTransaction {
   @@index([userId, createdAt])
   @@index([orderId])
   @@index([type])
+}
+
+/// Visible = shown on the product page; Hidden = taken down by an admin (the customer still sees it as hidden).
+enum ReviewStatus {
+  PUBLISHED
+  HIDDEN
+}
+
+/// A customer's review of one product (src/reviews). One per customer per product; they can edit it.
+/// Product.rating / Product.reviewCount are recalculated from PUBLISHED, non-archived reviews.
+model ProductReview {
+  id               String       @id @default(uuid())
+  productId        String
+  /// null once the customer's account is deleted (the review stays, under authorName)
+  userId           String?
+  /// Shown publicly, e.g. "Sarah M."
+  authorName       String
+  rating           Int
+  title            String       @default("")
+  body             String       @db.Text
+  status           ReviewStatus @default(PUBLISHED)
+  /// The customer had a paid order containing this product when they reviewed it
+  verifiedPurchase Boolean      @default(false)
+  /// Shown in the homepage "What Our Customers Say" section
+  featured         Boolean      @default(false)
+  featuredAt       DateTime?
+  /// Public reply from Slimza, shown under the review
+  adminReply       String?      @db.Text
+  adminReplyAt     DateTime?
+  /// The admin changed the customer's wording (shown as "Edited by Slimza")
+  editedByAdmin    Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  /// Archive lifecycle (src/common/archive/archive.ts)
+  archivedAt       DateTime?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([productId, userId])
+  @@index([productId, status, archivedAt])
+  @@index([featured, status])
+  @@index([createdAt])
 }

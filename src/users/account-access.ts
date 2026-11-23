@@ -38,6 +38,8 @@ export interface AccountAccessFields {
   status: UserStatus;
   archivedAt: Date | null;
   suspensionReason?: string | null;
+  /** Set when the customer deleted their own account (archivedAt is set too). */
+  deletedAt?: Date | null;
 }
 
 /** The minimal `select` needed for `getAccountBlock`. */
@@ -45,6 +47,7 @@ export const ACCOUNT_ACCESS_SELECT = {
   status: true,
   archivedAt: true,
   suspensionReason: true,
+  deletedAt: true,
 } as const;
 
 export interface AccountBlock {
@@ -56,6 +59,12 @@ const SUPPORT = 'Please contact support at info@slimza.com.';
 
 /** Returns why this account is blocked, or `null` if it may be used. */
 export function getAccountBlock(user: AccountAccessFields): AccountBlock | null {
+  if (user.archivedAt && user.deletedAt) {
+    return {
+      code: ACCOUNT_ARCHIVED,
+      message: 'Your account has been deleted. If you want your account back, please contact info@slimza.com.',
+    };
+  }
   if (user.archivedAt) {
     return {
       code: ACCOUNT_ARCHIVED,
