@@ -50,7 +50,7 @@ function escapeHtml(value: string): string {
 
 function formatHumanOrderStatus(status: string): string {
   const upper = status.toUpperCase();
-  if (upper === 'PENDING') return 'Pending';
+  if (upper === 'PLACED') return 'Placed';
   if (upper === 'PROCESSING') return 'Processing';
   if (upper === 'SHIPPED') return 'Shipped';
   if (upper === 'DELIVERED') return 'Delivered';

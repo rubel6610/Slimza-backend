@@ -589,7 +589,8 @@ export class CheckoutService {
     }
 
     let paymentStatus: PaymentStatus = PaymentStatus.PENDING;
-    let orderStatus: OrderStatus = OrderStatus.PROCESSING;
+    // Every new order starts as Placed; admins move it to Processing → Shipped → Delivered.
+    const orderStatus: OrderStatus = OrderStatus.PLACED;
     let stripeChargeId: string | null = null;
 
     if (input.paymentIntentId && this.stripe) {
@@ -599,13 +600,11 @@ export class CheckoutService {
         );
         if (intent.status === 'succeeded') {
           paymentStatus = PaymentStatus.PAID;
-          orderStatus = OrderStatus.PROCESSING;
           if (typeof intent.latest_charge === 'string') {
             stripeChargeId = intent.latest_charge;
           }
         } else if (intent.status === 'processing') {
           paymentStatus = PaymentStatus.PENDING;
-          orderStatus = OrderStatus.PENDING;
         } else {
           paymentStatus = PaymentStatus.PENDING;
         }
@@ -1255,10 +1254,8 @@ export class CheckoutService {
         this.logger.log(`PaymentIntent ${intent.id} succeeded via webhook.`);
         await this.prisma.order.updateMany({
           where: { paymentIntentId: intent.id },
-          data: {
-            paymentStatus: PaymentStatus.PAID,
-            status: OrderStatus.PROCESSING,
-          },
+          // Payment only — the order status stays where the admin put it (new orders are Placed).
+          data: { paymentStatus: PaymentStatus.PAID },
         });
       } else if (event.type === 'payment_intent.payment_failed') {
         const intent = event.data.object as Stripe.PaymentIntent;

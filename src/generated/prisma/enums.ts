@@ -34,7 +34,7 @@ export type OtpPurpose = (typeof OtpPurpose)[keyof typeof OtpPurpose]
 
 
 export const OrderStatus = {
-  PENDING: 'PENDING',
+  PLACED: 'PLACED',
   PROCESSING: 'PROCESSING',
   SHIPPED: 'SHIPPED',
   DELIVERED: 'DELIVERED',

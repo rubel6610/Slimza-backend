@@ -21,7 +21,7 @@ import { ReviewsService } from './reviews.service.js';
 /**
  * Product reviews (docs/REVIEWS.md).
  *   Public:   GET /reviews/featured · GET /reviews/product/:idOrSlug
- *   Customer: GET|PUT|DELETE /reviews/product/:idOrSlug/mine
+ *   Customer: GET /reviews/mine · GET|PUT|DELETE /reviews/product/:idOrSlug/mine
  *   Admin:    GET /reviews/admin(/stats) · PATCH /reviews/admin/:id
  *             PATCH /reviews/admin/:id/archive|unarchive · DELETE /reviews/admin/:id (archived only)
  */
@@ -72,6 +72,14 @@ export class ReviewsController {
   @Delete('admin/:id')
   remove(@Param('id', { schema: reviewIdParamSchema }) id: string) {
     return this.reviews.remove(id);
+  }
+
+  // ---- Customer: Account → My reviews ----
+
+  @Roles(UserRole.CUSTOMER)
+  @Get('mine')
+  myReviewList(@CurrentUser() user: AuthUserPayload) {
+    return this.reviews.myReviewList(user.sub);
   }
 
   // ---- Product page ----

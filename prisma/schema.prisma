@@ -141,8 +141,10 @@ model NewsletterLead {
   @@index([archivedAt])
 }
 
+/// Placed (automatic, every new order) → Processing → Shipped → Delivered; or Cancelled.
+/// Admins move orders along in Dashboard → Orders. Delivered (and paid) lets the customer review the products.
 enum OrderStatus {
-  PENDING
+  PLACED
   PROCESSING
   SHIPPED
   DELIVERED
@@ -185,7 +187,7 @@ model Order {
   promoCode       String?
   total           Float
   currency        String        @default("gbp")
-  status          OrderStatus   @default(PROCESSING)
+  status          OrderStatus   @default(PLACED)
   paymentStatus   PaymentStatus @default(PENDING)
   paymentMode     String        @default("stripe")
   paymentIntentId String?       @unique

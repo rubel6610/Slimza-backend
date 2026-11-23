@@ -42,7 +42,7 @@ export const adminReviewsQuerySchema = listQuerySchema({ sortable: ['createdAt',
 });
 export type AdminReviewsQuery = z.infer<typeof adminReviewsQuerySchema>;
 
-/** Admin changes. Any wording change marks the review "Edited by Slimza". */
+/** Admin changes (never labelled as edited on the storefront). */
 export const adminUpdateReviewSchema = z
   .object({
     status: z.enum(['PUBLISHED', 'HIDDEN']),

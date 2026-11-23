@@ -4,7 +4,7 @@ import { paginate, searchWhere, toOrderBy } from '../common/pagination/paginatio
 import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PUBLIC_PRODUCT_WHERE } from '../products/product-search.js';
-import { publicName, summarise, type RatingSummary } from './review-rules.js';
+import { productIdsInOrderLine, publicName, REVIEWABLE_ORDER, summarise, type RatingSummary } from './review-rules.js';
 import type {
   AdminReviewsQuery,
   AdminUpdateReviewInput,
@@ -22,7 +22,6 @@ const PUBLIC_SELECT = {
   verifiedPurchase: true,
   adminReply: true,
   adminReplyAt: true,
-  editedByAdmin: true,
   createdAt: true,
   user: { select: { avatarUrl: true } },
 } satisfies Prisma.ProductReviewSelect;
@@ -43,7 +42,8 @@ const SORTS: Record<ProductReviewsQuery['sort'], Prisma.ProductReviewOrderByWith
 
 /**
  * Product reviews.
- *  - Customers: one review per product (editing replaces it). Live straight away.
+ *  - Customers: one review per product, only for products from a paid, delivered order
+ *    (editing replaces it). Live straight away. Account → My reviews lists what they can review.
  *  - Admins: hide/show, edit, reply, feature on the homepage, archive → delete.
  * Product.rating / reviewCount are recalculated after every change (`syncProductRating`).
  */
@@ -85,8 +85,40 @@ export class ReviewsService {
   async mine(userId: string, ref: string) {
     const product = await this.findPublicProduct(ref);
     const review = await this.prisma.productReview.findUnique({ where: { productId_userId: { productId: product.id, userId } } });
-    const canReviewAsVerified = review ? review.verifiedPurchase : await this.hasBought(userId, product.id);
-    return { review, verifiedPurchase: canReviewAsVerified };
+    const bought = review ? review.verifiedPurchase : await this.hasBought(userId, product.id);
+    return {
+      review,
+      verifiedPurchase: bought,
+      /** New reviews need a delivered purchase; an existing review can still be edited. */
+      canReview: review ? !review.archivedAt : bought,
+    };
+  }
+
+  /**
+   * Account → My reviews: every product from the customer's delivered orders (newest first),
+   * with their review if they wrote one, plus any other reviews they have written.
+   */
+  async myReviewList(userId: string) {
+    const [purchases, reviews] = await Promise.all([
+      this.deliveredPurchases(userId),
+      this.prisma.productReview.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } }),
+    ]);
+    const reviewByProduct = new Map(reviews.map((r) => [r.productId, r]));
+    const ids = [...new Set([...purchases.keys(), ...reviewByProduct.keys()])];
+    const products = await this.prisma.product.findMany({
+      where: { ...PUBLIC_PRODUCT_WHERE, id: { in: ids } },
+      select: { id: true, slug: true, name: true, image: true },
+    });
+
+    const items = products.map((product) => {
+      const purchase = purchases.get(product.id) ?? null;
+      const review = reviewByProduct.get(product.id) ?? null;
+      return { product, purchase, review, canReview: review ? !review.archivedAt : Boolean(purchase) };
+    });
+    // Waiting for a review first, then most recently delivered.
+    const time = (i: (typeof items)[number]) => new Date(i.purchase?.deliveredAt ?? i.review?.createdAt ?? 0).getTime();
+    items.sort((a, b) => Number(Boolean(a.review)) - Number(Boolean(b.review)) || time(b) - time(a));
+    return { items, toReview: items.filter((i) => !i.review && i.canReview).length };
   }
 
   /** Create or edit the customer's own review. */
@@ -101,6 +133,9 @@ export class ReviewsService {
       // The customer's own words replace any admin edit; a hidden review stays hidden.
       review = await this.prisma.productReview.update({ where: { id: existing.id }, data: { ...content, editedByAdmin: false } });
     } else {
+      if (!(await this.hasBought(userId, product.id))) {
+        throw new ForbiddenException('You can review a product once an order with it has been delivered to you.');
+      }
       const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { firstName: true, lastName: true, name: true } });
       if (!user) throw new NotFoundException('Account not found');
       review = await this.prisma.productReview
@@ -110,7 +145,7 @@ export class ReviewsService {
             productId: product.id,
             userId,
             authorName: publicName(user),
-            verifiedPurchase: await this.hasBought(userId, product.id),
+            verifiedPurchase: true,
           },
         })
         .catch((err: { code?: string }) => {
@@ -250,13 +285,33 @@ export class ReviewsService {
     await this.prisma.product.update({ where: { id: productId }, data: { rating: average, reviewCount: count } });
   }
 
-  /** A paid (not refunded) order with this product in it. */
+  /** True when a paid, delivered order of this customer contains the product (on its own or in a bundle). */
   private async hasBought(userId: string, productId: string) {
-    const order = await this.prisma.order.findFirst({
-      where: { userId, paymentStatus: 'PAID', status: { not: 'CANCELLED' }, items: { some: { productId } } },
-      select: { id: true },
+    return (await this.deliveredPurchases(userId)).has(productId);
+  }
+
+  /**
+   * productId → the latest paid, delivered order it was in.
+   * Same ownership rule as "My orders": linked to the account, or placed with the account's email
+   * (guest checkouts, and orders whose account link was lost).
+   */
+  private async deliveredPurchases(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    const email = user?.email?.trim().toLowerCase();
+    const orders = await this.prisma.order.findMany({
+      where: { ...REVIEWABLE_ORDER, OR: [{ userId }, ...(email ? [{ customerEmail: email }] : [])] },
+      orderBy: { updatedAt: 'desc' },
+      select: { orderNumber: true, updatedAt: true, items: { select: { productId: true } } },
     });
-    return Boolean(order);
+    const bought = new Map<string, { orderNumber: string; deliveredAt: Date }>();
+    for (const order of orders) {
+      for (const item of order.items) {
+        for (const id of productIdsInOrderLine(item.productId)) {
+          if (!bought.has(id)) bought.set(id, { orderNumber: order.orderNumber, deliveredAt: order.updatedAt });
+        }
+      }
+    }
+    return bought;
   }
 
   private async findPublicProduct(ref: string) {

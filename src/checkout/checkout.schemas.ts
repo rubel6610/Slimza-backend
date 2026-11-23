@@ -62,7 +62,7 @@ export const confirmOrderSchema = z.object({
 export type ConfirmOrderInput = z.infer<typeof confirmOrderSchema>;
 
 export const updateOrderStatusSchema = z.object({
-  status: z.enum(['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']),
+  status: z.enum(['PLACED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']),
 });
 export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
 

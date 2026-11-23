@@ -28,3 +28,18 @@ export function summarise(rows: Array<{ rating: number; count: number }>): Ratin
   }
   return { average: count ? Math.round((total / count) * 10) / 10 : 0, count, breakdown };
 }
+
+/** Orders that let a customer review what was in them: paid for and delivered. */
+export const REVIEWABLE_ORDER = { paymentStatus: 'PAID', status: 'DELIVERED', archivedAt: null } as const;
+
+/**
+ * Product ids inside one order line. A normal line holds one product; a custom bundle line
+ * is stored as `bundle-<id>+<id>+…`, and every product in it counts as bought.
+ */
+export function productIdsInOrderLine(productId: string): string[] {
+  if (!productId.startsWith('bundle-')) return [productId];
+  return productId
+    .slice('bundle-'.length)
+    .split('+')
+    .filter(Boolean);
+}
