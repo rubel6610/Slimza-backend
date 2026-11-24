@@ -31,6 +31,7 @@ export interface OrderEmailPayload {
     line1?: string;
     line2?: string;
     city?: string;
+    district?: string;
     postcode?: string;
     country?: string;
     phone?: string;
@@ -255,7 +256,7 @@ export class MailService {
       addr.name && addr.name !== order.customerName ? addr.name : null,
       addr.line1,
       addr.line2,
-      [addr.city, addr.postcode].filter(Boolean).join(', '),
+      [addr.city, addr.district, addr.postcode].filter(Boolean).join(', '),
       addr.country,
       addr.phone || order.customerPhone
         ? `Phone: ${addr.phone || order.customerPhone}`
@@ -393,7 +394,7 @@ export class MailService {
     const addressText = [
       addr.line1,
       addr.line2,
-      [addr.city, addr.postcode].filter(Boolean).join(', '),
+      [addr.city, addr.district, addr.postcode].filter(Boolean).join(', '),
       addr.country,
     ]
       .filter(Boolean)

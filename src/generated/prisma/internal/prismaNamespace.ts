@@ -1564,6 +1564,7 @@ export const AddressScalarFieldEnum = {
   line1: 'line1',
   line2: 'line2',
   city: 'city',
+  district: 'district',
   postcode: 'postcode',
   country: 'country',
   phone: 'phone',
@@ -1906,6 +1907,7 @@ export const AddressOrderByRelevanceFieldEnum = {
   line1: 'line1',
   line2: 'line2',
   city: 'city',
+  district: 'district',
   postcode: 'postcode',
   country: 'country',
   phone: 'phone'

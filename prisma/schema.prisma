@@ -75,6 +75,8 @@ model Address {
   line1     String
   line2     String?
   city      String
+  /// District / county (optional)
+  district  String   @default("")
   postcode  String
   country   String
   phone     String   @default("")

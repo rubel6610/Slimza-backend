@@ -7,6 +7,8 @@ export const shippingAddressSchema = z.object({
   line1: z.string().trim().min(3, 'Please enter your street address'),
   line2: z.string().trim().optional().default(''),
   city: z.string().trim().min(2, 'Please enter your town or city'),
+  /** District / county (optional) */
+  district: z.string().trim().max(100).optional().default(''),
   postcode: z.string().trim().min(3, 'Please enter your postcode'),
   country: z.string().trim().min(2, 'Please select a country'),
   deliveryNotes: z.string().trim().optional().default(''),

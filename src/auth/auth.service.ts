@@ -84,6 +84,7 @@ export function serializeUser(user: User & { addresses?: Address[] }) {
       line1: a.line1,
       line2: a.line2 ?? '',
       city: a.city,
+      district: a.district,
       postcode: a.postcode,
       country: a.country,
       phone: a.phone,

@@ -20,6 +20,7 @@ export const createAddressSchema = z.object({
   line1: z.string().trim().min(1, 'Address line 1 is required').max(200),
   line2: z.string().trim().max(200).optional(),
   city: z.string().trim().min(1, 'City is required').max(100),
+  district: z.string().trim().max(100).optional(),
   postcode: z.string().trim().min(1, 'Postcode is required').max(30),
   country: z.string().trim().min(1, 'Country is required').max(100),
   phone: z.string().trim().max(40).optional().default(''),
