@@ -28,6 +28,8 @@ import { ACCOUNT_ACCESS_SELECT, assertAccountUsable } from '../users/account-acc
 import { LoyaltyService } from '../loyalty/loyalty.service.js';
 import { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { cardBrandName, planWalletUse } from '../wallet/wallet-rules.js';
+import { WalletService } from '../wallet/wallet.service.js';
 import type {
   CartBundleInput,
   CartLineInput,
@@ -63,7 +65,13 @@ export interface CalculatedPricing {
   pointsEligibleSpend: number;
   shipping: number;
   shippingMethod: { id: string; name: string; fee: number; eta: string };
+  /** Order value after every discount (before store credit). Saved as Order.total. */
   total: number;
+  /** Store credit used (signed-in customers who chose to use it). */
+  walletUsed: number;
+  /** What the card is charged: total − walletUsed. */
+  amountDue: number;
+  /** amountDue in pence (Stripe). */
   totalInPence: number;
   promoCode: string | null;
   lineItems: Array<{
@@ -92,6 +100,7 @@ export class CheckoutService {
     private readonly configService: ConfigService,
     @Optional() private readonly mailService?: MailService,
     @Optional() private readonly loyaltyService?: LoyaltyService,
+    @Optional() private readonly walletService?: WalletService,
   ) {
     const secretKey =
       this.configService.get<string>('STRIPE_SECRET_KEY') ??
@@ -128,8 +137,10 @@ export class CheckoutService {
       shippingMethodId?: string;
       /** Loyalty points the signed-in customer wants to use. */
       pointsToRedeem?: number;
-      /** Required to use points. */
+      /** Required to use points / store credit. */
       userId?: string | null;
+      /** Pay what store credit covers (signed-in customers). */
+      useWallet?: boolean;
     },
     options?: { strictPromo?: boolean; strictPoints?: boolean },
   ): Promise<CalculatedPricing> {
@@ -265,7 +276,12 @@ export class CheckoutService {
       0,
       round2(subtotal - discount - bundleReward - points.discount + shipping),
     );
-    const totalInPence = Math.round(total * 100);
+    // ---- Store credit (wallet): money, so it can pay for anything, delivery included ----
+    const walletBalance =
+      input.useWallet && input.userId && this.walletService ? await this.walletService.balance(input.userId) : 0;
+    const walletUsed = planWalletUse(walletBalance, total, Boolean(input.useWallet && input.userId));
+    const amountDue = Math.max(0, round2(total - walletUsed));
+    const totalInPence = Math.round(amountDue * 100);
 
     return {
       subtotal,
@@ -279,6 +295,8 @@ export class CheckoutService {
       shipping,
       shippingMethod: selectedShipping,
       total,
+      walletUsed,
+      amountDue,
       totalInPence,
       promoCode: appliedPromoCode,
       lineItems,
@@ -469,11 +487,14 @@ export class CheckoutService {
     userId?: string,
     userRole?: UserRole,
   ): Promise<{
-    mode: 'stripe' | 'demo';
+    /** wallet = store credit covers everything: no card payment, confirm with paymentMode "wallet". */
+    mode: 'stripe' | 'demo' | 'wallet';
     clientSecret: string | null;
     paymentIntentId: string | null;
     pricing: {
       total: number;
+      walletUsed: number;
+      amountDue: number;
       shipping: number;
       discount: number;
       pointsRedeemed: number;
@@ -491,29 +512,46 @@ export class CheckoutService {
         shippingMethodId: input.shippingMethodId,
         pointsToRedeem: input.pointsToRedeem,
         userId,
+        useWallet: input.useWallet,
       },
       { strictPromo: true, strictPoints: true },
     );
 
-    if (pricing.total <= 0) {
+    if (pricing.lineItems.length === 0 || pricing.total <= 0) {
       throw new BadRequestException('Shopping basket is empty or has a total of zero.');
+    }
+
+    const pricingOut = {
+      total: pricing.total,
+      walletUsed: pricing.walletUsed,
+      amountDue: pricing.amountDue,
+      shipping: pricing.shipping,
+      discount: pricing.discount,
+      pointsRedeemed: pricing.pointsRedeemed,
+      pointsDiscount: pricing.pointsDiscount,
+      shippingMethod: pricing.shippingMethod,
+    };
+
+    // Store credit pays for everything: nothing to charge.
+    if (pricing.amountDue <= 0 && pricing.walletUsed > 0) {
+      return { mode: 'wallet', clientSecret: null, paymentIntentId: null, pricing: pricingOut };
     }
 
     if (!this.stripe) {
       this.logger.warn('Stripe secret key is not set. Falling back to demo mode.');
-      return {
-        mode: 'demo',
-        clientSecret: null,
-        paymentIntentId: null,
-        pricing: {
-          total: pricing.total,
-          shipping: pricing.shipping,
-          discount: pricing.discount,
-          pointsRedeemed: pricing.pointsRedeemed,
-          pointsDiscount: pricing.pointsDiscount,
-          shippingMethod: pricing.shippingMethod,
-        },
-      };
+      return { mode: 'demo', clientSecret: null, paymentIntentId: null, pricing: pricingOut };
+    }
+
+    // Saved cards (Account → Wallet): pay with one, or save the new card for next time.
+    let customer: string | undefined;
+    let paymentMethod: string | undefined;
+    if (userId && this.walletService?.cardsEnabled) {
+      if (input.savedCardId) {
+        customer = await this.walletService.assertCardBelongs(userId, input.savedCardId);
+        paymentMethod = input.savedCardId;
+      } else if (input.saveCard) {
+        customer = await this.walletService.ensureCustomer(userId);
+      }
     }
 
     try {
@@ -523,6 +561,9 @@ export class CheckoutService {
         automatic_payment_methods: {
           enabled: true,
         },
+        ...(customer && { customer }),
+        ...(paymentMethod && { payment_method: paymentMethod }),
+        ...(customer && !paymentMethod && input.saveCard && { setup_future_usage: 'off_session' as const }),
         receipt_email: input.shippingAddress.email,
         metadata: {
           customerName: input.shippingAddress.name,
@@ -532,6 +573,7 @@ export class CheckoutService {
           promoCode: pricing.promoCode ?? '',
           userId: userId ?? '',
           pointsRedeemed: String(pricing.pointsRedeemed),
+          walletUsed: String(pricing.walletUsed),
         },
       });
 
@@ -539,14 +581,7 @@ export class CheckoutService {
         mode: 'stripe',
         clientSecret: intent.client_secret,
         paymentIntentId: intent.id,
-        pricing: {
-          total: pricing.total,
-          shipping: pricing.shipping,
-          discount: pricing.discount,
-          pointsRedeemed: pricing.pointsRedeemed,
-          pointsDiscount: pricing.pointsDiscount,
-          shippingMethod: pricing.shippingMethod,
-        },
+        pricing: pricingOut,
       };
     } catch (err: unknown) {
       const message =
@@ -573,9 +608,18 @@ export class CheckoutService {
         shippingMethodId: input.shippingMethodId,
         pointsToRedeem: input.pointsToRedeem,
         userId,
+        useWallet: input.useWallet,
       },
-      { strictPromo: input.paymentMode === 'demo', strictPoints: input.paymentMode === 'demo' },
+      { strictPromo: input.paymentMode !== 'stripe', strictPoints: input.paymentMode !== 'stripe' },
     );
+
+    // Paid fully with store credit: there must be credit, and it must cover the whole order.
+    if (input.paymentMode === 'wallet') {
+      if (!userId) throw new BadRequestException('Sign in to pay with store credit.');
+      if (pricing.walletUsed <= 0 || pricing.amountDue > 0) {
+        throw new BadRequestException('Your store credit does not cover this order. Please pay the rest by card.');
+      }
+    }
 
     // Check if an order already exists for this paymentIntentId
     if (input.paymentIntentId) {
@@ -592,12 +636,18 @@ export class CheckoutService {
     // Every new order starts as Placed; admins move it to Processing → Shipped → Delivered.
     const orderStatus: OrderStatus = OrderStatus.PLACED;
     let stripeChargeId: string | null = null;
+    let cardLabel: string | null = null;
 
     if (input.paymentIntentId && this.stripe) {
       try {
-        const intent = await this.stripe.paymentIntents.retrieve(
-          input.paymentIntentId,
-        );
+        const intent = await this.stripe.paymentIntents.retrieve(input.paymentIntentId, {
+          expand: ['payment_method'],
+        });
+        // "Visa •••• 4242" for the customer's wallet / receipts.
+        const pm = intent.payment_method;
+        if (pm && typeof pm !== 'string' && pm.card) {
+          cardLabel = `${cardBrandName(pm.card.brand)} •••• ${pm.card.last4}`;
+        }
         if (intent.status === 'succeeded') {
           paymentStatus = PaymentStatus.PAID;
           if (typeof intent.latest_charge === 'string') {
@@ -664,10 +714,12 @@ export class CheckoutService {
         pointsEarned,
         promoCode: pricing.promoCode,
         total: pricing.total,
+        walletUsed: pricing.walletUsed,
         currency: 'gbp',
         status: orderStatus,
         paymentStatus,
         paymentMode: input.paymentMode ?? 'stripe',
+        paymentLabel: this.paymentLabelFor(input.paymentMode ?? 'stripe', pricing.walletUsed, cardLabel ?? input.paymentLabel),
         paymentIntentId: input.paymentIntentId ?? null,
         stripeChargeId,
         items: {
@@ -689,6 +741,30 @@ export class CheckoutService {
         items: true,
       },
     });
+
+    // Store credit: spend it now. Fully-credit orders must get all of it (else the order is undone);
+    // card orders were already charged for the rest, so they take what is there.
+    if (pricing.walletUsed > 0 && userId && this.walletService) {
+      try {
+        const taken = await this.walletService.payForOrder({
+          userId,
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          amount: pricing.walletUsed,
+          strict: input.paymentMode === 'wallet',
+        });
+        if (taken !== pricing.walletUsed) {
+          await this.prisma.order.update({ where: { id: order.id }, data: { walletUsed: taken } });
+          order.walletUsed = taken;
+        }
+      } catch (err) {
+        if (input.paymentMode === 'wallet') {
+          await this.prisma.order.delete({ where: { id: order.id } }).catch(() => undefined);
+          throw err;
+        }
+        this.logger.error(`Store credit not taken for #${order.orderNumber}: ${err instanceof Error ? err.message : err}`);
+      }
+    }
 
     if (pricing.promoCode) {
       await this.prisma.coupon.updateMany({
@@ -960,6 +1036,7 @@ export class CheckoutService {
 
     let stripeRefundId: string | null = null;
 
+    // Refunds always go back to the card through Stripe (only the card part was charged there).
     if (order.paymentMode === 'stripe' && order.paymentIntentId) {
       if (!this.stripe) {
         throw new BadRequestException(
@@ -1014,6 +1091,9 @@ export class CheckoutService {
     ]);
 
     await this.syncLoyalty(order.id);
+
+    // The part paid with store credit goes back to the wallet.
+    await this.returnWallet(order);
 
     return {
       ...updatedRefund,
@@ -1137,7 +1217,24 @@ export class CheckoutService {
     });
     // Delivered → pending points become spendable; cancelled → points reversed / returned.
     await this.syncLoyalty(order.id);
+    if (status === OrderStatus.CANCELLED) await this.returnWallet(order);
     return updated;
+  }
+
+  /** How an order was paid, in words: "Store credit", "Visa •••• 4242", "Store credit + Visa •••• 4242". */
+  private paymentLabelFor(mode: string, walletUsed: number, cardLabel?: string | null) {
+    if (mode === 'wallet') return 'Store credit';
+    const card = (cardLabel ?? '').trim().slice(0, 80) || (mode === 'demo' ? 'Card (test payment)' : 'Card');
+    const label = card === 'Paid securely' ? 'Card' : card;
+    return walletUsed > 0 ? `Store credit + ${label}` : label;
+  }
+
+  /** Gives back the store credit an order used (once). Never breaks the caller. */
+  private async returnWallet(order: { id: string; orderNumber: string }) {
+    if (!this.walletService) return;
+    await this.walletService
+      .returnForOrder(order)
+      .catch((err) => this.logger.error(`Store credit return failed for #${order.orderNumber}: ${err instanceof Error ? err.message : err}`));
   }
 
   /** Re-checks an order's loyalty points after a status change. Never breaks the caller. */

@@ -54,6 +54,10 @@ model User {
   loyaltyPoints       Int                  @default(0)
   /// Loyalty: points ever earned (drives the tier). Redemptions don't lower it; reversals do.
   loyaltyLifetime     Int                  @default(0)
+  /// Store credit in GBP (sum of WalletTransaction.amount). Kept in sync by WalletService.
+  walletBalance       Float                @default(0)
+  /// Stripe Customer that holds this user's saved cards (created on first use).
+  stripeCustomerId    String?              @unique
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   addresses           Address[]
@@ -61,6 +65,8 @@ model User {
   refreshTokens       RefreshToken[]
   orders              Order[]
   loyaltyTransactions LoyaltyTransaction[]
+  walletTransactions  WalletTransaction[]
+  walletCards         WalletCard[]
   productReviews      ProductReview[]
 
   @@index([status])
@@ -186,12 +192,16 @@ model Order {
   pointsDiscount  Float         @default(0)
   /// Loyalty points this order earns (pending until delivered)
   pointsEarned    Int           @default(0)
+  /// Store credit (wallet) used on this order, in GBP. The card was charged total - walletUsed.
+  walletUsed      Float         @default(0)
   promoCode       String?
   total           Float
   currency        String        @default("gbp")
   status          OrderStatus   @default(PLACED)
   paymentStatus   PaymentStatus @default(PENDING)
   paymentMode     String        @default("stripe")
+  /// How it was paid, as shown to the customer ("Visa •••• 4242", "Store credit")
+  paymentLabel    String        @default("")
   paymentIntentId String?       @unique
   stripeChargeId  String?
   metadata        Json?
@@ -449,6 +459,58 @@ model LoyaltyTransaction {
   @@index([userId, createdAt])
   @@index([orderId])
   @@index([type])
+}
+
+/// What changed a customer's store credit (src/wallet).
+enum WalletEntryType {
+  /// Added by an admin (goodwill, compensation…)
+  ADMIN_CREDIT
+  /// Removed by an admin
+  ADMIN_DEBIT
+  /// An order refunded to store credit instead of the card
+  REFUND
+  /// Spent on an order at checkout
+  ORDER_PAYMENT
+  /// Credit given back when an order that used it was cancelled / refunded
+  ORDER_RETURN
+}
+
+/// Store-credit ledger. One row per change; `amount` is signed (GBP). `referenceKey` is unique,
+/// so the same order payment / return can never be booked twice.
+model WalletTransaction {
+  id           String          @id @default(uuid())
+  userId       String
+  type         WalletEntryType
+  amount       Float
+  balanceAfter Float
+  description  String          @db.VarChar(300)
+  orderId      String?
+  referenceKey String          @unique @db.VarChar(191)
+  /// Admin who made the change (ADMIN_* / REFUND)
+  createdById  String?
+  createdAt    DateTime        @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([orderId])
+}
+
+/// Saved cards when Stripe is NOT configured (test / demo mode). Only what a receipt shows:
+/// brand, last 4 and expiry — never the card number or CVC. With Stripe on, cards live in Stripe.
+model WalletCard {
+  id        String   @id @default(uuid())
+  userId    String
+  brand     String   @db.VarChar(40)
+  last4     String   @db.VarChar(4)
+  expMonth  Int
+  expYear   Int
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 /// Visible = shown on the product page; Hidden = taken down by an admin (the customer still sees it as hidden).

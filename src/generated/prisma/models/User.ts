@@ -29,11 +29,13 @@ export type AggregateUser = {
 export type UserAvgAggregateOutputType = {
   loyaltyPoints: number | null
   loyaltyLifetime: number | null
+  walletBalance: number | null
 }
 
 export type UserSumAggregateOutputType = {
   loyaltyPoints: number | null
   loyaltyLifetime: number | null
+  walletBalance: number | null
 }
 
 export type UserMinAggregateOutputType = {
@@ -58,6 +60,8 @@ export type UserMinAggregateOutputType = {
   archivedAt: Date | null
   loyaltyPoints: number | null
   loyaltyLifetime: number | null
+  walletBalance: number | null
+  stripeCustomerId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -84,6 +88,8 @@ export type UserMaxAggregateOutputType = {
   archivedAt: Date | null
   loyaltyPoints: number | null
   loyaltyLifetime: number | null
+  walletBalance: number | null
+  stripeCustomerId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -110,6 +116,8 @@ export type UserCountAggregateOutputType = {
   archivedAt: number
   loyaltyPoints: number
   loyaltyLifetime: number
+  walletBalance: number
+  stripeCustomerId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -119,11 +127,13 @@ export type UserCountAggregateOutputType = {
 export type UserAvgAggregateInputType = {
   loyaltyPoints?: true
   loyaltyLifetime?: true
+  walletBalance?: true
 }
 
 export type UserSumAggregateInputType = {
   loyaltyPoints?: true
   loyaltyLifetime?: true
+  walletBalance?: true
 }
 
 export type UserMinAggregateInputType = {
@@ -148,6 +158,8 @@ export type UserMinAggregateInputType = {
   archivedAt?: true
   loyaltyPoints?: true
   loyaltyLifetime?: true
+  walletBalance?: true
+  stripeCustomerId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -174,6 +186,8 @@ export type UserMaxAggregateInputType = {
   archivedAt?: true
   loyaltyPoints?: true
   loyaltyLifetime?: true
+  walletBalance?: true
+  stripeCustomerId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -200,6 +214,8 @@ export type UserCountAggregateInputType = {
   archivedAt?: true
   loyaltyPoints?: true
   loyaltyLifetime?: true
+  walletBalance?: true
+  stripeCustomerId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -313,6 +329,8 @@ export type UserGroupByOutputType = {
   archivedAt: Date | null
   loyaltyPoints: number
   loyaltyLifetime: number
+  walletBalance: number
+  stripeCustomerId: string | null
   createdAt: Date
   updatedAt: Date
   _count: UserCountAggregateOutputType | null
@@ -362,6 +380,8 @@ export type UserWhereInput = {
   archivedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   loyaltyPoints?: Prisma.IntFilter<"User"> | number
   loyaltyLifetime?: Prisma.IntFilter<"User"> | number
+  walletBalance?: Prisma.FloatFilter<"User"> | number
+  stripeCustomerId?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   addresses?: Prisma.AddressListRelationFilter
@@ -369,6 +389,8 @@ export type UserWhereInput = {
   refreshTokens?: Prisma.RefreshTokenListRelationFilter
   orders?: Prisma.OrderListRelationFilter
   loyaltyTransactions?: Prisma.LoyaltyTransactionListRelationFilter
+  walletTransactions?: Prisma.WalletTransactionListRelationFilter
+  walletCards?: Prisma.WalletCardListRelationFilter
   productReviews?: Prisma.ProductReviewListRelationFilter
 }
 
@@ -394,6 +416,8 @@ export type UserOrderByWithRelationInput = {
   archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   loyaltyPoints?: Prisma.SortOrder
   loyaltyLifetime?: Prisma.SortOrder
+  walletBalance?: Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   addresses?: Prisma.AddressOrderByRelationAggregateInput
@@ -401,6 +425,8 @@ export type UserOrderByWithRelationInput = {
   refreshTokens?: Prisma.RefreshTokenOrderByRelationAggregateInput
   orders?: Prisma.OrderOrderByRelationAggregateInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionOrderByRelationAggregateInput
+  walletTransactions?: Prisma.WalletTransactionOrderByRelationAggregateInput
+  walletCards?: Prisma.WalletCardOrderByRelationAggregateInput
   productReviews?: Prisma.ProductReviewOrderByRelationAggregateInput
   _relevance?: Prisma.UserOrderByRelevanceInput
 }
@@ -408,6 +434,7 @@ export type UserOrderByWithRelationInput = {
 export type UserWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   email?: string
+  stripeCustomerId?: string
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
@@ -430,6 +457,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   archivedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   loyaltyPoints?: Prisma.IntFilter<"User"> | number
   loyaltyLifetime?: Prisma.IntFilter<"User"> | number
+  walletBalance?: Prisma.FloatFilter<"User"> | number
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   addresses?: Prisma.AddressListRelationFilter
@@ -437,8 +465,10 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   refreshTokens?: Prisma.RefreshTokenListRelationFilter
   orders?: Prisma.OrderListRelationFilter
   loyaltyTransactions?: Prisma.LoyaltyTransactionListRelationFilter
+  walletTransactions?: Prisma.WalletTransactionListRelationFilter
+  walletCards?: Prisma.WalletCardListRelationFilter
   productReviews?: Prisma.ProductReviewListRelationFilter
-}, "id" | "email">
+}, "id" | "email" | "stripeCustomerId">
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -462,6 +492,8 @@ export type UserOrderByWithAggregationInput = {
   archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   loyaltyPoints?: Prisma.SortOrder
   loyaltyLifetime?: Prisma.SortOrder
+  walletBalance?: Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
@@ -496,6 +528,8 @@ export type UserScalarWhereWithAggregatesInput = {
   archivedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   loyaltyPoints?: Prisma.IntWithAggregatesFilter<"User"> | number
   loyaltyLifetime?: Prisma.IntWithAggregatesFilter<"User"> | number
+  walletBalance?: Prisma.FloatWithAggregatesFilter<"User"> | number
+  stripeCustomerId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -522,6 +556,8 @@ export type UserCreateInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
@@ -529,6 +565,8 @@ export type UserCreateInput = {
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   orders?: Prisma.OrderCreateNestedManyWithoutUserInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardCreateNestedManyWithoutUserInput
   productReviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
 }
 
@@ -554,6 +592,8 @@ export type UserUncheckedCreateInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
@@ -561,6 +601,8 @@ export type UserUncheckedCreateInput = {
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardUncheckedCreateNestedManyWithoutUserInput
   productReviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -586,6 +628,8 @@ export type UserUpdateInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
@@ -593,6 +637,8 @@ export type UserUpdateInput = {
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUpdateManyWithoutUserNestedInput
   productReviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
 }
 
@@ -618,6 +664,8 @@ export type UserUncheckedUpdateInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
@@ -625,6 +673,8 @@ export type UserUncheckedUpdateInput = {
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUncheckedUpdateManyWithoutUserNestedInput
   productReviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -650,6 +700,8 @@ export type UserCreateManyInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -676,6 +728,8 @@ export type UserUpdateManyMutationInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -702,6 +756,8 @@ export type UserUncheckedUpdateManyInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -734,6 +790,8 @@ export type UserCountOrderByAggregateInput = {
   archivedAt?: Prisma.SortOrder
   loyaltyPoints?: Prisma.SortOrder
   loyaltyLifetime?: Prisma.SortOrder
+  walletBalance?: Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -741,6 +799,7 @@ export type UserCountOrderByAggregateInput = {
 export type UserAvgOrderByAggregateInput = {
   loyaltyPoints?: Prisma.SortOrder
   loyaltyLifetime?: Prisma.SortOrder
+  walletBalance?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -765,6 +824,8 @@ export type UserMaxOrderByAggregateInput = {
   archivedAt?: Prisma.SortOrder
   loyaltyPoints?: Prisma.SortOrder
   loyaltyLifetime?: Prisma.SortOrder
+  walletBalance?: Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -791,6 +852,8 @@ export type UserMinOrderByAggregateInput = {
   archivedAt?: Prisma.SortOrder
   loyaltyPoints?: Prisma.SortOrder
   loyaltyLifetime?: Prisma.SortOrder
+  walletBalance?: Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -798,6 +861,7 @@ export type UserMinOrderByAggregateInput = {
 export type UserSumOrderByAggregateInput = {
   loyaltyPoints?: Prisma.SortOrder
   loyaltyLifetime?: Prisma.SortOrder
+  walletBalance?: Prisma.SortOrder
 }
 
 export type UserScalarRelationFilter = {
@@ -835,6 +899,14 @@ export type EnumUserStatusFieldUpdateOperationsInput = {
 }
 
 export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type FloatFieldUpdateOperationsInput = {
   set?: number
   increment?: number
   decrement?: number
@@ -918,6 +990,34 @@ export type UserUpdateOneRequiredWithoutLoyaltyTransactionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutLoyaltyTransactionsInput, Prisma.UserUpdateWithoutLoyaltyTransactionsInput>, Prisma.UserUncheckedUpdateWithoutLoyaltyTransactionsInput>
 }
 
+export type UserCreateNestedOneWithoutWalletTransactionsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutWalletTransactionsInput, Prisma.UserUncheckedCreateWithoutWalletTransactionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWalletTransactionsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutWalletTransactionsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutWalletTransactionsInput, Prisma.UserUncheckedCreateWithoutWalletTransactionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWalletTransactionsInput
+  upsert?: Prisma.UserUpsertWithoutWalletTransactionsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutWalletTransactionsInput, Prisma.UserUpdateWithoutWalletTransactionsInput>, Prisma.UserUncheckedUpdateWithoutWalletTransactionsInput>
+}
+
+export type UserCreateNestedOneWithoutWalletCardsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutWalletCardsInput, Prisma.UserUncheckedCreateWithoutWalletCardsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWalletCardsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutWalletCardsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutWalletCardsInput, Prisma.UserUncheckedCreateWithoutWalletCardsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWalletCardsInput
+  upsert?: Prisma.UserUpsertWithoutWalletCardsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutWalletCardsInput, Prisma.UserUpdateWithoutWalletCardsInput>, Prisma.UserUncheckedUpdateWithoutWalletCardsInput>
+}
+
 export type UserCreateNestedOneWithoutProductReviewsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutProductReviewsInput, Prisma.UserUncheckedCreateWithoutProductReviewsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutProductReviewsInput
@@ -956,12 +1056,16 @@ export type UserCreateWithoutAddressesInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   orders?: Prisma.OrderCreateNestedManyWithoutUserInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardCreateNestedManyWithoutUserInput
   productReviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
 }
 
@@ -987,12 +1091,16 @@ export type UserUncheckedCreateWithoutAddressesInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardUncheckedCreateNestedManyWithoutUserInput
   productReviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -1034,12 +1142,16 @@ export type UserUpdateWithoutAddressesInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUpdateManyWithoutUserNestedInput
   productReviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
 }
 
@@ -1065,12 +1177,16 @@ export type UserUncheckedUpdateWithoutAddressesInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUncheckedUpdateManyWithoutUserNestedInput
   productReviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -1096,12 +1212,16 @@ export type UserCreateWithoutOtpCodesInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   orders?: Prisma.OrderCreateNestedManyWithoutUserInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardCreateNestedManyWithoutUserInput
   productReviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
 }
 
@@ -1127,12 +1247,16 @@ export type UserUncheckedCreateWithoutOtpCodesInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardUncheckedCreateNestedManyWithoutUserInput
   productReviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -1174,12 +1298,16 @@ export type UserUpdateWithoutOtpCodesInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUpdateManyWithoutUserNestedInput
   productReviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
 }
 
@@ -1205,12 +1333,16 @@ export type UserUncheckedUpdateWithoutOtpCodesInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUncheckedUpdateManyWithoutUserNestedInput
   productReviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -1236,12 +1368,16 @@ export type UserCreateWithoutRefreshTokensInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
   orders?: Prisma.OrderCreateNestedManyWithoutUserInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardCreateNestedManyWithoutUserInput
   productReviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
 }
 
@@ -1267,12 +1403,16 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardUncheckedCreateNestedManyWithoutUserInput
   productReviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -1314,12 +1454,16 @@ export type UserUpdateWithoutRefreshTokensInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
   orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUpdateManyWithoutUserNestedInput
   productReviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
 }
 
@@ -1345,12 +1489,16 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUncheckedUpdateManyWithoutUserNestedInput
   productReviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -1376,12 +1524,16 @@ export type UserCreateWithoutOrdersInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardCreateNestedManyWithoutUserInput
   productReviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
 }
 
@@ -1407,12 +1559,16 @@ export type UserUncheckedCreateWithoutOrdersInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardUncheckedCreateNestedManyWithoutUserInput
   productReviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -1454,12 +1610,16 @@ export type UserUpdateWithoutOrdersInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUpdateManyWithoutUserNestedInput
   productReviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
 }
 
@@ -1485,12 +1645,16 @@ export type UserUncheckedUpdateWithoutOrdersInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUncheckedUpdateManyWithoutUserNestedInput
   productReviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -1516,12 +1680,16 @@ export type UserCreateWithoutLoyaltyTransactionsInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   orders?: Prisma.OrderCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardCreateNestedManyWithoutUserInput
   productReviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
 }
 
@@ -1547,12 +1715,16 @@ export type UserUncheckedCreateWithoutLoyaltyTransactionsInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
   otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardUncheckedCreateNestedManyWithoutUserInput
   productReviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -1594,12 +1766,16 @@ export type UserUpdateWithoutLoyaltyTransactionsInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUpdateManyWithoutUserNestedInput
   productReviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
 }
 
@@ -1625,12 +1801,328 @@ export type UserUncheckedUpdateWithoutLoyaltyTransactionsInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
   otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUncheckedUpdateManyWithoutUserNestedInput
+  productReviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutWalletTransactionsInput = {
+  id?: string
+  name: string
+  firstName?: string
+  lastName?: string
+  email: string
+  passwordHash: string
+  phone?: string
+  birthday?: string
+  avatarUrl?: string
+  role?: $Enums.UserRole
+  isEmailVerified?: boolean
+  emailVerifiedAt?: Date | string | null
+  deletionRequestedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  deletionReason?: string | null
+  status?: $Enums.UserStatus
+  suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  archivedAt?: Date | string | null
+  loyaltyPoints?: number
+  loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
+  otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  orders?: Prisma.OrderCreateNestedManyWithoutUserInput
+  loyaltyTransactions?: Prisma.LoyaltyTransactionCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardCreateNestedManyWithoutUserInput
+  productReviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutWalletTransactionsInput = {
+  id?: string
+  name: string
+  firstName?: string
+  lastName?: string
+  email: string
+  passwordHash: string
+  phone?: string
+  birthday?: string
+  avatarUrl?: string
+  role?: $Enums.UserRole
+  isEmailVerified?: boolean
+  emailVerifiedAt?: Date | string | null
+  deletionRequestedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  deletionReason?: string | null
+  status?: $Enums.UserStatus
+  suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  archivedAt?: Date | string | null
+  loyaltyPoints?: number
+  loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
+  otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
+  loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardUncheckedCreateNestedManyWithoutUserInput
+  productReviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutWalletTransactionsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutWalletTransactionsInput, Prisma.UserUncheckedCreateWithoutWalletTransactionsInput>
+}
+
+export type UserUpsertWithoutWalletTransactionsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutWalletTransactionsInput, Prisma.UserUncheckedUpdateWithoutWalletTransactionsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutWalletTransactionsInput, Prisma.UserUncheckedCreateWithoutWalletTransactionsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutWalletTransactionsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutWalletTransactionsInput, Prisma.UserUncheckedUpdateWithoutWalletTransactionsInput>
+}
+
+export type UserUpdateWithoutWalletTransactionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  birthday?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
+  loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
+  otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
+  loyaltyTransactions?: Prisma.LoyaltyTransactionUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUpdateManyWithoutUserNestedInput
+  productReviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutWalletTransactionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  birthday?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
+  loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
+  otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
+  loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUncheckedUpdateManyWithoutUserNestedInput
+  productReviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutWalletCardsInput = {
+  id?: string
+  name: string
+  firstName?: string
+  lastName?: string
+  email: string
+  passwordHash: string
+  phone?: string
+  birthday?: string
+  avatarUrl?: string
+  role?: $Enums.UserRole
+  isEmailVerified?: boolean
+  emailVerifiedAt?: Date | string | null
+  deletionRequestedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  deletionReason?: string | null
+  status?: $Enums.UserStatus
+  suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  archivedAt?: Date | string | null
+  loyaltyPoints?: number
+  loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
+  otpCodes?: Prisma.OtpCodeCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  orders?: Prisma.OrderCreateNestedManyWithoutUserInput
+  loyaltyTransactions?: Prisma.LoyaltyTransactionCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionCreateNestedManyWithoutUserInput
+  productReviews?: Prisma.ProductReviewCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutWalletCardsInput = {
+  id?: string
+  name: string
+  firstName?: string
+  lastName?: string
+  email: string
+  passwordHash: string
+  phone?: string
+  birthday?: string
+  avatarUrl?: string
+  role?: $Enums.UserRole
+  isEmailVerified?: boolean
+  emailVerifiedAt?: Date | string | null
+  deletionRequestedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  deletionReason?: string | null
+  status?: $Enums.UserStatus
+  suspendedAt?: Date | string | null
+  suspensionReason?: string | null
+  archivedAt?: Date | string | null
+  loyaltyPoints?: number
+  loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
+  otpCodes?: Prisma.OtpCodeUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
+  loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedCreateNestedManyWithoutUserInput
+  productReviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutWalletCardsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutWalletCardsInput, Prisma.UserUncheckedCreateWithoutWalletCardsInput>
+}
+
+export type UserUpsertWithoutWalletCardsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutWalletCardsInput, Prisma.UserUncheckedUpdateWithoutWalletCardsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutWalletCardsInput, Prisma.UserUncheckedCreateWithoutWalletCardsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutWalletCardsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutWalletCardsInput, Prisma.UserUncheckedUpdateWithoutWalletCardsInput>
+}
+
+export type UserUpdateWithoutWalletCardsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  birthday?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
+  loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
+  otpCodes?: Prisma.OtpCodeUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
+  loyaltyTransactions?: Prisma.LoyaltyTransactionUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUpdateManyWithoutUserNestedInput
+  productReviews?: Prisma.ProductReviewUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutWalletCardsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  birthday?: Prisma.StringFieldUpdateOperationsInput | string
+  avatarUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspensionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
+  loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
+  otpCodes?: Prisma.OtpCodeUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
+  loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedUpdateManyWithoutUserNestedInput
   productReviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -1656,6 +2148,8 @@ export type UserCreateWithoutProductReviewsInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
@@ -1663,6 +2157,8 @@ export type UserCreateWithoutProductReviewsInput = {
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
   orders?: Prisma.OrderCreateNestedManyWithoutUserInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutProductReviewsInput = {
@@ -1687,6 +2183,8 @@ export type UserUncheckedCreateWithoutProductReviewsInput = {
   archivedAt?: Date | string | null
   loyaltyPoints?: number
   loyaltyLifetime?: number
+  walletBalance?: number
+  stripeCustomerId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
@@ -1694,6 +2192,8 @@ export type UserUncheckedCreateWithoutProductReviewsInput = {
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedCreateNestedManyWithoutUserInput
+  walletCards?: Prisma.WalletCardUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutProductReviewsInput = {
@@ -1734,6 +2234,8 @@ export type UserUpdateWithoutProductReviewsInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
@@ -1741,6 +2243,8 @@ export type UserUpdateWithoutProductReviewsInput = {
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
   orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProductReviewsInput = {
@@ -1765,6 +2269,8 @@ export type UserUncheckedUpdateWithoutProductReviewsInput = {
   archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   loyaltyPoints?: Prisma.IntFieldUpdateOperationsInput | number
   loyaltyLifetime?: Prisma.IntFieldUpdateOperationsInput | number
+  walletBalance?: Prisma.FloatFieldUpdateOperationsInput | number
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
@@ -1772,6 +2278,8 @@ export type UserUncheckedUpdateWithoutProductReviewsInput = {
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
   loyaltyTransactions?: Prisma.LoyaltyTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletTransactions?: Prisma.WalletTransactionUncheckedUpdateManyWithoutUserNestedInput
+  walletCards?: Prisma.WalletCardUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -1785,6 +2293,8 @@ export type UserCountOutputType = {
   refreshTokens: number
   orders: number
   loyaltyTransactions: number
+  walletTransactions: number
+  walletCards: number
   productReviews: number
 }
 
@@ -1794,6 +2304,8 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   refreshTokens?: boolean | UserCountOutputTypeCountRefreshTokensArgs
   orders?: boolean | UserCountOutputTypeCountOrdersArgs
   loyaltyTransactions?: boolean | UserCountOutputTypeCountLoyaltyTransactionsArgs
+  walletTransactions?: boolean | UserCountOutputTypeCountWalletTransactionsArgs
+  walletCards?: boolean | UserCountOutputTypeCountWalletCardsArgs
   productReviews?: boolean | UserCountOutputTypeCountProductReviewsArgs
 }
 
@@ -1845,6 +2357,20 @@ export type UserCountOutputTypeCountLoyaltyTransactionsArgs<ExtArgs extends runt
 /**
  * UserCountOutputType without action
  */
+export type UserCountOutputTypeCountWalletTransactionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WalletTransactionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountWalletCardsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WalletCardWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
 export type UserCountOutputTypeCountProductReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ProductReviewWhereInput
 }
@@ -1872,6 +2398,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   archivedAt?: boolean
   loyaltyPoints?: boolean
   loyaltyLifetime?: boolean
+  walletBalance?: boolean
+  stripeCustomerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   addresses?: boolean | Prisma.User$addressesArgs<ExtArgs>
@@ -1879,6 +2407,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
   orders?: boolean | Prisma.User$ordersArgs<ExtArgs>
   loyaltyTransactions?: boolean | Prisma.User$loyaltyTransactionsArgs<ExtArgs>
+  walletTransactions?: boolean | Prisma.User$walletTransactionsArgs<ExtArgs>
+  walletCards?: boolean | Prisma.User$walletCardsArgs<ExtArgs>
   productReviews?: boolean | Prisma.User$productReviewsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
@@ -1907,17 +2437,21 @@ export type UserSelectScalar = {
   archivedAt?: boolean
   loyaltyPoints?: boolean
   loyaltyLifetime?: boolean
+  walletBalance?: boolean
+  stripeCustomerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "firstName" | "lastName" | "email" | "passwordHash" | "phone" | "birthday" | "avatarUrl" | "role" | "isEmailVerified" | "emailVerifiedAt" | "deletionRequestedAt" | "deletedAt" | "deletionReason" | "status" | "suspendedAt" | "suspensionReason" | "archivedAt" | "loyaltyPoints" | "loyaltyLifetime" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "firstName" | "lastName" | "email" | "passwordHash" | "phone" | "birthday" | "avatarUrl" | "role" | "isEmailVerified" | "emailVerifiedAt" | "deletionRequestedAt" | "deletedAt" | "deletionReason" | "status" | "suspendedAt" | "suspensionReason" | "archivedAt" | "loyaltyPoints" | "loyaltyLifetime" | "walletBalance" | "stripeCustomerId" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   addresses?: boolean | Prisma.User$addressesArgs<ExtArgs>
   otpCodes?: boolean | Prisma.User$otpCodesArgs<ExtArgs>
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
   orders?: boolean | Prisma.User$ordersArgs<ExtArgs>
   loyaltyTransactions?: boolean | Prisma.User$loyaltyTransactionsArgs<ExtArgs>
+  walletTransactions?: boolean | Prisma.User$walletTransactionsArgs<ExtArgs>
+  walletCards?: boolean | Prisma.User$walletCardsArgs<ExtArgs>
   productReviews?: boolean | Prisma.User$productReviewsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1930,6 +2464,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     refreshTokens: Prisma.$RefreshTokenPayload<ExtArgs>[]
     orders: Prisma.$OrderPayload<ExtArgs>[]
     loyaltyTransactions: Prisma.$LoyaltyTransactionPayload<ExtArgs>[]
+    walletTransactions: Prisma.$WalletTransactionPayload<ExtArgs>[]
+    walletCards: Prisma.$WalletCardPayload<ExtArgs>[]
     productReviews: Prisma.$ProductReviewPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1973,6 +2509,14 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
      * Loyalty: points ever earned (drives the tier). Redemptions don't lower it; reversals do.
      */
     loyaltyLifetime: number
+    /**
+     * Store credit in GBP (sum of WalletTransaction.amount). Kept in sync by WalletService.
+     */
+    walletBalance: number
+    /**
+     * Stripe Customer that holds this user's saved cards (created on first use).
+     */
+    stripeCustomerId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["user"]>
@@ -2320,6 +2864,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   refreshTokens<T extends Prisma.User$refreshTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$refreshTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RefreshTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   orders<T extends Prisma.User$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   loyaltyTransactions<T extends Prisma.User$loyaltyTransactionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$loyaltyTransactionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LoyaltyTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  walletTransactions<T extends Prisma.User$walletTransactionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$walletTransactionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WalletTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  walletCards<T extends Prisma.User$walletCardsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$walletCardsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WalletCardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productReviews<T extends Prisma.User$productReviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$productReviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2371,6 +2917,8 @@ export interface UserFieldRefs {
   readonly archivedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly loyaltyPoints: Prisma.FieldRef<"User", 'Int'>
   readonly loyaltyLifetime: Prisma.FieldRef<"User", 'Int'>
+  readonly walletBalance: Prisma.FieldRef<"User", 'Float'>
+  readonly stripeCustomerId: Prisma.FieldRef<"User", 'String'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
 }
@@ -2838,6 +3386,54 @@ export type User$loyaltyTransactionsArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   distinct?: Prisma.LoyaltyTransactionScalarFieldEnum | Prisma.LoyaltyTransactionScalarFieldEnum[]
+}
+
+/**
+ * User.walletTransactions
+ */
+export type User$walletTransactionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WalletTransaction
+   */
+  select?: Prisma.WalletTransactionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WalletTransaction
+   */
+  omit?: Prisma.WalletTransactionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WalletTransactionInclude<ExtArgs> | null
+  where?: Prisma.WalletTransactionWhereInput
+  orderBy?: Prisma.WalletTransactionOrderByWithRelationInput | Prisma.WalletTransactionOrderByWithRelationInput[]
+  cursor?: Prisma.WalletTransactionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WalletTransactionScalarFieldEnum | Prisma.WalletTransactionScalarFieldEnum[]
+}
+
+/**
+ * User.walletCards
+ */
+export type User$walletCardsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WalletCard
+   */
+  select?: Prisma.WalletCardSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WalletCard
+   */
+  omit?: Prisma.WalletCardOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WalletCardInclude<ExtArgs> | null
+  where?: Prisma.WalletCardWhereInput
+  orderBy?: Prisma.WalletCardOrderByWithRelationInput | Prisma.WalletCardOrderByWithRelationInput[]
+  cursor?: Prisma.WalletCardWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WalletCardScalarFieldEnum | Prisma.WalletCardScalarFieldEnum[]
 }
 
 /**

@@ -412,6 +412,8 @@ export const ModelName = {
   FranchiseApplication: 'FranchiseApplication',
   Blog: 'Blog',
   LoyaltyTransaction: 'LoyaltyTransaction',
+  WalletTransaction: 'WalletTransaction',
+  WalletCard: 'WalletCard',
   ProductReview: 'ProductReview'
 } as const
 
@@ -428,7 +430,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "address" | "otpCode" | "refreshToken" | "cmsSection" | "newsletterLead" | "order" | "refundRequest" | "orderItem" | "product" | "coupon" | "mediaAsset" | "franchiseApplication" | "blog" | "loyaltyTransaction" | "productReview"
+    modelProps: "user" | "address" | "otpCode" | "refreshToken" | "cmsSection" | "newsletterLead" | "order" | "refundRequest" | "orderItem" | "product" | "coupon" | "mediaAsset" | "franchiseApplication" | "blog" | "loyaltyTransaction" | "walletTransaction" | "walletCard" | "productReview"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1422,6 +1424,138 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    WalletTransaction: {
+      payload: Prisma.$WalletTransactionPayload<ExtArgs>
+      fields: Prisma.WalletTransactionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WalletTransactionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletTransactionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WalletTransactionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletTransactionPayload>
+        }
+        findFirst: {
+          args: Prisma.WalletTransactionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletTransactionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WalletTransactionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletTransactionPayload>
+        }
+        findMany: {
+          args: Prisma.WalletTransactionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletTransactionPayload>[]
+        }
+        create: {
+          args: Prisma.WalletTransactionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletTransactionPayload>
+        }
+        createMany: {
+          args: Prisma.WalletTransactionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.WalletTransactionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletTransactionPayload>
+        }
+        update: {
+          args: Prisma.WalletTransactionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletTransactionPayload>
+        }
+        deleteMany: {
+          args: Prisma.WalletTransactionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WalletTransactionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.WalletTransactionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletTransactionPayload>
+        }
+        aggregate: {
+          args: Prisma.WalletTransactionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWalletTransaction>
+        }
+        groupBy: {
+          args: Prisma.WalletTransactionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WalletTransactionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WalletTransactionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WalletTransactionCountAggregateOutputType> | number
+        }
+      }
+    }
+    WalletCard: {
+      payload: Prisma.$WalletCardPayload<ExtArgs>
+      fields: Prisma.WalletCardFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WalletCardFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletCardPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WalletCardFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletCardPayload>
+        }
+        findFirst: {
+          args: Prisma.WalletCardFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletCardPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WalletCardFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletCardPayload>
+        }
+        findMany: {
+          args: Prisma.WalletCardFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletCardPayload>[]
+        }
+        create: {
+          args: Prisma.WalletCardCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletCardPayload>
+        }
+        createMany: {
+          args: Prisma.WalletCardCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.WalletCardDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletCardPayload>
+        }
+        update: {
+          args: Prisma.WalletCardUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletCardPayload>
+        }
+        deleteMany: {
+          args: Prisma.WalletCardDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WalletCardUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.WalletCardUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletCardPayload>
+        }
+        aggregate: {
+          args: Prisma.WalletCardAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWalletCard>
+        }
+        groupBy: {
+          args: Prisma.WalletCardGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WalletCardGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WalletCardCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WalletCardCountAggregateOutputType> | number
+        }
+      }
+    }
     ProductReview: {
       payload: Prisma.$ProductReviewPayload<ExtArgs>
       fields: Prisma.ProductReviewFieldRefs
@@ -1549,6 +1683,8 @@ export const UserScalarFieldEnum = {
   archivedAt: 'archivedAt',
   loyaltyPoints: 'loyaltyPoints',
   loyaltyLifetime: 'loyaltyLifetime',
+  walletBalance: 'walletBalance',
+  stripeCustomerId: 'stripeCustomerId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1650,12 +1786,14 @@ export const OrderScalarFieldEnum = {
   pointsRedeemed: 'pointsRedeemed',
   pointsDiscount: 'pointsDiscount',
   pointsEarned: 'pointsEarned',
+  walletUsed: 'walletUsed',
   promoCode: 'promoCode',
   total: 'total',
   currency: 'currency',
   status: 'status',
   paymentStatus: 'paymentStatus',
   paymentMode: 'paymentMode',
+  paymentLabel: 'paymentLabel',
   paymentIntentId: 'paymentIntentId',
   stripeChargeId: 'stripeChargeId',
   metadata: 'metadata',
@@ -1828,6 +1966,36 @@ export const LoyaltyTransactionScalarFieldEnum = {
 export type LoyaltyTransactionScalarFieldEnum = (typeof LoyaltyTransactionScalarFieldEnum)[keyof typeof LoyaltyTransactionScalarFieldEnum]
 
 
+export const WalletTransactionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  amount: 'amount',
+  balanceAfter: 'balanceAfter',
+  description: 'description',
+  orderId: 'orderId',
+  referenceKey: 'referenceKey',
+  createdById: 'createdById',
+  createdAt: 'createdAt'
+} as const
+
+export type WalletTransactionScalarFieldEnum = (typeof WalletTransactionScalarFieldEnum)[keyof typeof WalletTransactionScalarFieldEnum]
+
+
+export const WalletCardScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  brand: 'brand',
+  last4: 'last4',
+  expMonth: 'expMonth',
+  expYear: 'expYear',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt'
+} as const
+
+export type WalletCardScalarFieldEnum = (typeof WalletCardScalarFieldEnum)[keyof typeof WalletCardScalarFieldEnum]
+
+
 export const ProductReviewScalarFieldEnum = {
   id: 'id',
   productId: 'productId',
@@ -1893,7 +2061,8 @@ export const UserOrderByRelevanceFieldEnum = {
   birthday: 'birthday',
   avatarUrl: 'avatarUrl',
   deletionReason: 'deletionReason',
-  suspensionReason: 'suspensionReason'
+  suspensionReason: 'suspensionReason',
+  stripeCustomerId: 'stripeCustomerId'
 } as const
 
 export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
@@ -1983,6 +2152,7 @@ export const OrderOrderByRelevanceFieldEnum = {
   promoCode: 'promoCode',
   currency: 'currency',
   paymentMode: 'paymentMode',
+  paymentLabel: 'paymentLabel',
   paymentIntentId: 'paymentIntentId',
   stripeChargeId: 'stripeChargeId'
 } as const
@@ -2095,6 +2265,28 @@ export const LoyaltyTransactionOrderByRelevanceFieldEnum = {
 export type LoyaltyTransactionOrderByRelevanceFieldEnum = (typeof LoyaltyTransactionOrderByRelevanceFieldEnum)[keyof typeof LoyaltyTransactionOrderByRelevanceFieldEnum]
 
 
+export const WalletTransactionOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  description: 'description',
+  orderId: 'orderId',
+  referenceKey: 'referenceKey',
+  createdById: 'createdById'
+} as const
+
+export type WalletTransactionOrderByRelevanceFieldEnum = (typeof WalletTransactionOrderByRelevanceFieldEnum)[keyof typeof WalletTransactionOrderByRelevanceFieldEnum]
+
+
+export const WalletCardOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  brand: 'brand',
+  last4: 'last4'
+} as const
+
+export type WalletCardOrderByRelevanceFieldEnum = (typeof WalletCardOrderByRelevanceFieldEnum)[keyof typeof WalletCardOrderByRelevanceFieldEnum]
+
+
 export const ProductReviewOrderByRelevanceFieldEnum = {
   id: 'id',
   productId: 'productId',
@@ -2157,6 +2349,13 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
 
 
 /**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
  * Reference to a field of type 'OtpPurpose'
  */
 export type EnumOtpPurposeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OtpPurpose'>
@@ -2174,13 +2373,6 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
  * Reference to a field of type 'QueryMode'
  */
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
-    
-
-
-/**
- * Reference to a field of type 'Float'
- */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
     
 
 
@@ -2244,6 +2436,13 @@ export type EnumLoyaltyEntryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
  * Reference to a field of type 'LoyaltyEntryStatus'
  */
 export type EnumLoyaltyEntryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LoyaltyEntryStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'WalletEntryType'
+ */
+export type EnumWalletEntryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WalletEntryType'>
     
 
 
@@ -2419,6 +2618,8 @@ export type GlobalOmitConfig = {
   franchiseApplication?: Prisma.FranchiseApplicationOmit
   blog?: Prisma.BlogOmit
   loyaltyTransaction?: Prisma.LoyaltyTransactionOmit
+  walletTransaction?: Prisma.WalletTransactionOmit
+  walletCard?: Prisma.WalletCardOmit
   productReview?: Prisma.ProductReviewOmit
 }
 

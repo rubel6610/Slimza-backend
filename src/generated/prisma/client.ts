@@ -120,6 +120,18 @@ export type Blog = Prisma.BlogModel
  */
 export type LoyaltyTransaction = Prisma.LoyaltyTransactionModel
 /**
+ * Model WalletTransaction
+ * Store-credit ledger. One row per change; `amount` is signed (GBP). `referenceKey` is unique,
+ * so the same order payment / return can never be booked twice.
+ */
+export type WalletTransaction = Prisma.WalletTransactionModel
+/**
+ * Model WalletCard
+ * Saved cards when Stripe is NOT configured (test / demo mode). Only what a receipt shows:
+ * brand, last 4 and expiry — never the card number or CVC. With Stripe on, cards live in Stripe.
+ */
+export type WalletCard = Prisma.WalletCardModel
+/**
  * Model ProductReview
  * A customer's review of one product (src/reviews). One per customer per product; they can edit it.
  * Product.rating / Product.reviewCount are recalculated from PUBLISHED, non-archived reviews.
