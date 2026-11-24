@@ -1,33 +1,4 @@
-/**
- * ============================================================================
- *  CMS ITEM ARCHIVE — the archive lifecycle for items inside CMS sections
- * ============================================================================
- *
- * CMS content is stored as one JSON blob per section (table `CmsSection`).
- * Some sections contain a list of items with an `id` (banner slides, nav links,
- * ...). Those items follow the same lifecycle as database records
- * (src/common/archive/archive.ts), using an `archivedAt` field on the item:
- *
- *     { id: 'feat-1', title: 'Natural', active: true, archivedAt: null }                   // live
- *     { id: 'feat-1', title: 'Natural', active: true, archivedAt: '2026-11-19T10:00:00Z' } // archived
- *
- * `active` and `archivedAt` are independent:
- *  - `active: false` = temporarily hidden by the on/off switch, still in the main list.
- *  - `archivedAt`    = moved to the Archive. Restoring keeps the old `active` value.
- *
- * Rules enforced here (and therefore by the API):
- *  1. `PUT /cms/:key` can edit, add, reorder, archive or restore items, but it
- *     can NEVER remove one. Dropping a live item → 409. Archived items left out
- *     of the payload are kept (so a stale client can't lose them by accident).
- *  2. Permanent removal only happens through `DELETE /cms/:key/items/:itemId`,
- *     and only for archived items.
- *  3. `POST /cms/:key/reset` restores default content. Items you added yourself
- *     are moved to the archive, not deleted.
- *  4. Non-admin readers never receive archived items (`stripArchivedItems`).
- *
- * To make a new section archivable, add it to `CMS_ARCHIVABLE_LISTS` below.
- * Every item in that list needs a unique string `id`.
- */
+
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 
 export interface CmsArchivableList {
@@ -48,6 +19,7 @@ export const CMS_ARCHIVABLE_LISTS: Record<string, CmsArchivableList> = {
   bundle: { path: 'tiers', label: 'Discount tier' },
   blog_categories: { path: null, label: 'Blog category' },
   testimonials: { path: 'items', label: 'Customer review' },
+  wellness_hub: { path: 'groups', label: 'Hub group' },
 };
 
 export type CmsItem = Record<string, unknown> & { id?: unknown; archivedAt?: unknown };

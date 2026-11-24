@@ -26,6 +26,8 @@ export const createProductSchema = z.object({
   variations: z.unknown().optional(),
   supplyDuration: z.string().trim().optional().default('1 Month'),
   packsPerMonth: z.coerce.number().int().min(1).optional().default(1),
+  /** Wellness Product Hub groups this product belongs to (omit to leave them unchanged). */
+  hubGroupIds: z.array(z.string().trim().min(1).max(60)).max(40).optional(),
 });
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 

@@ -34,6 +34,7 @@ The **backend** enforces the rule, not only the UI. A permanent delete of someth
 | CMS → Categories                     | item in `categories`              | same, with `key = categories` |
 | CMS → Trusted By partners            | item in `trusted_by.partners`     | same, with `key = trusted_by` |
 | CMS → Testimonials (customer reviews) | item in `testimonials.items`     | same, with `key = testimonials` |
+| Wellness Product Hub (groups)         | item in `wellness_hub.groups`    | same, with `key = wellness_hub` |
 | CMS → Return policy cards            | item in `return_policy.cards`     | same, with `key = return_policy` |
 | Bundle → Discount tiers              | item in `bundle.tiers`            | same, with `key = bundle` |
 | Blogs → Categories                   | item in `blog_categories`         | same, with `key = blog_categories` |
@@ -133,6 +134,7 @@ export const CMS_ARCHIVABLE_LISTS = {
   categories:    { path: null,       label: 'Category' },
   trusted_by:    { path: 'partners', label: 'Partner' },
   testimonials:  { path: 'items', label: 'Customer review' },
+  wellness_hub:  { path: 'groups', label: 'Hub group' },
   return_policy: { path: 'cards',    label: 'Policy card' },
   bundle:        { path: 'tiers',    label: 'Discount tier' },
   blog_categories: { path: null,     label: 'Blog category' },

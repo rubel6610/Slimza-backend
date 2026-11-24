@@ -4,6 +4,7 @@ import {
   Logger,
   NotFoundException,
   OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -15,6 +16,7 @@ import {
 } from '../common/archive/archive.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { MediaService } from '../media/media.service.js';
+import { WellnessHubService } from '../wellness-hub/wellness-hub.service.js';
 import {
   PUBLIC_PRODUCT_WHERE,
   brandWhere,
@@ -374,6 +376,7 @@ export class ProductsService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mediaService: MediaService,
+    @Optional() private readonly wellnessHub?: WellnessHubService,
   ) {}
 
   async onModuleInit() {
@@ -681,6 +684,7 @@ export class ProductsService implements OnModuleInit {
     });
 
     this.logger.log(`Created product "${product.name}" with ID: ${product.id}`);
+    if (input.hubGroupIds) await this.wellnessHub?.setProductGroups(product.id, input.hubGroupIds);
     return product;
   }
 
@@ -734,6 +738,7 @@ export class ProductsService implements OnModuleInit {
     });
 
     this.logger.log(`Updated product "${updated.name}" (${updated.id})`);
+    if (input.hubGroupIds) await this.wellnessHub?.setProductGroups(updated.id, input.hubGroupIds);
     return updated;
   }
 
@@ -800,6 +805,7 @@ export class ProductsService implements OnModuleInit {
     assertArchivedBeforeDelete(existing, `Product "${existing.name}"`);
 
     await this.prisma.product.delete({ where: { id } });
+    await this.wellnessHub?.removeProducts([id]);
     this.logger.log(`Permanently deleted product "${existing.name}" (${id})`);
     return { ok: true as const, id };
   }
@@ -817,6 +823,7 @@ export class ProductsService implements OnModuleInit {
     const result = await this.prisma.product.deleteMany({
       where: { id: { in: products.map((p) => p.id) }, archivedAt: { not: null } },
     });
+    await this.wellnessHub?.removeProducts(products.filter((p) => p.archivedAt).map((p) => p.id));
     this.logger.log(`Permanently deleted ${result.count} archived products`);
     return { ok: true as const, count: result.count };
   }

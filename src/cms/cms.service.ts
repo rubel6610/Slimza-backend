@@ -33,6 +33,7 @@ import {
   parseTestimonialsForSave,
   TESTIMONIALS_CMS_KEY,
 } from '../testimonials/testimonials-config.js';
+import { parseWellnessHubForSave, WELLNESS_HUB_CMS_KEY } from '../wellness-hub/wellness-hub-config.js';
 import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
@@ -526,6 +527,11 @@ export class CmsService implements OnModuleInit {
     }
     if (key === CURRENCY_CMS_KEY) {
       const parsed = parseCurrencyConfigForSave(data);
+      if (!parsed.ok) throw new BadRequestException(parsed.message);
+      data = parsed.data;
+    }
+    if (key === WELLNESS_HUB_CMS_KEY) {
+      const parsed = parseWellnessHubForSave(data);
       if (!parsed.ok) throw new BadRequestException(parsed.message);
       data = parsed.data;
     }

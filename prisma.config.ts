@@ -1,17 +1,6 @@
 import 'dotenv/config';
 import { defineConfig } from 'prisma/config';
 
-/**
- * Resolves the MySQL connection URL dynamically for:
- * 1. GoDaddy Platform-Managed Node.js Hosting:
- *    - DB_HOST (e.g. 'localhost' or remote MySQL host)
- *    - DB_NAME
- *    - DB_USER
- *    - DB_PASSWORD
- *    - DB_PORT (defaults to 3306)
- * 2. Explicit DATABASE_URL (local or third-party cloud hosting)
- * 3. Local Docker fallback (root:password@localhost:3306/slimza)
- */
 function resolveDatabaseUrl(): string {
   const dbHost = process.env.DB_HOST?.trim();
   const dbName = process.env.DB_NAME?.trim();
