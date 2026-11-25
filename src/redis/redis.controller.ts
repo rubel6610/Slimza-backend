@@ -1,14 +1,13 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Global } from '@nestjs/common';
 import { RedisService } from './redis.service.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { UserRole } from '../generated/prisma/enums.js';
 
+
 @Controller('redis')
 export class RedisController {
-  constructor(private readonly redisService: RedisService) {
-
-  }
-
+  constructor(private readonly redisService: RedisService) {}
+  @Roles(UserRole.ADMIN)
   @Get('ping')
   async ping() {
     return this.redisService.client.ping();

@@ -80,6 +80,16 @@ export const updateOrderStatusSchema = z.object({
 });
 export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
 
+/** Dashboard → order → Tracking (sent to the customer). */
+export const orderTrackingSchema = z.object({
+  carrier: z.string().trim().min(2, 'Choose the carrier').max(80),
+  trackingNumber: z.string().trim().min(3, 'Enter the tracking number').max(80),
+  trackingUrl: z.string().trim().url('Use a full link (https://…)').max(500).optional().or(z.literal('')),
+  /** Email the customer (default yes) */
+  notify: z.boolean().optional().default(true),
+});
+export type OrderTrackingInput = z.infer<typeof orderTrackingSchema>;
+
 export const requestRefundSchema = z.object({
   reason: z
     .string()

@@ -55,6 +55,24 @@ services:
       timeout: 3s
       retries: 10
 
+  minio:
+    image: docker.io/pgsty/silo:RELEASE.2026-11-12T00-00-00Z
+    container_name: slimza-minio
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:9000:9000'
+      - '127.0.0.1:9001:9001'
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - slimza-minio-data:/data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 5s
+      timeout: 3s
+
   backend:
     build:
       context: .
@@ -67,12 +85,14 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      minio:
+        condition: service_healthy
     volumes:
       - .:/app
       - /app/node_modules
       - slimza-uploads:/app/uploads
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - PORT=5173
       - DB_HOST=mysql
       - DB_PORT=3306
@@ -83,9 +103,15 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD:-secret123}
+      - S3_ENDPOINT=http://minio:9000
+      - S3_REGION=us-east-1
+      - S3_ACCESS_KEY=${MINIO_ROOT_USER:-minioadmin}
+      - S3_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - S3_BUCKET=slimza-files
     restart: unless-stopped
 
 volumes:
   slimza-mysql-data:
   slimza-uploads:
   slimza-redis-data:
+  slimza-minio-data:

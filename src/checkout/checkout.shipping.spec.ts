@@ -35,25 +35,25 @@ function makeService(couponPercent: number, points = 0) {
   );
 }
 
-// p01 = £27.99 (static catalogue), express delivery £4.99
+// p01 = £27.99 (static catalogue), France tracked delivery (Zone 1, up to 250g) £10.95
 const line = { productId: 'p01', sizeIndex: 0, months: 1, qty: 1 };
 
 describe('CheckoutService — delivery is never discounted', () => {
   it('a 100% coupon makes the products free, but delivery is still paid in full', async () => {
-    const pricing = await makeService(100).calculatePricing({ lines: [line], shippingMethodId: 'uk-express', promoCode: 'ALL' });
+    const pricing = await makeService(100).calculatePricing({ lines: [line], shippingAddress: { country: 'France' }, promoCode: 'ALL' });
     expect(pricing.discount).toBe(27.99);
-    expect(pricing.total).toBe(4.99);
-    expect(pricing.totalInPence).toBe(499);
+    expect(pricing.total).toBe(10.95);
+    expect(pricing.totalInPence).toBe(1095);
   });
 
   it('coupon + points together never reach the delivery fee', async () => {
     const pricing = await makeService(50, 99999).calculatePricing({
       lines: [line],
-      shippingMethodId: 'uk-express',
+      shippingAddress: { country: 'France' },
       promoCode: 'ALL',
       pointsToRedeem: 99999,
       userId: 'u1',
     });
-    expect(pricing.total).toBe(4.99);
+    expect(pricing.total).toBe(10.95);
   });
 });

@@ -1,9 +1,10 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { archiveWhere, assertArchivedBeforeDelete } from '../common/archive/archive.js';
 import { paginate, searchWhere, toOrderBy } from '../common/pagination/pagination.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PUBLIC_PRODUCT_WHERE } from '../products/product-search.js';
+import { RedisService } from '../redis/redis.service.js';
 import { productIdsInOrderLine, publicName, REVIEWABLE_ORDER, summarise, type RatingSummary } from './review-rules.js';
 import type {
   AdminReviewsQuery,
@@ -49,7 +50,10 @@ const SORTS: Record<ProductReviewsQuery['sort'], Prisma.ProductReviewOrderByWith
  */
 @Injectable()
 export class ReviewsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly redis?: RedisService,
+  ) {}
 
   // ---- Public ----------------------------------------------------------------------
 
@@ -283,6 +287,10 @@ export class ReviewsService {
   async syncProductRating(productId: string) {
     const { average, count } = await this.summaryFor(productId);
     await this.prisma.product.update({ where: { id: productId }, data: { rating: average, reviewCount: count } });
+    await Promise.all([
+      this.redis?.delByPrefix('products:'),
+      this.redis?.delByPrefix('wellness-hub:'),
+    ]);
   }
 
   /** True when a paid, delivered order of this customer contains the product (on its own or in a bundle). */

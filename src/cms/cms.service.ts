@@ -33,7 +33,10 @@ import {
   parseTestimonialsForSave,
   TESTIMONIALS_CMS_KEY,
 } from '../testimonials/testimonials-config.js';
-import { parseWellnessHubForSave, WELLNESS_HUB_CMS_KEY } from '../wellness-hub/wellness-hub-config.js';
+import {
+  parseWellnessHubForSave,
+  WELLNESS_HUB_CMS_KEY,
+} from '../wellness-hub/wellness-hub-config.js';
 import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
@@ -44,6 +47,8 @@ import {
   stripArchivedItems,
   type CmsItem,
 } from './cms-archive.js';
+import { RedisService } from '../redis/redis.service.js';
+import { DEFAULT_SHIPPING_CONFIG, parseShippingConfigForSave, SHIPPING_CMS_KEY } from '../shipping/shipping-config.js';
 
 export interface UploadedCmsFile {
   buffer: Buffer;
@@ -80,7 +85,12 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
     navLinks: [
       { id: 'nav-1', label: 'Home', href: '/', active: true },
       { id: 'nav-2', label: 'Shop', href: '/shop', active: true },
-      { id: 'nav-3', label: 'Make Your Own Bundle', href: '/bundle', active: true },
+      {
+        id: 'nav-3',
+        label: 'Make Your Own Bundle',
+        href: '/bundle',
+        active: true,
+      },
       { id: 'nav-4', label: 'About Us', href: '/about', active: true },
     ],
   },
@@ -104,7 +114,8 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
       slug: 'teatox',
       eyebrow: 'Cleanse & Reset',
       title: ['Start fresh,', 'every day'],
-      description: 'Support your digestion and natural daily energy with our herbal detox blends.',
+      description:
+        'Support your digestion and natural daily energy with our herbal detox blends.',
       cta: 'Shop Teatox',
       ctaHref: '/shop?category=teatox',
       image: '/banner/slides/teatox-banner-slide.jpg',
@@ -118,7 +129,8 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
       slug: 'shilajit',
       eyebrow: 'Pure Vitality',
       title: ['Pure Himalayan', 'Power'],
-      description: 'Harvested at high altitudes for natural stamina, mental clarity, and deep replenishment.',
+      description:
+        'Harvested at high altitudes for natural stamina, mental clarity, and deep replenishment.',
       cta: 'Explore Shilajit',
       ctaHref: '/shop?category=shilajit',
       image: '/banner/slides/shilajit-banner-slide.jpg',
@@ -131,7 +143,8 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
       slug: 'slimming-tea',
       eyebrow: 'Body & Balance',
       title: ['Feel light,', 'stay energized'],
-      description: 'Gentle botanicals formulated to support a balanced metabolism and everyday comfort.',
+      description:
+        'Gentle botanicals formulated to support a balanced metabolism and everyday comfort.',
       cta: 'Discover Slimming',
       ctaHref: '/shop?category=slimming-tea',
       image: '/banner/slides/slimming-tea-banner-slide.jpg',
@@ -144,7 +157,8 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
       slug: 'matcha',
       eyebrow: 'Focused Calm',
       title: ['Ceremonial grade,', 'pure focus'],
-      description: 'Shade-grown Japanese green tea for clean, sustained morning-to-evening clarity.',
+      description:
+        'Shade-grown Japanese green tea for clean, sustained morning-to-evening clarity.',
       cta: 'Shop Matcha',
       ctaHref: '/shop?category=matcha',
       image: '/banner/slides/matcha-banner-slide.jpg',
@@ -160,14 +174,36 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
   currencies: DEFAULT_CURRENCY_CONFIG,
   /** Homepage "What Our Customers Say" (Dashboard → CMS → Testimonials). */
   testimonials: DEFAULT_TESTIMONIALS_CONFIG,
+  /** UK + international shipping, excluded destinations, customs text (Dashboard → Shipping). */
+  shipping: DEFAULT_SHIPPING_CONFIG,
   /** Blog categories (Dashboard → Blogs → Categories). Posts reference `slug`. */
   blog_categories: [
-    { id: 'blogcat-1', slug: 'wellness-tips', name: 'Wellness Tips', archivedAt: null },
-    { id: 'blogcat-2', slug: 'natural-ingredients', name: 'Natural Ingredients', archivedAt: null },
+    {
+      id: 'blogcat-1',
+      slug: 'wellness-tips',
+      name: 'Wellness Tips',
+      archivedAt: null,
+    },
+    {
+      id: 'blogcat-2',
+      slug: 'natural-ingredients',
+      name: 'Natural Ingredients',
+      archivedAt: null,
+    },
     { id: 'blogcat-3', slug: 'nutrition', name: 'Nutrition', archivedAt: null },
     { id: 'blogcat-4', slug: 'lifestyle', name: 'Lifestyle', archivedAt: null },
-    { id: 'blogcat-5', slug: 'product-guides', name: 'Product Guides', archivedAt: null },
-    { id: 'blogcat-6', slug: 'sleep-recovery', name: 'Sleep & Recovery', archivedAt: null },
+    {
+      id: 'blogcat-5',
+      slug: 'product-guides',
+      name: 'Product Guides',
+      archivedAt: null,
+    },
+    {
+      id: 'blogcat-6',
+      slug: 'sleep-recovery',
+      name: 'Sleep & Recovery',
+      archivedAt: null,
+    },
   ],
   bundle_banner: {
     imageUrl: '/banner/bundle-reward-banner.png',
@@ -176,12 +212,42 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
     active: true,
   },
   features: [
-    { id: 'feat-1', icon: '/features/1.png', title: 'Natural Ingredients', active: true },
-    { id: 'feat-2', icon: '/features/2.png', title: 'Better Energy', active: true },
-    { id: 'feat-3', icon: '/features/3.png', title: 'Gut & Immune Support', active: true },
-    { id: 'feat-4', icon: '/features/secure-checkout.svg', title: 'Secure & Encrypted Checkout', active: true },
-    { id: 'feat-5', icon: '/features/5.png', title: 'Mental Clarity', active: true },
-    { id: 'feat-6', icon: '/features/money-back.svg', title: '30-Day Money Back Guarantee', active: true },
+    {
+      id: 'feat-1',
+      icon: '/features/1.png',
+      title: 'Natural Ingredients',
+      active: true,
+    },
+    {
+      id: 'feat-2',
+      icon: '/features/2.png',
+      title: 'Better Energy',
+      active: true,
+    },
+    {
+      id: 'feat-3',
+      icon: '/features/3.png',
+      title: 'Gut & Immune Support',
+      active: true,
+    },
+    {
+      id: 'feat-4',
+      icon: '/features/secure-checkout.svg',
+      title: 'Secure & Encrypted Checkout',
+      active: true,
+    },
+    {
+      id: 'feat-5',
+      icon: '/features/5.png',
+      title: 'Mental Clarity',
+      active: true,
+    },
+    {
+      id: 'feat-6',
+      icon: '/features/money-back.svg',
+      title: '30-Day Money Back Guarantee',
+      active: true,
+    },
   ],
   categories: [
     {
@@ -229,13 +295,49 @@ export const DEFAULT_CMS_DATA: Record<string, unknown> = {
   ],
   trusted_by: {
     title: 'Featured In & Trusted By Retailers Across the UK',
-    description: 'Find Slimza organic teas, ceremonial matcha, and Himalayan shilajit at premium independent grocers, wellness boutiques, and specialty pop-ups nationwide.',
+    description:
+      'Find Slimza organic teas, ceremonial matcha, and Himalayan shilajit at premium independent grocers, wellness boutiques, and specialty pop-ups nationwide.',
     partners: [
-      { id: 'partner-1', name: 'Spitalfields E1', wordmark: 'SPITALFIELDS E1', captionAbove: 'Featured at', captionBelow: 'London Market', active: true },
-      { id: 'partner-2', name: 'Camden Market', wordmark: 'CAMDEN MARKET', captionAbove: 'Stocked in', captionBelow: 'North London', active: true },
-      { id: 'partner-3', name: 'Seven Dials Covent Garden', wordmark: 'SEVEN DIALS', captionAbove: 'Available at', captionBelow: 'Covent Garden', active: true },
-      { id: 'partner-4', name: 'Borough Market', wordmark: 'BOROUGH MARKET', captionAbove: 'Selected for', captionBelow: 'Artisan Hall', active: true },
-      { id: 'partner-5', name: 'Greenwich Market', wordmark: 'GREENWICH MARKET', captionAbove: 'Showcased at', captionBelow: 'Maritime Hall', active: true },
+      {
+        id: 'partner-1',
+        name: 'Spitalfields E1',
+        wordmark: 'SPITALFIELDS E1',
+        captionAbove: 'Featured at',
+        captionBelow: 'London Market',
+        active: true,
+      },
+      {
+        id: 'partner-2',
+        name: 'Camden Market',
+        wordmark: 'CAMDEN MARKET',
+        captionAbove: 'Stocked in',
+        captionBelow: 'North London',
+        active: true,
+      },
+      {
+        id: 'partner-3',
+        name: 'Seven Dials Covent Garden',
+        wordmark: 'SEVEN DIALS',
+        captionAbove: 'Available at',
+        captionBelow: 'Covent Garden',
+        active: true,
+      },
+      {
+        id: 'partner-4',
+        name: 'Borough Market',
+        wordmark: 'BOROUGH MARKET',
+        captionAbove: 'Selected for',
+        captionBelow: 'Artisan Hall',
+        active: true,
+      },
+      {
+        id: 'partner-5',
+        name: 'Greenwich Market',
+        wordmark: 'GREENWICH MARKET',
+        captionAbove: 'Showcased at',
+        captionBelow: 'Maritime Hall',
+        active: true,
+      },
     ],
   },
   about_us: {
@@ -318,7 +420,8 @@ We may update this policy from time to time.`,
   terms: {
     title: 'Terms and Conditions',
     lastUpdated: 'January 2026',
-    content: 'Welcome to Slimza. By placing an order or using our website, you agree to these terms and conditions.',
+    content:
+      'Welcome to Slimza. By placing an order or using our website, you agree to these terms and conditions.',
   },
   return_policy: {
     heroTitle: 'Return policy',
@@ -411,6 +514,7 @@ export class CmsService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mediaService: MediaService,
+    private readonly redis: RedisService,
   ) {}
 
   async onModuleInit() {
@@ -425,7 +529,9 @@ export class CmsService implements OnModuleInit {
 
   async seedDefaultsIfMissing() {
     try {
-      const existing = await this.prisma.cmsSection.findMany({ select: { key: true } });
+      const existing = await this.prisma.cmsSection.findMany({
+        select: { key: true },
+      });
       const existingKeys = new Set(existing.map((e) => e.key));
 
       for (const [key, defaultVal] of Object.entries(DEFAULT_CMS_DATA)) {
@@ -436,24 +542,39 @@ export class CmsService implements OnModuleInit {
               data: defaultVal as Prisma.InputJsonValue,
             },
           });
+          await this.redis.del('cms:all', `cms:section:${key}`);
+          if (key === WELLNESS_HUB_CMS_KEY) {
+            await this.redis.delByPrefix('wellness-hub:');
+          } else if (key === 'categories') {
+            await this.redis.delByPrefix('products:');
+          }
           this.logger.log(`Initialized default CMS section for "${key}"`);
         }
       }
 
       // Upgrade old 1-sentence privacy_policy placeholder to full policy content
-      const privacyRec = await this.prisma.cmsSection.findUnique({ where: { key: 'privacy_policy' } });
+      const privacyRec = await this.prisma.cmsSection.findUnique({
+        where: { key: 'privacy_policy' },
+      });
       if (
         privacyRec &&
         typeof privacyRec.data === 'object' &&
         privacyRec.data !== null &&
         typeof (privacyRec.data as any).content === 'string' &&
-        (privacyRec.data as any).content.startsWith('At Slimza, we respect your privacy')
+        (privacyRec.data as any).content.startsWith(
+          'At Slimza, we respect your privacy',
+        )
       ) {
         await this.prisma.cmsSection.update({
           where: { key: 'privacy_policy' },
-          data: { data: DEFAULT_CMS_DATA.privacy_policy as Prisma.InputJsonValue },
+          data: {
+            data: DEFAULT_CMS_DATA.privacy_policy as Prisma.InputJsonValue,
+          },
         });
-        this.logger.log('Upgraded privacy_policy in database to full comprehensive content');
+        await this.redis.del('cms:all', 'cms:section:privacy_policy');
+        this.logger.log(
+          'Upgraded privacy_policy in database to full comprehensive content',
+        );
       }
     } catch (err) {
       this.logger.warn(`Failed to seed default CMS sections: ${String(err)}`);
@@ -464,7 +585,19 @@ export class CmsService implements OnModuleInit {
    * @param includeArchived Return archived list items too. Only the controller
    *        decides this (admins only); the storefront always gets `false`.
    */
-  async getAllSections(includeArchived = false): Promise<Record<string, unknown>> {
+  async getAllSections(
+    includeArchived = false,
+  ): Promise<Record<string, unknown>> {
+    if (includeArchived) {
+      return this.loadAllSections(true);
+    }
+
+    return this.redis.wrap('cms:all', 300, () => this.loadAllSections(false));
+  }
+
+  private async loadAllSections(
+    includeArchived: boolean,
+  ): Promise<Record<string, unknown>> {
     const records = await this.prisma.cmsSection.findMany();
     const result: Record<string, unknown> = { ...DEFAULT_CMS_DATA };
 
@@ -482,8 +615,14 @@ export class CmsService implements OnModuleInit {
   }
 
   async getSection(key: string, includeArchived = false): Promise<unknown> {
-    const data = await this.getStoredSectionData(key);
-    return includeArchived ? data : stripArchivedItems(key, data);
+    if (includeArchived) {
+      return this.getStoredSectionData(key);
+    }
+
+    return this.redis.wrap(`cms:section:${key}`, 300, async () => {
+      const data = await this.getStoredSectionData(key);
+      return stripArchivedItems(key, data);
+    });
   }
 
   /** Raw stored data (archived items included), falling back to defaults. */
@@ -504,7 +643,17 @@ export class CmsService implements OnModuleInit {
       create: { key, data: data as Prisma.InputJsonValue },
       update: { data: data as Prisma.InputJsonValue },
     });
-    return { ok: true as const, key: updated.key, data: updated.data as unknown };
+    await this.redis.del('cms:all', `cms:section:${key}`);
+    if (key === WELLNESS_HUB_CMS_KEY) {
+      await this.redis.delByPrefix('wellness-hub:');
+    } else if (key === 'categories') {
+      await this.redis.delByPrefix('products:');
+    }
+    return {
+      ok: true as const,
+      key: updated.key,
+      data: updated.data as unknown,
+    };
   }
 
   /**
@@ -512,7 +661,10 @@ export class CmsService implements OnModuleInit {
    * edit / add / reorder / archive / restore items, but never remove one: a
    * missing live item → 409. See cms-archive.ts.
    */
-  async updateSection(key: string, data: unknown): Promise<{ ok: true; key: string; data: unknown }> {
+  async updateSection(
+    key: string,
+    data: unknown,
+  ): Promise<{ ok: true; key: string; data: unknown }> {
     if (key === BUNDLE_CMS_KEY) {
       // Bundle settings drive checkout pricing, so they are validated strictly.
       const parsed = parseBundleConfigForSave(data);
@@ -530,6 +682,12 @@ export class CmsService implements OnModuleInit {
       if (!parsed.ok) throw new BadRequestException(parsed.message);
       data = parsed.data;
     }
+    if (key === SHIPPING_CMS_KEY) {
+      // Shipping prices are charged at checkout, so they are validated strictly.
+      const parsed = parseShippingConfigForSave(data);
+      if (!parsed.ok) throw new BadRequestException(parsed.message);
+      data = parsed.data;
+    }
     if (key === WELLNESS_HUB_CMS_KEY) {
       const parsed = parseWellnessHubForSave(data);
       if (!parsed.ok) throw new BadRequestException(parsed.message);
@@ -541,14 +699,19 @@ export class CmsService implements OnModuleInit {
       data = parsed.data;
     }
     const current = await this.getStoredSectionData(key).catch(() => undefined);
-    const next = current === undefined ? data : mergeCmsSectionUpdate(key, current, data);
+    const next =
+      current === undefined ? data : mergeCmsSectionUpdate(key, current, data);
     return this.writeSection(key, next);
   }
 
   /** Restores default content. Custom items are moved to the archive, not deleted. */
-  async resetSection(key: string): Promise<{ ok: true; key: string; data: unknown }> {
+  async resetSection(
+    key: string,
+  ): Promise<{ ok: true; key: string; data: unknown }> {
     if (!(key in DEFAULT_CMS_DATA)) {
-      throw new NotFoundException(`No default template for CMS section "${key}"`);
+      throw new NotFoundException(
+        `No default template for CMS section "${key}"`,
+      );
     }
 
     const current = await this.getStoredSectionData(key);
@@ -607,7 +770,12 @@ export class CmsService implements OnModuleInit {
       .replace(/^-+|-+$/g, '');
     const filename = `${Date.now()}-${safeName.endsWith(`.${ext}`) ? safeName : `${safeName}.${ext}`}`;
 
-    return this.mediaService.saveAsset('cms', filename, file.mimetype, file.buffer);
+    return this.mediaService.saveAsset(
+      'cms',
+      filename,
+      file.mimetype,
+      file.buffer,
+    );
   }
 
   async subscribeNewsletter(email: string, source = 'Footer Newsletter') {
@@ -643,7 +811,9 @@ export class CmsService implements OnModuleInit {
   }
 
   private async findNewsletterLeadOrThrow(id: string) {
-    const existing = await this.prisma.newsletterLead.findUnique({ where: { id } });
+    const existing = await this.prisma.newsletterLead.findUnique({
+      where: { id },
+    });
     if (!existing) throw new NotFoundException('Newsletter lead not found');
     return existing;
   }

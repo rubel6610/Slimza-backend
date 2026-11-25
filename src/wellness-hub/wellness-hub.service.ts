@@ -1,8 +1,9 @@
-import { Injectable, Logger, NotFoundException, type OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, Optional, type OnModuleInit } from '@nestjs/common';
 import type { Prisma } from '../generated/prisma/client.js';
 import { DEFAULT_CMS_DATA } from '../cms/cms.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PUBLIC_PRODUCT_WHERE } from '../products/product-search.js';
+import { RedisService } from '../redis/redis.service.js';
 import {
   buildHubFromCategories,
   parseWellnessHubForSave,
@@ -12,12 +13,17 @@ import {
   type WellnessHubConfig,
 } from './wellness-hub-config.js';
 
+const WELLNESS_HUB_CACHE_TTL_SECONDS = 300;
+
 /** Wellness Product Hub groups (config in wellness-hub-config.ts). */
 @Injectable()
 export class WellnessHubService implements OnModuleInit {
   private readonly logger = new Logger(WellnessHubService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly redis?: RedisService,
+  ) {}
 
   async onModuleInit() {
     await this.seedFromCategoriesIfMissing().catch((err) => this.logger.warn(`Wellness hub seed skipped: ${String(err)}`));
@@ -39,6 +45,7 @@ export class WellnessHubService implements OnModuleInit {
     });
     const hub = buildHubFromCategories(categories?.data ?? DEFAULT_CMS_DATA.categories, products);
     await this.prisma.cmsSection.create({ data: { key: WELLNESS_HUB_CMS_KEY, data: hub as unknown as Prisma.InputJsonValue } });
+    await this.invalidateCache();
     this.logger.log(`Created the Wellness Product Hub from ${hub.groups.length} categories`);
   }
 
@@ -70,10 +77,24 @@ export class WellnessHubService implements OnModuleInit {
     const next = fn(parsed.data);
     if (JSON.stringify(next) === JSON.stringify(parsed.data)) return;
     await this.prisma.cmsSection.update({ where: { key: WELLNESS_HUB_CMS_KEY }, data: { data: next as unknown as Prisma.InputJsonValue } });
+    await this.invalidateCache();
+  }
+
+  private async invalidateCache() {
+    await this.redis?.delByPrefix('wellness-hub:');
   }
 
   /** Group page: the group and its products, in the admin's order (hidden / unpublished products left out). */
   async publicGroup(slug: string) {
+    if (!this.redis) {
+      return this.loadPublicGroup(slug);
+    }
+    return this.redis.wrap(`wellness-hub:group:${slug}`, WELLNESS_HUB_CACHE_TTL_SECONDS, () =>
+      this.loadPublicGroup(slug),
+    );
+  }
+
+  private async loadPublicGroup(slug: string) {
     const config = await this.getConfig();
     const group = config.groups.find((g) => g.slug === slug && g.active && !g.archivedAt);
     if (!group) throw new NotFoundException('This collection was not found');

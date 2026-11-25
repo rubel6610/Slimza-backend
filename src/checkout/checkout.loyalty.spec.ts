@@ -24,24 +24,24 @@ function makeService(balance: number) {
   );
 }
 
-// p01 = £27.99 (static catalogue), express delivery £4.99
+// p01 = £27.99 (static catalogue), France tracked delivery (Zone 1, up to 250g) £10.95
 const line = { productId: 'p01', sizeIndex: 0, months: 1, qty: 1 };
 
 describe('CheckoutService — loyalty points', () => {
   it('takes points off the products, not the delivery', async () => {
     const pricing = await makeService(1000).calculatePricing(
-      { lines: [line], shippingMethodId: 'uk-express', pointsToRedeem: 500, userId: 'u1' },
+      { lines: [line], shippingAddress: { country: 'France' }, pointsToRedeem: 500, userId: 'u1' },
       { strictPoints: true },
     );
-    expect(pricing).toMatchObject({ pointsRedeemed: 500, pointsDiscount: 5, total: 27.98, pointsEligibleSpend: 22.99 });
+    expect(pricing).toMatchObject({ pointsRedeemed: 500, pointsDiscount: 5, total: 33.94, pointsEligibleSpend: 22.99 });
   });
 
   it('can pay for all the products but never the delivery', async () => {
     const pricing = await makeService(99999).calculatePricing(
-      { lines: [line], shippingMethodId: 'uk-express', pointsToRedeem: 99999, userId: 'u1' },
+      { lines: [line], shippingAddress: { country: 'France' }, pointsToRedeem: 99999, userId: 'u1' },
       { strictPoints: false },
     );
-    expect(pricing).toMatchObject({ pointsRedeemed: 2799, pointsDiscount: 27.99, total: 4.99 });
+    expect(pricing).toMatchObject({ pointsRedeemed: 2799, pointsDiscount: 27.99, total: 10.95 });
   });
 
   it('refuses at the payment step when the request is not possible', async () => {

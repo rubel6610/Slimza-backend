@@ -67,14 +67,14 @@ describe('CheckoutService', () => {
   it('calculates pricing correctly with catalog items and shipping', async () => {
     const pricing = await service.calculatePricing({
       lines: [{ productId: 'p01', sizeIndex: 0, months: 1, qty: 1 }],
-      shippingMethodId: 'uk-express',
+      shippingAddress: { country: 'France' },
     });
 
-    // p01 price: 27.99, shipping: 4.99
+    // p01 price: 27.99, shipping: 10.95 (France, Zone 1)
     expect(pricing.subtotal).toBe(27.99);
-    expect(pricing.shipping).toBe(4.99);
-    expect(pricing.total).toBe(32.98);
-    expect(pricing.totalInPence).toBe(3298);
+    expect(pricing.shipping).toBe(10.95);
+    expect(pricing.total).toBe(38.94);
+    expect(pricing.totalInPence).toBe(3894);
   });
 
   it('applies valid active DB coupon discount', async () => {

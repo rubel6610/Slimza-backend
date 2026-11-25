@@ -31,6 +31,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { cardBrandName } from '../wallet/wallet-rules.js';
 import { unavailableReason } from '../products/product-availability.js';
 import { taxFor } from '../products/product-tax.js';
+import { pickMethod, quoteShipping, readShippingConfig, SHIPPING_CMS_KEY, type ShippingAddressLike } from '../shipping/shipping-config.js';
 import { fallbackOption, intervalText, optionUnitPrice, readSupplyOptions, type SupplyOption } from '../products/supply-options.js';
 import { WalletService } from '../wallet/wallet.service.js';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
@@ -50,7 +51,6 @@ import {
 import { bundleRuleError, priceBundle, type BundleLine } from '../bundle/bundle-pricing.js';
 import {
   BACKEND_CATALOG,
-  SHIPPING_METHODS,
   SIZE_TABLES,
   SUPPLY_PLAN_DISCOUNTS,
   round2,
@@ -68,7 +68,9 @@ export interface CalculatedPricing {
   /** Product spend that earns points (after every discount, excluding delivery). */
   pointsEligibleSpend: number;
   shipping: number;
-  shippingMethod: { id: string; name: string; fee: number; eta: string };
+  shippingMethod: { id: string; name: string; fee: number; eta: string; carrier: string; international: boolean };
+  /** Packed weight of everything in the order (grams) — international shipping is priced by it */
+  weightGrams: number;
   /** Tax on products whose price doesn't include it — on the full price, never discounted. */
   tax: number;
   /**
@@ -154,6 +156,8 @@ export class CheckoutService {
       shippingMethodId?: string;
       /** Loyalty points the signed-in customer wants to use. */
       pointsToRedeem?: number;
+      /** Delivery address: decides UK vs international shipping (and refuses excluded / BFPO / PO Box). */
+      shippingAddress?: ShippingAddressLike;
       /** Required to use points. */
       userId?: string | null;
     },
@@ -176,6 +180,9 @@ export class CheckoutService {
     let rawLinesSubtotal = 0;
     // Tax is worked out on full prices (before coupons, bundle discounts or points) and never discounted.
     let tax = 0;
+    // Packed weight (grams) of everything, for international shipping.
+    const shippingConfig = await this.loadShippingConfig();
+    let weightGrams = 0;
     const subscriptionLines: CalculatedPricing['subscriptionLines'] = [];
 
     for (const line of lines) {
@@ -231,6 +238,7 @@ export class CheckoutService {
         rawLinesSubtotal += lineTotal;
         // Tax on the full option price — Subscribe & Save never lowers the tax.
         const optionTax = taxFor(lineTax, option.price, line.qty);
+        weightGrams += (option.weightGrams ?? shippingConfig.defaultItemWeightGrams) * line.qty;
         tax += optionTax;
         lineItems.push({
           productId: line.productId,
@@ -264,6 +272,7 @@ export class CheckoutService {
       const lineTotal = round2(unitPrice * line.qty);
       rawLinesSubtotal += lineTotal;
       tax += taxFor(lineTax, unitPrice, line.qty);
+      weightGrams += shippingConfig.defaultItemWeightGrams * line.qty;
 
       lineItems.push({
         productId: line.productId,
@@ -279,7 +288,8 @@ export class CheckoutService {
     }
 
     // ---- Bundles: rules + prices from the dashboard (CMS section "bundle") ----
-    const bundlePricing = await this.priceBundles(bundles, Boolean(options?.allowUnavailable));
+    const bundlePricing = await this.priceBundles(bundles, Boolean(options?.allowUnavailable), shippingConfig.defaultItemWeightGrams);
+    weightGrams += bundlePricing.weightGrams;
     lineItems.push(...bundlePricing.lineItems);
     tax += bundlePricing.tax;
     const { config: bundleConfig, bundleSpend, bundleSavings } = bundlePricing;
@@ -335,10 +345,19 @@ export class CheckoutService {
         ? spendReward.amount
         : 0;
 
-    const selectedShipping =
-      input.shippingMethodId && SHIPPING_METHODS[input.shippingMethodId]
-        ? SHIPPING_METHODS[input.shippingMethodId]
-        : SHIPPING_METHODS['uk-standard'];
+    // ---- Shipping (Dashboard → Shipping): UK methods, or international by zone + packed weight ----
+    const quote = quoteShipping(shippingConfig, input.shippingAddress ?? {}, weightGrams, {
+      ignoreRestrictions: options?.allowUnavailable,
+    });
+    if (!quote.ok && lineItems.length > 0) {
+      // Already paid (recording the order): never fail; otherwise refuse with the reason.
+      if (!options?.allowUnavailable) throw new BadRequestException(quote.message);
+      this.logger.warn(`Shipping quote failed for a paid order (${quote.reason}); recording it with no delivery fee.`);
+    }
+    const chosen = quote.ok ? pickMethod(quote, input.shippingMethodId) : null;
+    const selectedShipping = chosen
+      ? { id: chosen.id, name: chosen.name, fee: chosen.fee, eta: chosen.eta, carrier: chosen.carrier, international: chosen.international }
+      : { id: 'uk-standard', name: 'Delivery', fee: 0, eta: '', carrier: '', international: false };
 
     const shipping =
       lineItems.length > 0 ? selectedShipping.fee : 0;
@@ -365,6 +384,7 @@ export class CheckoutService {
       pointsEligibleSpend: Math.max(0, round2(productsAfterDiscounts - points.discount)),
       shipping,
       shippingMethod: selectedShipping,
+      weightGrams,
       tax,
       subscriptionLines,
       total,
@@ -413,17 +433,19 @@ export class CheckoutService {
    * (min/max items, per-category limit, allowed categories) or checkout fails
    * with 400 and a message the customer can act on.
    */
-  private async priceBundles(bundles: CartBundleInput[], allowUnavailable = false): Promise<{
+  private async priceBundles(bundles: CartBundleInput[], allowUnavailable = false, defaultWeight = 0): Promise<{
     config: BundleConfig;
     bundleSpend: number;
     bundleSavings: number;
     lineItems: CalculatedPricing['lineItems'];
     /** Tax on the bundled products' full prices */
     tax: number;
+    /** Packed weight of the bundles (each product's first purchase option, or the default) */
+    weightGrams: number;
   }> {
     const config = await this.loadBundleConfig();
     const active = bundles.filter((b) => b.qty > 0 && Array.isArray(b.items) && b.items.length > 0);
-    if (active.length === 0) return { config, bundleSpend: 0, bundleSavings: 0, lineItems: [], tax: 0 };
+    if (active.length === 0) return { config, bundleSpend: 0, bundleSavings: 0, lineItems: [], tax: 0, weightGrams: 0 };
 
     if (!config.enabled) {
       throw new BadRequestException(
@@ -441,6 +463,7 @@ export class CheckoutService {
     let bundleSpend = 0;
     let bundleSavings = 0;
     let bundleTax = 0;
+    let bundleWeight = 0;
     const lineItems: CalculatedPricing['lineItems'] = [];
 
     for (const b of active) {
@@ -475,6 +498,8 @@ export class CheckoutService {
       for (const item of b.items) {
         const p = byId.get(item.productId);
         if (p) bundleTax += taxFor(p, p.price, (item.qty ?? 1) * b.qty);
+        const itemWeight = p ? (readSupplyOptions(p.supplyOptions)[0]?.weightGrams ?? defaultWeight) : defaultWeight;
+        bundleWeight += itemWeight * (item.qty ?? 1) * b.qty;
       }
       bundleSpend += bundleTotal;
       bundleSavings += round2(priced.discount * b.qty);
@@ -499,7 +524,7 @@ export class CheckoutService {
       });
     }
 
-    return { config, bundleSpend: round2(bundleSpend), bundleSavings: round2(bundleSavings), lineItems, tax: round2(bundleTax) };
+    return { config, bundleSpend: round2(bundleSpend), bundleSavings: round2(bundleSavings), lineItems, tax: round2(bundleTax), weightGrams: bundleWeight };
   }
 
   /** slug → category display name (from the CMS categories section), for error messages. */
@@ -574,7 +599,7 @@ export class CheckoutService {
       discount: number;
       pointsRedeemed: number;
       pointsDiscount: number;
-      shippingMethod: { id: string; name: string; fee: number; eta: string };
+      shippingMethod: { id: string; name: string; fee: number; eta: string; carrier: string; international: boolean };
     };
   }> {
     await this.assertPurchaserCanBuy(input.shippingAddress?.email, userRole, userId);
@@ -587,6 +612,7 @@ export class CheckoutService {
         shippingMethodId: input.shippingMethodId,
         pointsToRedeem: input.pointsToRedeem,
         userId,
+        shippingAddress: input.shippingAddress,
       },
       { strictPromo: true, strictPoints: true, subscriptionsEnabled: await this.subscriptionsOn() },
     );
@@ -677,6 +703,7 @@ export class CheckoutService {
         shippingMethodId: input.shippingMethodId,
         pointsToRedeem: input.pointsToRedeem,
         userId,
+        shippingAddress: input.shippingAddress,
       },
       {
         strictPromo: input.paymentMode === 'demo',
@@ -781,6 +808,7 @@ export class CheckoutService {
         customerPhone: input.shippingAddress.phone.trim(),
         shippingAddress: input.shippingAddress as any,
         shippingMethod: pricing.shippingMethod.id,
+        shippingLabel: [pricing.shippingMethod.name, pricing.shippingMethod.carrier].filter(Boolean).join(' · ').slice(0, 190),
         shippingFee: pricing.shipping,
         tax: pricing.tax,
         subtotal: pricing.subtotal,
@@ -1298,6 +1326,47 @@ export class CheckoutService {
     // Delivered → pending points become spendable; cancelled → points reversed / returned.
     await this.syncLoyalty(order.id);
     return updated;
+  }
+
+  /**
+   * Dashboard → order → Tracking: saves the carrier + tracking number, marks the order Shipped
+   * (if it wasn't further along) and emails the customer their tracking details.
+   */
+  async setTracking(orderId: string, input: { carrier: string; trackingNumber: string; trackingUrl?: string; notify?: boolean }) {
+    const order = await this.prisma.order.findFirst({ where: { OR: [{ id: orderId }, { orderNumber: orderId }] } });
+    if (!order) throw new NotFoundException('Order not found.');
+    if (order.status === OrderStatus.CANCELLED) throw new BadRequestException('This order is cancelled.');
+    const moveToShipped = order.status === OrderStatus.PLACED || order.status === OrderStatus.PROCESSING;
+    const updated = await this.prisma.order.update({
+      where: { id: order.id },
+      data: {
+        trackingCarrier: input.carrier.trim(),
+        trackingNumber: input.trackingNumber.trim(),
+        trackingUrl: input.trackingUrl?.trim() || null,
+        shippedAt: order.shippedAt ?? new Date(),
+        ...(moveToShipped && { status: OrderStatus.SHIPPED }),
+      },
+      include: { items: true, refundRequest: true },
+    });
+    if (input.notify !== false && this.mailService) {
+      void this.mailService
+        .sendShippedEmail({
+          to: updated.customerEmail,
+          name: updated.customerName,
+          orderNumber: updated.orderNumber,
+          carrier: updated.trackingCarrier ?? '',
+          trackingNumber: updated.trackingNumber ?? '',
+          trackingUrl: updated.trackingUrl,
+        })
+        .catch((err) => this.logger.warn(`Shipped email failed for #${updated.orderNumber}: ${err instanceof Error ? err.message : err}`));
+    }
+    return updated;
+  }
+
+  /** Dashboard → Shipping settings (CMS section "shipping"), or the defaults. */
+  private async loadShippingConfig() {
+    const record = this.prisma.cmsSection?.findUnique ? await this.prisma.cmsSection.findUnique({ where: { key: SHIPPING_CMS_KEY } }) : null;
+    return readShippingConfig(record?.data);
   }
 
   /** Subscribe & Save switched on in the dashboard, and Stripe set up (renewals need it). */

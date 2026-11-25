@@ -96,4 +96,26 @@ describe('product ↔ hub groups', () => {
     await service.setProductGroups('p1', ['a', 'b']); // already there → nothing written
     expect(prisma.cmsSection.update).not.toHaveBeenCalled();
   });
+
+  it('caches publicGroup in Redis and invalidates on hub update', async () => {
+    const prisma = {
+      cmsSection: {
+        findUnique: vi.fn().mockResolvedValue({ data: hub }),
+        update: vi.fn().mockResolvedValue({}),
+      },
+      product: { findMany: vi.fn().mockResolvedValue([{ id: 'p1' }, { id: 'x' }]) },
+    };
+    const redis = {
+      wrap: vi.fn((_k: string, _ttl: number, fn: () => Promise<unknown>) => fn()),
+      delByPrefix: vi.fn().mockResolvedValue(undefined),
+    };
+    const service = new WellnessHubService(prisma as never, redis as never);
+
+    const res = await service.publicGroup('a');
+    expect(res.products.map((p) => p.id)).toEqual(['x', 'p1']);
+    expect(redis.wrap).toHaveBeenCalledWith('wellness-hub:group:a', 300, expect.any(Function));
+
+    await service.setProductGroups('p9', ['b']);
+    expect(redis.delByPrefix).toHaveBeenCalledWith('wellness-hub:');
+  });
 });

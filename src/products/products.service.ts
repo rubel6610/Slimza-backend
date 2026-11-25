@@ -16,6 +16,7 @@ import {
 } from '../common/archive/archive.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { MediaService } from '../media/media.service.js';
+import { RedisService } from '../redis/redis.service.js';
 import { priceFromOptions, readSupplyOptions } from './supply-options.js';
 import { WellnessHubService } from '../wellness-hub/wellness-hub.service.js';
 import {
@@ -370,6 +371,10 @@ export const INITIAL_PRODUCTS = [
   },
 ];
 
+const PRODUCT_LIST_CACHE_TTL_SECONDS = 180;
+const PRODUCT_ONE_CACHE_TTL_SECONDS = 300;
+const PRODUCT_SEARCH_CACHE_TTL_SECONDS = 120;
+
 @Injectable()
 export class ProductsService implements OnModuleInit {
   private readonly logger = new Logger(ProductsService.name);
@@ -378,7 +383,16 @@ export class ProductsService implements OnModuleInit {
     private readonly prisma: PrismaService,
     private readonly mediaService: MediaService,
     @Optional() private readonly wellnessHub?: WellnessHubService,
+    @Optional() private readonly redis?: RedisService,
   ) {}
+
+  private async invalidateProductCaches() {
+    this.tagIndexCache = null;
+    await Promise.all([
+      this.redis?.delByPrefix('products:'),
+      this.redis?.delByPrefix('wellness-hub:'),
+    ]);
+  }
 
   async onModuleInit() {
     await this.ensureUploadsDirectory();
@@ -423,6 +437,7 @@ export class ProductsService implements OnModuleInit {
             },
           });
         }
+        await this.invalidateProductCaches();
         this.logger.log('Initial 16 products successfully seeded!');
       }
     } catch (err) {
@@ -481,6 +496,26 @@ export class ProductsService implements OnModuleInit {
   }
 
   async search(query: ProductSearchQuery) {
+    if (!this.redis) {
+      return this.loadSearch(query);
+    }
+    const cacheKey = `products:search:${JSON.stringify({
+      q: query.q ?? '',
+      category: query.category ?? [],
+      brand: query.brand ?? [],
+      flag: query.flag ?? [],
+      min: query.min ?? null,
+      max: query.max ?? null,
+      sort: query.sort ?? '',
+      page: query.page,
+      limit: query.limit,
+    })}`;
+    return this.redis.wrap(cacheKey, PRODUCT_SEARCH_CACHE_TTL_SECONDS, () =>
+      this.loadSearch(query),
+    );
+  }
+
+  private async loadSearch(query: ProductSearchQuery) {
     const terms = parseSearchTerms(query.q);
     const searching = terms.fulltext.length + terms.short.length > 0;
     const sort = query.sort ?? (searching ? 'relevance' : 'default');
@@ -557,6 +592,25 @@ export class ProductsService implements OnModuleInit {
   }
 
   async findAll(query: Partial<QueryProductInput> = {}, isAdmin = false) {
+    if (isAdmin || !this.redis) {
+      return this.loadAll(query, isAdmin);
+    }
+    const cacheKey = `products:list:${JSON.stringify({
+      q: query.q ?? '',
+      category: query.category ?? '',
+      brand: query.brand ?? '',
+      tag: query.tag ?? '',
+      featured: query.featured ?? '',
+      sort: query.sort ?? '',
+      page: query.page ?? 1,
+      limit: query.limit ?? 50,
+    })}`;
+    return this.redis.wrap(cacheKey, PRODUCT_LIST_CACHE_TTL_SECONDS, () =>
+      this.loadAll(query, false),
+    );
+  }
+
+  private async loadAll(query: Partial<QueryProductInput> = {}, isAdmin = false) {
     // Each condition is pushed into AND, so search + category + brand… all apply together.
     // (Before, the category's OR replaced the search's OR and the search was ignored.)
     const and: Prisma.ProductWhereInput[] = [archiveWhere(resolveArchiveFilter(query.archived, isAdmin))];
@@ -626,6 +680,17 @@ export class ProductsService implements OnModuleInit {
 
   /** Archived products are invisible (404) unless `isAdmin` is true. */
   async findOne(idOrSlug: string, isAdmin = false) {
+    if (isAdmin || !this.redis) {
+      return this.loadOne(idOrSlug, isAdmin);
+    }
+    return this.redis.wrap(
+      `products:one:${idOrSlug}`,
+      PRODUCT_ONE_CACHE_TTL_SECONDS,
+      () => this.loadOne(idOrSlug, false),
+    );
+  }
+
+  private async loadOne(idOrSlug: string, isAdmin = false) {
     const isUuid =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
         idOrSlug,
@@ -696,6 +761,7 @@ export class ProductsService implements OnModuleInit {
 
     this.logger.log(`Created product "${product.name}" with ID: ${product.id}`);
     if (input.hubGroupIds) await this.wellnessHub?.setProductGroups(product.id, input.hubGroupIds);
+    await this.invalidateProductCaches();
     return product;
   }
 
@@ -764,6 +830,7 @@ export class ProductsService implements OnModuleInit {
 
     this.logger.log(`Updated product "${updated.name}" (${updated.id})`);
     if (input.hubGroupIds) await this.wellnessHub?.setProductGroups(updated.id, input.hubGroupIds);
+    await this.invalidateProductCaches();
     return updated;
   }
 
@@ -789,6 +856,7 @@ export class ProductsService implements OnModuleInit {
       where: { id },
       data: { archivedAt: new Date() },
     });
+    await this.invalidateProductCaches();
     this.logger.log(`Archived product "${existing.name}" (${id})`);
     return archived;
   }
@@ -802,6 +870,7 @@ export class ProductsService implements OnModuleInit {
       where: { id },
       data: { archivedAt: null },
     });
+    await this.invalidateProductCaches();
     this.logger.log(`Restored product "${existing.name}" (${id})`);
     return restored;
   }
@@ -811,6 +880,7 @@ export class ProductsService implements OnModuleInit {
       where: { id: { in: ids }, archivedAt: null },
       data: { archivedAt: new Date() },
     });
+    if (result.count > 0) await this.invalidateProductCaches();
     this.logger.log(`Archived ${result.count} products`);
     return { ok: true as const, count: result.count };
   }
@@ -820,6 +890,7 @@ export class ProductsService implements OnModuleInit {
       where: { id: { in: ids }, archivedAt: { not: null } },
       data: { archivedAt: null },
     });
+    if (result.count > 0) await this.invalidateProductCaches();
     this.logger.log(`Restored ${result.count} products`);
     return { ok: true as const, count: result.count };
   }
@@ -831,6 +902,7 @@ export class ProductsService implements OnModuleInit {
 
     await this.prisma.product.delete({ where: { id } });
     await this.wellnessHub?.removeProducts([id]);
+    await this.invalidateProductCaches();
     this.logger.log(`Permanently deleted product "${existing.name}" (${id})`);
     return { ok: true as const, id };
   }
@@ -849,6 +921,7 @@ export class ProductsService implements OnModuleInit {
       where: { id: { in: products.map((p) => p.id) }, archivedAt: { not: null } },
     });
     await this.wellnessHub?.removeProducts(products.filter((p) => p.archivedAt).map((p) => p.id));
+    if (result.count > 0) await this.invalidateProductCaches();
     this.logger.log(`Permanently deleted ${result.count} archived products`);
     return { ok: true as const, count: result.count };
   }

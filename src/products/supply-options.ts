@@ -26,6 +26,8 @@ export const supplyOptionSchema = z.object({
   badge: z.string().trim().max(30).optional().default(''),
   /** Subscribe & Save discount for this option, in % (0 = no subscription discount) */
   subscribeDiscountPercent: z.coerce.number().min(0).max(90).optional().default(0),
+  /** Packed weight of one of these, in grams (international shipping is priced by weight). Empty = the default from Dashboard → Shipping. */
+  weightGrams: z.coerce.number().int().min(0).max(50_000).nullable().optional(),
 });
 export type SupplyOption = z.infer<typeof supplyOptionSchema>;
 

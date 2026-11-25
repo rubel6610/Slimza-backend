@@ -180,6 +180,13 @@ model Order {
   customerPhone   String        @default("")
   shippingAddress Json
   shippingMethod  String        @default("uk-standard")
+  /// How it ships, as shown to people: "Tracked International Delivery (Europe) · Evri International"
+  shippingLabel   String        @default("")
+  /// Set by the admin when the order is dispatched (Dashboard → order → Tracking)
+  trackingCarrier String?
+  trackingNumber  String?
+  trackingUrl     String?       @db.VarChar(500)
+  shippedAt       DateTime?
   shippingFee     Float         @default(0)
   /// Tax added on top for products whose price doesn't include it (never discounted)
   tax             Float         @default(0)

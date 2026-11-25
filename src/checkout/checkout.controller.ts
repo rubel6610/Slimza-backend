@@ -31,6 +31,8 @@ import {
   processRefundSchema,
   requestRefundSchema,
   updateOrderStatusSchema,
+  orderTrackingSchema,
+  type OrderTrackingInput,
   type ConfirmOrderInput,
   type CreatePaymentIntentInput,
   type ProcessRefundInput,
@@ -170,6 +172,15 @@ export class CheckoutController {
   @Delete('admin/orders/:id')
   async deleteOrder(@Param('id', { schema: orderIdParamSchema }) id: string) {
     return this.checkoutService.deleteArchivedOrder(id);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Patch('admin/orders/:id/tracking')
+  async setTracking(
+    @Param('id', { schema: orderIdParamSchema }) id: string,
+    @Body({ schema: orderTrackingSchema }) body: OrderTrackingInput,
+  ) {
+    return this.checkoutService.setTracking(id, { ...body, trackingUrl: body.trackingUrl || undefined });
   }
 
   @Roles(UserRole.ADMIN)

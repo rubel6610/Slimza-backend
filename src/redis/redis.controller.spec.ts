@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { vi } from 'vitest';
 import { RedisController } from './redis.controller.js';
 import { RedisService } from './redis.service.js';
 
@@ -8,7 +9,14 @@ describe('RedisController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [RedisController],
-      providers: [RedisService],
+      providers: [
+        {
+          provide: RedisService,
+          useValue: {
+            client: { ping: vi.fn().mockResolvedValue('PONG') },
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<RedisController>(RedisController);

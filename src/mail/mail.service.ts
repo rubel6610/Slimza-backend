@@ -701,4 +701,42 @@ export class MailService {
       `SUBSCRIPTION ${params.kind.toUpperCase()}`,
     );
   }
+  /** "Your order is on its way" with the carrier and tracking number (Dashboard → order → Tracking). */
+  async sendShippedEmail(params: {
+    to: string;
+    name: string;
+    orderNumber: string;
+    carrier: string;
+    trackingNumber: string;
+    trackingUrl?: string | null;
+  }): Promise<void> {
+    const name = params.name || 'there';
+    const orders = `${this.storeUrl}/account/orders`;
+    await this.sendSimple(
+      {
+        to: params.to,
+        subject: `Your order #${params.orderNumber} is on its way`,
+        text: [
+          `Hi ${name},`,
+          '',
+          `Good news: your order #${params.orderNumber} has been dispatched with ${params.carrier}.`,
+          `Tracking number: ${params.trackingNumber}`,
+          params.trackingUrl ? `Track your parcel: ${params.trackingUrl}` : '',
+          '',
+          `Your orders: ${orders}`,
+          '',
+          'The Slimza team',
+        ]
+          .filter((line, i, all) => line !== '' || all[i - 1] !== '')
+          .join('\n'),
+        html:
+          `<p>Hi ${escapeHtml(name)},</p>` +
+          `<p>Good news: your order <strong>#${escapeHtml(params.orderNumber)}</strong> has been dispatched with <strong>${escapeHtml(params.carrier)}</strong>.</p>` +
+          `<p>Tracking number: <strong>${escapeHtml(params.trackingNumber)}</strong></p>` +
+          (params.trackingUrl ? `<p><a href="${escapeHtml(params.trackingUrl)}">Track your parcel</a></p>` : '') +
+          `<p><a href="${escapeHtml(orders)}">View your orders</a></p><p>The Slimza team</p>`,
+      },
+      'SHIPPED',
+    );
+  }
 }
