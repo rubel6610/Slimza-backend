@@ -1,33 +1,13 @@
-import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
-import { paginate } from '../common/pagination/pagination.js';
-import type { WalletEntryType } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { cardBrandName, round2, walletKeys, type SavedCard } from './wallet-rules.js';
-import type { AddTestCardInput, WalletHistoryQuery } from './wallet.schemas.js';
-
-interface BookEntry {
-  userId: string;
-  type: WalletEntryType;
-  /** Signed GBP: + adds credit, − spends it. */
-  amount: number;
-  description: string;
-  referenceKey: string;
-  orderId?: string | null;
-  createdById?: string | null;
-}
-
-/** Thrown inside `book` when a debit would take the balance below zero. */
-class InsufficientCreditError extends Error {
-  constructor(readonly balance: number) {
-    super('Not enough store credit');
-  }
-}
+import { cardBrandName, type SavedCard } from './wallet-rules.js';
+import type { AddTestCardInput } from './wallet.schemas.js';
 
 /**
- * The customer's wallet (docs/WALLET.md):
- *  - store credit: a ledger (WalletTransaction) + the cached User.walletBalance, changed only here
+ * The customer's wallet (docs/WALLET.md): saved cards and their payment history.
+ * There is NO store credit — Slimza takes payments through Stripe only and refunds go back to the card.
  *  - saved cards: kept by Stripe on the customer's Stripe Customer; we only show brand / last 4 / expiry.
  *    Without Stripe (test mode) they are kept in WalletCard — brand / last 4 / expiry only.
  */
@@ -54,30 +34,10 @@ export class WalletService {
     return this.stripe ? 'stripe' : 'test';
   }
 
-  // ---- Store credit ------------------------------------------------------------------
-
-  async balance(userId: string): Promise<number> {
-    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { walletBalance: true } });
-    return round2(user?.walletBalance ?? 0);
-  }
-
-  async history(userId: string, query: Pick<WalletHistoryQuery, 'page' | 'limit'>) {
-    const where = { userId };
-    return paginate(query, {
-      count: () => this.prisma.walletTransaction.count({ where }),
-      findMany: ({ skip, take }) =>
-        this.prisma.walletTransaction.findMany({
-          where,
-          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-          skip,
-          take,
-          select: { id: true, type: true, amount: true, balanceAfter: true, description: true, orderId: true, createdAt: true },
-        }),
-    });
-  }
+  // ---- Payments ----------------------------------------------------------------------
 
   /**
-   * Account → Wallet → Payments: the customer's paid orders and how they were paid (card / store credit).
+   * Account → Wallet → Payments: the customer's paid orders and the card they used.
    * Same ownership rule as "My orders": linked to the account, or placed with its email.
    */
   async payments(userId: string, limit = 10) {
@@ -96,7 +56,6 @@ export class WalletService {
         orderNumber: true,
         createdAt: true,
         total: true,
-        walletUsed: true,
         paymentMode: true,
         paymentLabel: true,
         paymentStatus: true,
@@ -105,140 +64,21 @@ export class WalletService {
     });
     return orders.map((o) => ({
       ...o,
-      cardPaid: round2(Math.max(0, o.total - o.walletUsed)),
       // Orders from before payment labels were saved
-      paymentLabel:
-        o.paymentLabel ||
-        (o.paymentMode === 'wallet' ? 'Store credit' : o.paymentMode === 'demo' ? 'Card (test payment)' : 'Card'),
+      paymentLabel: o.paymentLabel || (o.paymentMode === 'demo' ? 'Card (test payment)' : 'Card'),
     }));
   }
 
-  /** Account → Wallet. */
-  async summary(userId: string, query: Pick<WalletHistoryQuery, 'page' | 'limit'>) {
-    const [balance, transactions, payments, cards] = await Promise.all([
-      this.balance(userId),
-      this.history(userId, query),
+  /** Account → Wallet: saved cards + latest payments. */
+  async summary(userId: string) {
+    const [payments, cards] = await Promise.all([
       this.payments(userId),
       this.listCards(userId).catch((err) => {
         this.logger.warn(`Could not load saved cards: ${err instanceof Error ? err.message : err}`);
         return [] as SavedCard[];
       }),
     ]);
-    return { balance, cardsEnabled: this.cardsEnabled, cardsMode: this.cardsMode, cards, transactions, payments };
-  }
-
-  /** Dashboard: add or remove credit by hand. */
-  async adminAdjust(userId: string, amount: number, reason: string, adminId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
-    if (!user) throw new NotFoundException('Customer not found');
-    if (user.role !== 'CUSTOMER') throw new BadRequestException('Only customer accounts have a wallet.');
-    try {
-      await this.book({
-        userId,
-        type: amount > 0 ? 'ADMIN_CREDIT' : 'ADMIN_DEBIT',
-        amount,
-        description: reason,
-        referenceKey: `admin:${userId}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
-        createdById: adminId,
-      });
-    } catch (err) {
-      if (err instanceof InsufficientCreditError) {
-        throw new BadRequestException(`The customer only has £${err.balance.toFixed(2)} of store credit.`);
-      }
-      throw err;
-    }
-    return { balance: await this.balance(userId) };
-  }
-
-  /**
-   * Checkout: spend store credit on an order. Returns what was actually taken.
-   * strict (order paid fully by credit): not enough credit → 409.
-   * lenient (card already charged for the rest): takes what is there and logs the gap.
-   */
-  async payForOrder(input: { userId: string; orderId: string; orderNumber: string; amount: number; strict: boolean }) {
-    const amount = round2(input.amount);
-    if (amount <= 0) return 0;
-    try {
-      const entry = await this.book({
-        userId: input.userId,
-        type: 'ORDER_PAYMENT',
-        amount: -amount,
-        description: `Paid for order #${input.orderNumber}`,
-        orderId: input.orderId,
-        referenceKey: walletKeys.orderPayment(input.orderId),
-      });
-      return entry ? amount : 0;
-    } catch (err) {
-      if (!(err instanceof InsufficientCreditError)) throw err;
-      if (input.strict) throw new ConflictException('Your store credit changed. Please review your order and try again.');
-      const take = round2(Math.max(0, err.balance));
-      this.logger.warn(`Order #${input.orderNumber}: wanted £${amount} of store credit, only £${take} left.`);
-      if (take <= 0) return 0;
-      await this.book({
-        userId: input.userId,
-        type: 'ORDER_PAYMENT',
-        amount: -take,
-        description: `Paid for order #${input.orderNumber}`,
-        orderId: input.orderId,
-        referenceKey: walletKeys.orderPayment(input.orderId),
-      });
-      return take;
-    }
-  }
-
-  /**
-   * Order cancelled / refunded to the original payment method: give back the credit it used.
-   * Once per order; skipped when the whole order was already refunded to store credit.
-   */
-  async returnForOrder(order: { id: string; orderNumber: string }) {
-    const paid = await this.prisma.walletTransaction.findUnique({ where: { referenceKey: walletKeys.orderPayment(order.id) } });
-    if (!paid) return 0;
-    const amount = round2(-paid.amount);
-    const entry = await this.book({
-      userId: paid.userId,
-      type: 'ORDER_RETURN',
-      amount,
-      description: `Returned from cancelled order #${order.orderNumber}`,
-      orderId: order.id,
-      referenceKey: walletKeys.orderReturn(order.id),
-    });
-    return entry ? amount : 0;
-  }
-
-  /**
-   * Adds one ledger row and moves the cached balance, atomically. Idempotent by `referenceKey`
-   * (returns null if that change was already booked). Debits never take the balance below 0.
-   */
-  private async book(entry: BookEntry) {
-    for (let attempt = 0; attempt < 4; attempt++) {
-      const result = await this.prisma.$transaction(async (tx) => {
-        const existing = await tx.walletTransaction.findUnique({ where: { referenceKey: entry.referenceKey }, select: { id: true } });
-        if (existing) return { done: null };
-        const user = await tx.user.findUnique({ where: { id: entry.userId }, select: { walletBalance: true } });
-        if (!user) throw new NotFoundException('Customer not found');
-        const before = user.walletBalance;
-        const after = round2(before + entry.amount);
-        if (after < 0) throw new InsufficientCreditError(round2(before));
-        // Optimistic lock: only if nobody changed the balance since we read it.
-        const updated = await tx.user.updateMany({ where: { id: entry.userId, walletBalance: before }, data: { walletBalance: after } });
-        if (updated.count === 0) return { retry: true as const };
-        const row = await tx.walletTransaction.create({
-          data: {
-            userId: entry.userId,
-            type: entry.type,
-            amount: round2(entry.amount),
-            balanceAfter: after,
-            description: entry.description.slice(0, 300),
-            orderId: entry.orderId ?? null,
-            referenceKey: entry.referenceKey,
-            createdById: entry.createdById ?? null,
-          },
-        });
-        return { done: row };
-      });
-      if (!('retry' in result)) return result.done;
-    }
-    throw new ConflictException('Your wallet is busy. Please try again.');
+    return { cardsEnabled: this.cardsEnabled, cardsMode: this.cardsMode, cards, payments };
   }
 
   // ---- Saved cards (Stripe) ----------------------------------------------------------

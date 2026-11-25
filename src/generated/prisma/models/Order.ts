@@ -28,6 +28,7 @@ export type AggregateOrder = {
 
 export type OrderAvgAggregateOutputType = {
   shippingFee: number | null
+  tax: number | null
   subtotal: number | null
   discount: number | null
   bundleSavings: number | null
@@ -35,12 +36,12 @@ export type OrderAvgAggregateOutputType = {
   pointsRedeemed: number | null
   pointsDiscount: number | null
   pointsEarned: number | null
-  walletUsed: number | null
   total: number | null
 }
 
 export type OrderSumAggregateOutputType = {
   shippingFee: number | null
+  tax: number | null
   subtotal: number | null
   discount: number | null
   bundleSavings: number | null
@@ -48,7 +49,6 @@ export type OrderSumAggregateOutputType = {
   pointsRedeemed: number | null
   pointsDiscount: number | null
   pointsEarned: number | null
-  walletUsed: number | null
   total: number | null
 }
 
@@ -61,6 +61,7 @@ export type OrderMinAggregateOutputType = {
   customerPhone: string | null
   shippingMethod: string | null
   shippingFee: number | null
+  tax: number | null
   subtotal: number | null
   discount: number | null
   bundleSavings: number | null
@@ -68,7 +69,6 @@ export type OrderMinAggregateOutputType = {
   pointsRedeemed: number | null
   pointsDiscount: number | null
   pointsEarned: number | null
-  walletUsed: number | null
   promoCode: string | null
   total: number | null
   currency: string | null
@@ -92,6 +92,7 @@ export type OrderMaxAggregateOutputType = {
   customerPhone: string | null
   shippingMethod: string | null
   shippingFee: number | null
+  tax: number | null
   subtotal: number | null
   discount: number | null
   bundleSavings: number | null
@@ -99,7 +100,6 @@ export type OrderMaxAggregateOutputType = {
   pointsRedeemed: number | null
   pointsDiscount: number | null
   pointsEarned: number | null
-  walletUsed: number | null
   promoCode: string | null
   total: number | null
   currency: string | null
@@ -124,6 +124,7 @@ export type OrderCountAggregateOutputType = {
   shippingAddress: number
   shippingMethod: number
   shippingFee: number
+  tax: number
   subtotal: number
   discount: number
   bundleSavings: number
@@ -131,7 +132,6 @@ export type OrderCountAggregateOutputType = {
   pointsRedeemed: number
   pointsDiscount: number
   pointsEarned: number
-  walletUsed: number
   promoCode: number
   total: number
   currency: number
@@ -151,6 +151,7 @@ export type OrderCountAggregateOutputType = {
 
 export type OrderAvgAggregateInputType = {
   shippingFee?: true
+  tax?: true
   subtotal?: true
   discount?: true
   bundleSavings?: true
@@ -158,12 +159,12 @@ export type OrderAvgAggregateInputType = {
   pointsRedeemed?: true
   pointsDiscount?: true
   pointsEarned?: true
-  walletUsed?: true
   total?: true
 }
 
 export type OrderSumAggregateInputType = {
   shippingFee?: true
+  tax?: true
   subtotal?: true
   discount?: true
   bundleSavings?: true
@@ -171,7 +172,6 @@ export type OrderSumAggregateInputType = {
   pointsRedeemed?: true
   pointsDiscount?: true
   pointsEarned?: true
-  walletUsed?: true
   total?: true
 }
 
@@ -184,6 +184,7 @@ export type OrderMinAggregateInputType = {
   customerPhone?: true
   shippingMethod?: true
   shippingFee?: true
+  tax?: true
   subtotal?: true
   discount?: true
   bundleSavings?: true
@@ -191,7 +192,6 @@ export type OrderMinAggregateInputType = {
   pointsRedeemed?: true
   pointsDiscount?: true
   pointsEarned?: true
-  walletUsed?: true
   promoCode?: true
   total?: true
   currency?: true
@@ -215,6 +215,7 @@ export type OrderMaxAggregateInputType = {
   customerPhone?: true
   shippingMethod?: true
   shippingFee?: true
+  tax?: true
   subtotal?: true
   discount?: true
   bundleSavings?: true
@@ -222,7 +223,6 @@ export type OrderMaxAggregateInputType = {
   pointsRedeemed?: true
   pointsDiscount?: true
   pointsEarned?: true
-  walletUsed?: true
   promoCode?: true
   total?: true
   currency?: true
@@ -247,6 +247,7 @@ export type OrderCountAggregateInputType = {
   shippingAddress?: true
   shippingMethod?: true
   shippingFee?: true
+  tax?: true
   subtotal?: true
   discount?: true
   bundleSavings?: true
@@ -254,7 +255,6 @@ export type OrderCountAggregateInputType = {
   pointsRedeemed?: true
   pointsDiscount?: true
   pointsEarned?: true
-  walletUsed?: true
   promoCode?: true
   total?: true
   currency?: true
@@ -367,6 +367,7 @@ export type OrderGroupByOutputType = {
   shippingAddress: runtime.JsonValue
   shippingMethod: string
   shippingFee: number
+  tax: number
   subtotal: number
   discount: number
   bundleSavings: number
@@ -374,7 +375,6 @@ export type OrderGroupByOutputType = {
   pointsRedeemed: number
   pointsDiscount: number
   pointsEarned: number
-  walletUsed: number
   promoCode: string | null
   total: number
   currency: string
@@ -423,6 +423,7 @@ export type OrderWhereInput = {
   shippingAddress?: Prisma.JsonFilter<"Order">
   shippingMethod?: Prisma.StringFilter<"Order"> | string
   shippingFee?: Prisma.FloatFilter<"Order"> | number
+  tax?: Prisma.FloatFilter<"Order"> | number
   subtotal?: Prisma.FloatFilter<"Order"> | number
   discount?: Prisma.FloatFilter<"Order"> | number
   bundleSavings?: Prisma.FloatFilter<"Order"> | number
@@ -430,7 +431,6 @@ export type OrderWhereInput = {
   pointsRedeemed?: Prisma.IntFilter<"Order"> | number
   pointsDiscount?: Prisma.FloatFilter<"Order"> | number
   pointsEarned?: Prisma.IntFilter<"Order"> | number
-  walletUsed?: Prisma.FloatFilter<"Order"> | number
   promoCode?: Prisma.StringNullableFilter<"Order"> | string | null
   total?: Prisma.FloatFilter<"Order"> | number
   currency?: Prisma.StringFilter<"Order"> | string
@@ -459,6 +459,7 @@ export type OrderOrderByWithRelationInput = {
   shippingAddress?: Prisma.SortOrder
   shippingMethod?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
+  tax?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
@@ -466,7 +467,6 @@ export type OrderOrderByWithRelationInput = {
   pointsRedeemed?: Prisma.SortOrder
   pointsDiscount?: Prisma.SortOrder
   pointsEarned?: Prisma.SortOrder
-  walletUsed?: Prisma.SortOrder
   promoCode?: Prisma.SortOrderInput | Prisma.SortOrder
   total?: Prisma.SortOrder
   currency?: Prisma.SortOrder
@@ -500,6 +500,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   shippingAddress?: Prisma.JsonFilter<"Order">
   shippingMethod?: Prisma.StringFilter<"Order"> | string
   shippingFee?: Prisma.FloatFilter<"Order"> | number
+  tax?: Prisma.FloatFilter<"Order"> | number
   subtotal?: Prisma.FloatFilter<"Order"> | number
   discount?: Prisma.FloatFilter<"Order"> | number
   bundleSavings?: Prisma.FloatFilter<"Order"> | number
@@ -507,7 +508,6 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   pointsRedeemed?: Prisma.IntFilter<"Order"> | number
   pointsDiscount?: Prisma.FloatFilter<"Order"> | number
   pointsEarned?: Prisma.IntFilter<"Order"> | number
-  walletUsed?: Prisma.FloatFilter<"Order"> | number
   promoCode?: Prisma.StringNullableFilter<"Order"> | string | null
   total?: Prisma.FloatFilter<"Order"> | number
   currency?: Prisma.StringFilter<"Order"> | string
@@ -535,6 +535,7 @@ export type OrderOrderByWithAggregationInput = {
   shippingAddress?: Prisma.SortOrder
   shippingMethod?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
+  tax?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
@@ -542,7 +543,6 @@ export type OrderOrderByWithAggregationInput = {
   pointsRedeemed?: Prisma.SortOrder
   pointsDiscount?: Prisma.SortOrder
   pointsEarned?: Prisma.SortOrder
-  walletUsed?: Prisma.SortOrder
   promoCode?: Prisma.SortOrderInput | Prisma.SortOrder
   total?: Prisma.SortOrder
   currency?: Prisma.SortOrder
@@ -576,6 +576,7 @@ export type OrderScalarWhereWithAggregatesInput = {
   shippingAddress?: Prisma.JsonWithAggregatesFilter<"Order">
   shippingMethod?: Prisma.StringWithAggregatesFilter<"Order"> | string
   shippingFee?: Prisma.FloatWithAggregatesFilter<"Order"> | number
+  tax?: Prisma.FloatWithAggregatesFilter<"Order"> | number
   subtotal?: Prisma.FloatWithAggregatesFilter<"Order"> | number
   discount?: Prisma.FloatWithAggregatesFilter<"Order"> | number
   bundleSavings?: Prisma.FloatWithAggregatesFilter<"Order"> | number
@@ -583,7 +584,6 @@ export type OrderScalarWhereWithAggregatesInput = {
   pointsRedeemed?: Prisma.IntWithAggregatesFilter<"Order"> | number
   pointsDiscount?: Prisma.FloatWithAggregatesFilter<"Order"> | number
   pointsEarned?: Prisma.IntWithAggregatesFilter<"Order"> | number
-  walletUsed?: Prisma.FloatWithAggregatesFilter<"Order"> | number
   promoCode?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   total?: Prisma.FloatWithAggregatesFilter<"Order"> | number
   currency?: Prisma.StringWithAggregatesFilter<"Order"> | string
@@ -608,6 +608,7 @@ export type OrderCreateInput = {
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: string
   shippingFee?: number
+  tax?: number
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -615,7 +616,6 @@ export type OrderCreateInput = {
   pointsRedeemed?: number
   pointsDiscount?: number
   pointsEarned?: number
-  walletUsed?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -644,6 +644,7 @@ export type OrderUncheckedCreateInput = {
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: string
   shippingFee?: number
+  tax?: number
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -651,7 +652,6 @@ export type OrderUncheckedCreateInput = {
   pointsRedeemed?: number
   pointsDiscount?: number
   pointsEarned?: number
-  walletUsed?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -678,6 +678,7 @@ export type OrderUpdateInput = {
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
+  tax?: Prisma.FloatFieldUpdateOperationsInput | number
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -685,7 +686,6 @@ export type OrderUpdateInput = {
   pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
   pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
   pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
-  walletUsed?: Prisma.FloatFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -714,6 +714,7 @@ export type OrderUncheckedUpdateInput = {
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
+  tax?: Prisma.FloatFieldUpdateOperationsInput | number
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -721,7 +722,6 @@ export type OrderUncheckedUpdateInput = {
   pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
   pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
   pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
-  walletUsed?: Prisma.FloatFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -749,6 +749,7 @@ export type OrderCreateManyInput = {
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: string
   shippingFee?: number
+  tax?: number
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -756,7 +757,6 @@ export type OrderCreateManyInput = {
   pointsRedeemed?: number
   pointsDiscount?: number
   pointsEarned?: number
-  walletUsed?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -781,6 +781,7 @@ export type OrderUpdateManyMutationInput = {
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
+  tax?: Prisma.FloatFieldUpdateOperationsInput | number
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -788,7 +789,6 @@ export type OrderUpdateManyMutationInput = {
   pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
   pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
   pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
-  walletUsed?: Prisma.FloatFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -814,6 +814,7 @@ export type OrderUncheckedUpdateManyInput = {
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
+  tax?: Prisma.FloatFieldUpdateOperationsInput | number
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -821,7 +822,6 @@ export type OrderUncheckedUpdateManyInput = {
   pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
   pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
   pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
-  walletUsed?: Prisma.FloatFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -863,6 +863,7 @@ export type OrderCountOrderByAggregateInput = {
   shippingAddress?: Prisma.SortOrder
   shippingMethod?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
+  tax?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
@@ -870,7 +871,6 @@ export type OrderCountOrderByAggregateInput = {
   pointsRedeemed?: Prisma.SortOrder
   pointsDiscount?: Prisma.SortOrder
   pointsEarned?: Prisma.SortOrder
-  walletUsed?: Prisma.SortOrder
   promoCode?: Prisma.SortOrder
   total?: Prisma.SortOrder
   currency?: Prisma.SortOrder
@@ -888,6 +888,7 @@ export type OrderCountOrderByAggregateInput = {
 
 export type OrderAvgOrderByAggregateInput = {
   shippingFee?: Prisma.SortOrder
+  tax?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
@@ -895,7 +896,6 @@ export type OrderAvgOrderByAggregateInput = {
   pointsRedeemed?: Prisma.SortOrder
   pointsDiscount?: Prisma.SortOrder
   pointsEarned?: Prisma.SortOrder
-  walletUsed?: Prisma.SortOrder
   total?: Prisma.SortOrder
 }
 
@@ -908,6 +908,7 @@ export type OrderMaxOrderByAggregateInput = {
   customerPhone?: Prisma.SortOrder
   shippingMethod?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
+  tax?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
@@ -915,7 +916,6 @@ export type OrderMaxOrderByAggregateInput = {
   pointsRedeemed?: Prisma.SortOrder
   pointsDiscount?: Prisma.SortOrder
   pointsEarned?: Prisma.SortOrder
-  walletUsed?: Prisma.SortOrder
   promoCode?: Prisma.SortOrder
   total?: Prisma.SortOrder
   currency?: Prisma.SortOrder
@@ -939,6 +939,7 @@ export type OrderMinOrderByAggregateInput = {
   customerPhone?: Prisma.SortOrder
   shippingMethod?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
+  tax?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
@@ -946,7 +947,6 @@ export type OrderMinOrderByAggregateInput = {
   pointsRedeemed?: Prisma.SortOrder
   pointsDiscount?: Prisma.SortOrder
   pointsEarned?: Prisma.SortOrder
-  walletUsed?: Prisma.SortOrder
   promoCode?: Prisma.SortOrder
   total?: Prisma.SortOrder
   currency?: Prisma.SortOrder
@@ -963,6 +963,7 @@ export type OrderMinOrderByAggregateInput = {
 
 export type OrderSumOrderByAggregateInput = {
   shippingFee?: Prisma.SortOrder
+  tax?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
@@ -970,7 +971,6 @@ export type OrderSumOrderByAggregateInput = {
   pointsRedeemed?: Prisma.SortOrder
   pointsDiscount?: Prisma.SortOrder
   pointsEarned?: Prisma.SortOrder
-  walletUsed?: Prisma.SortOrder
   total?: Prisma.SortOrder
 }
 
@@ -1021,6 +1021,14 @@ export type OrderUncheckedUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.OrderScalarWhereInput | Prisma.OrderScalarWhereInput[]
 }
 
+export type FloatFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type EnumOrderStatusFieldUpdateOperationsInput = {
   set?: $Enums.OrderStatus
 }
@@ -1066,6 +1074,7 @@ export type OrderCreateWithoutUserInput = {
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: string
   shippingFee?: number
+  tax?: number
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -1073,7 +1082,6 @@ export type OrderCreateWithoutUserInput = {
   pointsRedeemed?: number
   pointsDiscount?: number
   pointsEarned?: number
-  walletUsed?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -1100,6 +1108,7 @@ export type OrderUncheckedCreateWithoutUserInput = {
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: string
   shippingFee?: number
+  tax?: number
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -1107,7 +1116,6 @@ export type OrderUncheckedCreateWithoutUserInput = {
   pointsRedeemed?: number
   pointsDiscount?: number
   pointsEarned?: number
-  walletUsed?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -1164,6 +1172,7 @@ export type OrderScalarWhereInput = {
   shippingAddress?: Prisma.JsonFilter<"Order">
   shippingMethod?: Prisma.StringFilter<"Order"> | string
   shippingFee?: Prisma.FloatFilter<"Order"> | number
+  tax?: Prisma.FloatFilter<"Order"> | number
   subtotal?: Prisma.FloatFilter<"Order"> | number
   discount?: Prisma.FloatFilter<"Order"> | number
   bundleSavings?: Prisma.FloatFilter<"Order"> | number
@@ -1171,7 +1180,6 @@ export type OrderScalarWhereInput = {
   pointsRedeemed?: Prisma.IntFilter<"Order"> | number
   pointsDiscount?: Prisma.FloatFilter<"Order"> | number
   pointsEarned?: Prisma.IntFilter<"Order"> | number
-  walletUsed?: Prisma.FloatFilter<"Order"> | number
   promoCode?: Prisma.StringNullableFilter<"Order"> | string | null
   total?: Prisma.FloatFilter<"Order"> | number
   currency?: Prisma.StringFilter<"Order"> | string
@@ -1196,6 +1204,7 @@ export type OrderCreateWithoutRefundRequestInput = {
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: string
   shippingFee?: number
+  tax?: number
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -1203,7 +1212,6 @@ export type OrderCreateWithoutRefundRequestInput = {
   pointsRedeemed?: number
   pointsDiscount?: number
   pointsEarned?: number
-  walletUsed?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -1231,6 +1239,7 @@ export type OrderUncheckedCreateWithoutRefundRequestInput = {
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: string
   shippingFee?: number
+  tax?: number
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -1238,7 +1247,6 @@ export type OrderUncheckedCreateWithoutRefundRequestInput = {
   pointsRedeemed?: number
   pointsDiscount?: number
   pointsEarned?: number
-  walletUsed?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -1280,6 +1288,7 @@ export type OrderUpdateWithoutRefundRequestInput = {
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
+  tax?: Prisma.FloatFieldUpdateOperationsInput | number
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1287,7 +1296,6 @@ export type OrderUpdateWithoutRefundRequestInput = {
   pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
   pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
   pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
-  walletUsed?: Prisma.FloatFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1315,6 +1323,7 @@ export type OrderUncheckedUpdateWithoutRefundRequestInput = {
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
+  tax?: Prisma.FloatFieldUpdateOperationsInput | number
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1322,7 +1331,6 @@ export type OrderUncheckedUpdateWithoutRefundRequestInput = {
   pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
   pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
   pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
-  walletUsed?: Prisma.FloatFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1348,6 +1356,7 @@ export type OrderCreateWithoutItemsInput = {
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: string
   shippingFee?: number
+  tax?: number
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -1355,7 +1364,6 @@ export type OrderCreateWithoutItemsInput = {
   pointsRedeemed?: number
   pointsDiscount?: number
   pointsEarned?: number
-  walletUsed?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -1383,6 +1391,7 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: string
   shippingFee?: number
+  tax?: number
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -1390,7 +1399,6 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   pointsRedeemed?: number
   pointsDiscount?: number
   pointsEarned?: number
-  walletUsed?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -1432,6 +1440,7 @@ export type OrderUpdateWithoutItemsInput = {
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
+  tax?: Prisma.FloatFieldUpdateOperationsInput | number
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1439,7 +1448,6 @@ export type OrderUpdateWithoutItemsInput = {
   pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
   pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
   pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
-  walletUsed?: Prisma.FloatFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1467,6 +1475,7 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
+  tax?: Prisma.FloatFieldUpdateOperationsInput | number
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1474,7 +1483,6 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
   pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
   pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
-  walletUsed?: Prisma.FloatFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1500,6 +1508,7 @@ export type OrderCreateManyUserInput = {
   shippingAddress: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: string
   shippingFee?: number
+  tax?: number
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -1507,7 +1516,6 @@ export type OrderCreateManyUserInput = {
   pointsRedeemed?: number
   pointsDiscount?: number
   pointsEarned?: number
-  walletUsed?: number
   promoCode?: string | null
   total: number
   currency?: string
@@ -1532,6 +1540,7 @@ export type OrderUpdateWithoutUserInput = {
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
+  tax?: Prisma.FloatFieldUpdateOperationsInput | number
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1539,7 +1548,6 @@ export type OrderUpdateWithoutUserInput = {
   pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
   pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
   pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
-  walletUsed?: Prisma.FloatFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1566,6 +1574,7 @@ export type OrderUncheckedUpdateWithoutUserInput = {
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
+  tax?: Prisma.FloatFieldUpdateOperationsInput | number
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1573,7 +1582,6 @@ export type OrderUncheckedUpdateWithoutUserInput = {
   pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
   pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
   pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
-  walletUsed?: Prisma.FloatFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1600,6 +1608,7 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
   shippingAddress?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
+  tax?: Prisma.FloatFieldUpdateOperationsInput | number
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1607,7 +1616,6 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
   pointsRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
   pointsDiscount?: Prisma.FloatFieldUpdateOperationsInput | number
   pointsEarned?: Prisma.IntFieldUpdateOperationsInput | number
-  walletUsed?: Prisma.FloatFieldUpdateOperationsInput | number
   promoCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.FloatFieldUpdateOperationsInput | number
   currency?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1664,6 +1672,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   shippingAddress?: boolean
   shippingMethod?: boolean
   shippingFee?: boolean
+  tax?: boolean
   subtotal?: boolean
   discount?: boolean
   bundleSavings?: boolean
@@ -1671,7 +1680,6 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   pointsRedeemed?: boolean
   pointsDiscount?: boolean
   pointsEarned?: boolean
-  walletUsed?: boolean
   promoCode?: boolean
   total?: boolean
   currency?: boolean
@@ -1703,6 +1711,7 @@ export type OrderSelectScalar = {
   shippingAddress?: boolean
   shippingMethod?: boolean
   shippingFee?: boolean
+  tax?: boolean
   subtotal?: boolean
   discount?: boolean
   bundleSavings?: boolean
@@ -1710,7 +1719,6 @@ export type OrderSelectScalar = {
   pointsRedeemed?: boolean
   pointsDiscount?: boolean
   pointsEarned?: boolean
-  walletUsed?: boolean
   promoCode?: boolean
   total?: boolean
   currency?: boolean
@@ -1726,7 +1734,7 @@ export type OrderSelectScalar = {
   archivedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "userId" | "customerEmail" | "customerName" | "customerPhone" | "shippingAddress" | "shippingMethod" | "shippingFee" | "subtotal" | "discount" | "bundleSavings" | "bundleReward" | "pointsRedeemed" | "pointsDiscount" | "pointsEarned" | "walletUsed" | "promoCode" | "total" | "currency" | "status" | "paymentStatus" | "paymentMode" | "paymentLabel" | "paymentIntentId" | "stripeChargeId" | "metadata" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "userId" | "customerEmail" | "customerName" | "customerPhone" | "shippingAddress" | "shippingMethod" | "shippingFee" | "tax" | "subtotal" | "discount" | "bundleSavings" | "bundleReward" | "pointsRedeemed" | "pointsDiscount" | "pointsEarned" | "promoCode" | "total" | "currency" | "status" | "paymentStatus" | "paymentMode" | "paymentLabel" | "paymentIntentId" | "stripeChargeId" | "metadata" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
@@ -1751,6 +1759,10 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     shippingAddress: runtime.JsonValue
     shippingMethod: string
     shippingFee: number
+    /**
+     * Tax added on top for products whose price doesn't include it (never discounted)
+     */
+    tax: number
     subtotal: number
     discount: number
     bundleSavings: number
@@ -1764,10 +1776,6 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
      * Loyalty points this order earns (pending until delivered)
      */
     pointsEarned: number
-    /**
-     * Store credit (wallet) used on this order, in GBP. The card was charged total - walletUsed.
-     */
-    walletUsed: number
     promoCode: string | null
     total: number
     currency: string
@@ -2168,6 +2176,7 @@ export interface OrderFieldRefs {
   readonly shippingAddress: Prisma.FieldRef<"Order", 'Json'>
   readonly shippingMethod: Prisma.FieldRef<"Order", 'String'>
   readonly shippingFee: Prisma.FieldRef<"Order", 'Float'>
+  readonly tax: Prisma.FieldRef<"Order", 'Float'>
   readonly subtotal: Prisma.FieldRef<"Order", 'Float'>
   readonly discount: Prisma.FieldRef<"Order", 'Float'>
   readonly bundleSavings: Prisma.FieldRef<"Order", 'Float'>
@@ -2175,7 +2184,6 @@ export interface OrderFieldRefs {
   readonly pointsRedeemed: Prisma.FieldRef<"Order", 'Int'>
   readonly pointsDiscount: Prisma.FieldRef<"Order", 'Float'>
   readonly pointsEarned: Prisma.FieldRef<"Order", 'Int'>
-  readonly walletUsed: Prisma.FieldRef<"Order", 'Float'>
   readonly promoCode: Prisma.FieldRef<"Order", 'String'>
   readonly total: Prisma.FieldRef<"Order", 'Float'>
   readonly currency: Prisma.FieldRef<"Order", 'String'>

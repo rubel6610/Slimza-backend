@@ -114,17 +114,6 @@ export const LoyaltyEntryStatus = {
 export type LoyaltyEntryStatus = (typeof LoyaltyEntryStatus)[keyof typeof LoyaltyEntryStatus]
 
 
-export const WalletEntryType = {
-  ADMIN_CREDIT: 'ADMIN_CREDIT',
-  ADMIN_DEBIT: 'ADMIN_DEBIT',
-  REFUND: 'REFUND',
-  ORDER_PAYMENT: 'ORDER_PAYMENT',
-  ORDER_RETURN: 'ORDER_RETURN'
-} as const
-
-export type WalletEntryType = (typeof WalletEntryType)[keyof typeof WalletEntryType]
-
-
 export const ReviewStatus = {
   PUBLISHED: 'PUBLISHED',
   HIDDEN: 'HIDDEN'

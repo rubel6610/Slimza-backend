@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { archiveFilterSchema } from '../common/archive/archive.js';
+import { STOCK_STATUSES } from './product-availability.js';
 
 export const createProductSchema = z.object({
   name: z.string().trim().min(1, 'Product name is required'),
@@ -9,9 +10,13 @@ export const createProductSchema = z.object({
   originalPrice: z.coerce.number().optional(),
   discountPercent: z.coerce.number().min(0).max(100).optional().default(0),
   taxIncluded: z.boolean().optional().default(true),
+  /** Only used when taxIncluded is false: a percent of the price, or a fixed £ per item. */
+  taxType: z.enum(['percent', 'fixed']).optional().default('percent'),
+  taxValue: z.coerce.number().min(0).max(10_000).optional().default(0),
   unlimitedStock: z.boolean().optional().default(false),
   stockQuantity: z.coerce.number().int().min(0).optional().default(50),
-  stockStatus: z.enum(['In Stock', 'Low Stock', 'Out of Stock']).optional().default('In Stock'),
+  /** Coming Soon / Out of Stock: shown in the shop, but can't be bought (see product-availability.ts). */
+  stockStatus: z.enum(STOCK_STATUSES).optional().default('In Stock'),
   category: z.string().trim().optional().default('cleanse-reset'),
   categories: z.array(z.string()).optional().default([]),
   brand: z.string().trim().optional().default('slimza-teas'),

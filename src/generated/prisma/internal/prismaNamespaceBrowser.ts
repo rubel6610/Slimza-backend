@@ -66,7 +66,6 @@ export const ModelName = {
   FranchiseApplication: 'FranchiseApplication',
   Blog: 'Blog',
   LoyaltyTransaction: 'LoyaltyTransaction',
-  WalletTransaction: 'WalletTransaction',
   WalletCard: 'WalletCard',
   ProductReview: 'ProductReview'
 } as const
@@ -109,7 +108,6 @@ export const UserScalarFieldEnum = {
   archivedAt: 'archivedAt',
   loyaltyPoints: 'loyaltyPoints',
   loyaltyLifetime: 'loyaltyLifetime',
-  walletBalance: 'walletBalance',
   stripeCustomerId: 'stripeCustomerId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -205,6 +203,7 @@ export const OrderScalarFieldEnum = {
   shippingAddress: 'shippingAddress',
   shippingMethod: 'shippingMethod',
   shippingFee: 'shippingFee',
+  tax: 'tax',
   subtotal: 'subtotal',
   discount: 'discount',
   bundleSavings: 'bundleSavings',
@@ -212,7 +211,6 @@ export const OrderScalarFieldEnum = {
   pointsRedeemed: 'pointsRedeemed',
   pointsDiscount: 'pointsDiscount',
   pointsEarned: 'pointsEarned',
-  walletUsed: 'walletUsed',
   promoCode: 'promoCode',
   total: 'total',
   currency: 'currency',
@@ -279,6 +277,8 @@ export const ProductScalarFieldEnum = {
   originalPrice: 'originalPrice',
   discountPercent: 'discountPercent',
   taxIncluded: 'taxIncluded',
+  taxType: 'taxType',
+  taxValue: 'taxValue',
   unlimitedStock: 'unlimitedStock',
   stockQuantity: 'stockQuantity',
   stockStatus: 'stockStatus',
@@ -390,22 +390,6 @@ export const LoyaltyTransactionScalarFieldEnum = {
 } as const
 
 export type LoyaltyTransactionScalarFieldEnum = (typeof LoyaltyTransactionScalarFieldEnum)[keyof typeof LoyaltyTransactionScalarFieldEnum]
-
-
-export const WalletTransactionScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  type: 'type',
-  amount: 'amount',
-  balanceAfter: 'balanceAfter',
-  description: 'description',
-  orderId: 'orderId',
-  referenceKey: 'referenceKey',
-  createdById: 'createdById',
-  createdAt: 'createdAt'
-} as const
-
-export type WalletTransactionScalarFieldEnum = (typeof WalletTransactionScalarFieldEnum)[keyof typeof WalletTransactionScalarFieldEnum]
 
 
 export const WalletCardScalarFieldEnum = {
@@ -619,6 +603,7 @@ export const ProductOrderByRelevanceFieldEnum = {
   slug: 'slug',
   name: 'name',
   description: 'description',
+  taxType: 'taxType',
   stockStatus: 'stockStatus',
   category: 'category',
   brand: 'brand',
@@ -689,18 +674,6 @@ export const LoyaltyTransactionOrderByRelevanceFieldEnum = {
 } as const
 
 export type LoyaltyTransactionOrderByRelevanceFieldEnum = (typeof LoyaltyTransactionOrderByRelevanceFieldEnum)[keyof typeof LoyaltyTransactionOrderByRelevanceFieldEnum]
-
-
-export const WalletTransactionOrderByRelevanceFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  description: 'description',
-  orderId: 'orderId',
-  referenceKey: 'referenceKey',
-  createdById: 'createdById'
-} as const
-
-export type WalletTransactionOrderByRelevanceFieldEnum = (typeof WalletTransactionOrderByRelevanceFieldEnum)[keyof typeof WalletTransactionOrderByRelevanceFieldEnum]
 
 
 export const WalletCardOrderByRelevanceFieldEnum = {

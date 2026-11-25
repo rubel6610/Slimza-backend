@@ -1,11 +1,4 @@
 import { z } from 'zod';
-import { pageParamsSchema } from '../common/pagination/pagination.js';
-import { MAX_ADJUSTMENT } from './wallet-rules.js';
-
-export const walletHistoryQuerySchema = pageParamsSchema.omit({ q: true }).extend({
-  limit: z.coerce.number().int().min(1).max(50).optional().default(10),
-});
-export type WalletHistoryQuery = z.infer<typeof walletHistoryQuerySchema>;
 
 /** Stripe PaymentMethod id (pm_1Abc…) or, in test mode, a saved card's uuid. */
 export const cardIdParamSchema = z
@@ -25,15 +18,3 @@ export const addTestCardSchema = z.object({
   makeDefault: z.boolean().optional().default(false),
 });
 export type AddTestCardInput = z.infer<typeof addTestCardSchema>;
-export const userIdParamSchema = z.string().trim().min(1).max(64);
-
-/** Admin: add (positive) or remove (negative) store credit. */
-export const adminAdjustSchema = z.object({
-  amount: z.coerce
-    .number()
-    .refine((n) => Number.isFinite(n) && n !== 0, 'Enter an amount other than 0')
-    .refine((n) => Math.abs(n) <= MAX_ADJUSTMENT, `Adjust at most £${MAX_ADJUSTMENT} at a time`)
-    .transform((n) => Math.round(n * 100) / 100),
-  reason: z.string().trim().min(3, 'Add a short reason (the customer sees it)').max(200),
-});
-export type AdminAdjustInput = z.infer<typeof adminAdjustSchema>;

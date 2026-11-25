@@ -25,6 +25,8 @@ export interface OrderEmailPayload {
   promoCode?: string | null;
   shippingFee: number;
   shippingMethod?: string;
+  /** Tax added on top (products whose price doesn't include it) */
+  tax?: number;
   total: number;
   shippingAddress: {
     name?: string;
@@ -229,6 +231,7 @@ export class MailService {
       order.items.length > 1 ||
       order.discount > 0 ||
       (order.bundleReward ?? 0) > 0 ||
+      (order.tax ?? 0) > 0 ||
       order.shippingFee > 0;
 
     const totalsHtml = showTotalsSummary
@@ -246,6 +249,7 @@ export class MailService {
               : ''
           }
           <div><strong style="color: #374151;">Shipping:</strong> ${order.shippingFee === 0 ? 'Free' : `&pound; ${order.shippingFee.toFixed(2)}`}</div>
+          ${(order.tax ?? 0) > 0 ? `<div><strong style="color: #374151;">Tax:</strong> &pound; ${(order.tax ?? 0).toFixed(2)}</div>` : ''}
           <div style="font-size: 16px; color: #111827; margin-top: 6px;"><strong>Total: &pound; ${order.total.toFixed(2)}</strong></div>
         </div>
       `
@@ -413,6 +417,7 @@ export class MailService {
         ? `Discount${order.promoCode ? ` (${order.promoCode})` : ''}: -£${order.discount.toFixed(2)}`
         : null,
       `Shipping: ${order.shippingFee === 0 ? 'Free' : `£${order.shippingFee.toFixed(2)}`}`,
+      (order.tax ?? 0) > 0 ? `Tax: £${(order.tax ?? 0).toFixed(2)}` : null,
       `Total: £${order.total.toFixed(2)}`,
       '',
       'Shipping Information:',
@@ -590,6 +595,54 @@ export class MailService {
         html: `<p>Hi ${escapeHtml(name)},</p><p>Good news: your Slimza account has been restored. You can sign in again with your usual email and password.</p><p><a href="${escapeHtml(signIn)}">Sign in to Slimza</a></p><p>The Slimza team</p>`,
       },
       'ACCOUNT RESTORED',
+    );
+  }
+
+  /** Sent to the customer every time a refund is approved (money goes back to their card via Stripe). */
+  async sendRefundEmail(params: {
+    to: string;
+    name: string;
+    orderNumber: string;
+    amount: number;
+    adminNote?: string | null;
+    stripeRefundId?: string | null;
+  }): Promise<void> {
+    const name = params.name || 'there';
+    const amount = `£${params.amount.toFixed(2)}`;
+    const orders = `${this.storeUrl}/account/orders`;
+    const note = params.adminNote?.trim();
+    const ref = params.stripeRefundId ? `Refund reference: ${params.stripeRefundId}` : '';
+    await this.sendSimple(
+      {
+        to: params.to,
+        subject: `Your refund for order #${params.orderNumber}`,
+        text: [
+          `Hi ${name},`,
+          '',
+          `We've refunded ${amount} for order #${params.orderNumber} to the card you paid with. Your order has been cancelled.`,
+          'Refunds usually appear on your statement within 5–10 working days, depending on your bank.',
+          note ? `\nNote from Slimza: ${note}` : '',
+          ref,
+          '',
+          `Your orders: ${orders}`,
+          '',
+          'Questions? Reply to this email or contact info@slimza.com.',
+          '',
+          'The Slimza team',
+        ]
+          .filter((line, i, all) => line !== '' || all[i - 1] !== '')
+          .join('\n'),
+        html:
+          `<p>Hi ${escapeHtml(name)},</p>` +
+          `<p>We've refunded <strong>${amount}</strong> for order <strong>#${escapeHtml(params.orderNumber)}</strong> to the card you paid with. Your order has been cancelled.</p>` +
+          `<p>Refunds usually appear on your statement within 5–10 working days, depending on your bank.</p>` +
+          (note ? `<p><strong>Note from Slimza:</strong> ${escapeHtml(note)}</p>` : '') +
+          (params.stripeRefundId ? `<p style="color:#6B7280;font-size:13px">Refund reference: ${escapeHtml(params.stripeRefundId)}</p>` : '') +
+          `<p><a href="${escapeHtml(orders)}">View your orders</a></p>` +
+          `<p>Questions? Reply to this email or contact <a href="mailto:info@slimza.com">info@slimza.com</a>.</p>` +
+          `<p>The Slimza team</p>`,
+      },
+      'REFUND',
     );
   }
 }

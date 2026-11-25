@@ -44,8 +44,6 @@ export const createPaymentIntentSchema = z.object({
   shippingAddress: shippingAddressSchema,
   /** Loyalty points to spend (signed-in customers only). 0 = none. */
   pointsToRedeem: z.number().int().min(0).max(10_000_000).optional().default(0),
-  /** Use store credit (Account → Wallet) first. */
-  useWallet: z.boolean().optional().default(false),
   /** Pay with a saved card (Stripe PaymentMethod id). */
   savedCardId: z.string().trim().regex(/^pm_[A-Za-z0-9]+$/).optional(),
   /** Save the new card to the wallet for next time. */
@@ -57,8 +55,7 @@ export type CreatePaymentIntentInput = z.infer<
 
 export const confirmOrderSchema = z.object({
   paymentIntentId: z.string().trim().nullable().optional(),
-  /** wallet = paid fully with store credit (no card). */
-  paymentMode: z.enum(['stripe', 'demo', 'wallet']).optional().default('stripe'),
+  paymentMode: z.enum(['stripe', 'demo']).optional().default('stripe'),
   paymentLabel: z.string().trim().optional().default('Paid securely'),
   lines: z.array(cartLineInputSchema).optional().default([]),
   bundles: z.array(cartBundleInputSchema).optional().default([]),
@@ -67,7 +64,6 @@ export const confirmOrderSchema = z.object({
   shippingAddress: shippingAddressSchema,
   /** Must match what was sent to create-payment-intent. */
   pointsToRedeem: z.number().int().min(0).max(10_000_000).optional().default(0),
-  useWallet: z.boolean().optional().default(false),
 });
 export type ConfirmOrderInput = z.infer<typeof confirmOrderSchema>;
 

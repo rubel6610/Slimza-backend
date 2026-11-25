@@ -28,7 +28,9 @@ import { ACCOUNT_ACCESS_SELECT, assertAccountUsable } from '../users/account-acc
 import { LoyaltyService } from '../loyalty/loyalty.service.js';
 import { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { cardBrandName, planWalletUse } from '../wallet/wallet-rules.js';
+import { cardBrandName } from '../wallet/wallet-rules.js';
+import { unavailableReason } from '../products/product-availability.js';
+import { taxFor } from '../products/product-tax.js';
 import { WalletService } from '../wallet/wallet.service.js';
 import type {
   CartBundleInput,
@@ -65,13 +67,11 @@ export interface CalculatedPricing {
   pointsEligibleSpend: number;
   shipping: number;
   shippingMethod: { id: string; name: string; fee: number; eta: string };
-  /** Order value after every discount (before store credit). Saved as Order.total. */
+  /** Tax on products whose price doesn't include it — on the full price, never discounted. */
+  tax: number;
+  /** What the customer pays: products after every discount, plus the full delivery fee and tax. */
   total: number;
-  /** Store credit used (signed-in customers who chose to use it). */
-  walletUsed: number;
-  /** What the card is charged: total − walletUsed. */
-  amountDue: number;
-  /** amountDue in pence (Stripe). */
+  /** total in pence (Stripe). */
   totalInPence: number;
   promoCode: string | null;
   lineItems: Array<{
@@ -137,18 +137,26 @@ export class CheckoutService {
       shippingMethodId?: string;
       /** Loyalty points the signed-in customer wants to use. */
       pointsToRedeem?: number;
-      /** Required to use points / store credit. */
+      /** Required to use points. */
       userId?: string | null;
-      /** Pay what store credit covers (signed-in customers). */
-      useWallet?: boolean;
     },
-    options?: { strictPromo?: boolean; strictPoints?: boolean },
+    options?: {
+      strictPromo?: boolean;
+      strictPoints?: boolean;
+      /**
+       * Skip the Coming Soon / Out of Stock check. Only for confirming an order the card was
+       * already charged for (the product may have changed status while the customer paid).
+       */
+      allowUnavailable?: boolean;
+    },
   ): Promise<CalculatedPricing> {
     const lines = input.lines ?? [];
     const bundles = input.bundles ?? [];
     const lineItems: CalculatedPricing['lineItems'] = [];
 
     let rawLinesSubtotal = 0;
+    // Tax is worked out on full prices (before coupons, bundle discounts or points) and never discounted.
+    let tax = 0;
 
     for (const line of lines) {
       if (!line.qty || line.qty <= 0) continue;
@@ -156,6 +164,7 @@ export class CheckoutService {
       let name = product ? product.name : `Product ${line.productId}`;
       let basePrice = product ? product.price : 25;
       let image = product?.image ?? '';
+      let lineTax: { taxIncluded?: boolean | null; taxType?: string | null; taxValue?: number | null } = { taxIncluded: true };
       const sizeType = product ? product.sizeType : 'powder';
 
       if (!product && this.prisma.product?.findFirst) {
@@ -169,10 +178,13 @@ export class CheckoutService {
             `"${dbProduct.name}" is no longer available. Please remove it from your basket.`,
           );
         }
+        const notForSale = dbProduct && !options?.allowUnavailable ? unavailableReason(dbProduct) : null;
+        if (notForSale) throw new BadRequestException(notForSale);
         if (dbProduct) {
           name = dbProduct.name;
           basePrice = dbProduct.price;
           image = dbProduct.image ?? '';
+          lineTax = dbProduct;
         }
       }
 
@@ -190,6 +202,7 @@ export class CheckoutService {
       const unitPrice = round2(basePrice * sizeOption.multiplier * (1 - plan.discount));
       const lineTotal = round2(unitPrice * line.qty);
       rawLinesSubtotal += lineTotal;
+      tax += taxFor(lineTax, unitPrice, line.qty);
 
       lineItems.push({
         productId: line.productId,
@@ -205,8 +218,9 @@ export class CheckoutService {
     }
 
     // ---- Bundles: rules + prices from the dashboard (CMS section "bundle") ----
-    const bundlePricing = await this.priceBundles(bundles);
+    const bundlePricing = await this.priceBundles(bundles, Boolean(options?.allowUnavailable));
     lineItems.push(...bundlePricing.lineItems);
+    tax += bundlePricing.tax;
     const { config: bundleConfig, bundleSpend, bundleSavings } = bundlePricing;
 
     // Bundle totals are already after the tier discount.
@@ -272,16 +286,12 @@ export class CheckoutService {
     const productsAfterDiscounts = Math.max(0, round2(subtotal - discount - bundleReward));
     const points = await this.planPoints(input.pointsToRedeem ?? 0, input.userId ?? null, productsAfterDiscounts, options?.strictPoints);
 
-    const total = Math.max(
-      0,
-      round2(subtotal - discount - bundleReward - points.discount + shipping),
-    );
-    // ---- Store credit (wallet): money, so it can pay for anything, delivery included ----
-    const walletBalance =
-      input.useWallet && input.userId && this.walletService ? await this.walletService.balance(input.userId) : 0;
-    const walletUsed = planWalletUse(walletBalance, total, Boolean(input.useWallet && input.userId));
-    const amountDue = Math.max(0, round2(total - walletUsed));
-    const totalInPence = Math.round(amountDue * 100);
+    // Delivery is never discounted: coupons, bundle rewards and points only reduce the products,
+    // and the full delivery fee is added on top.
+    const productsToPay = Math.max(0, round2(productsAfterDiscounts - points.discount));
+    tax = round2(tax);
+    const total = round2(productsToPay + shipping + tax);
+    const totalInPence = Math.round(total * 100);
 
     return {
       subtotal,
@@ -294,9 +304,8 @@ export class CheckoutService {
       pointsEligibleSpend: Math.max(0, round2(productsAfterDiscounts - points.discount)),
       shipping,
       shippingMethod: selectedShipping,
+      tax,
       total,
-      walletUsed,
-      amountDue,
       totalInPence,
       promoCode: appliedPromoCode,
       lineItems,
@@ -342,15 +351,17 @@ export class CheckoutService {
    * (min/max items, per-category limit, allowed categories) or checkout fails
    * with 400 and a message the customer can act on.
    */
-  private async priceBundles(bundles: CartBundleInput[]): Promise<{
+  private async priceBundles(bundles: CartBundleInput[], allowUnavailable = false): Promise<{
     config: BundleConfig;
     bundleSpend: number;
     bundleSavings: number;
     lineItems: CalculatedPricing['lineItems'];
+    /** Tax on the bundled products' full prices */
+    tax: number;
   }> {
     const config = await this.loadBundleConfig();
     const active = bundles.filter((b) => b.qty > 0 && Array.isArray(b.items) && b.items.length > 0);
-    if (active.length === 0) return { config, bundleSpend: 0, bundleSavings: 0, lineItems: [] };
+    if (active.length === 0) return { config, bundleSpend: 0, bundleSavings: 0, lineItems: [], tax: 0 };
 
     if (!config.enabled) {
       throw new BadRequestException(
@@ -367,6 +378,7 @@ export class CheckoutService {
 
     let bundleSpend = 0;
     let bundleSavings = 0;
+    let bundleTax = 0;
     const lineItems: CalculatedPricing['lineItems'] = [];
 
     for (const b of active) {
@@ -377,9 +389,8 @@ export class CheckoutService {
             `${p ? `"${p.name}"` : 'A product in your bundle'} is no longer available. Please rebuild your bundle.`,
           );
         }
-        if (!p.unlimitedStock && p.stockStatus === 'Out of Stock') {
-          throw new BadRequestException(`"${p.name}" is out of stock. Please rebuild your bundle.`);
-        }
+        const notForSale = allowUnavailable ? null : unavailableReason(p);
+        if (notForSale) throw new BadRequestException(notForSale.replace('remove it from your basket', 'rebuild your bundle'));
         return {
           product: {
             id: p.id,
@@ -398,6 +409,11 @@ export class CheckoutService {
 
       const priced = priceBundle(config, lines);
       const bundleTotal = round2(priced.total * b.qty);
+      // Tax on each product's full price (the bundle discount doesn't reduce tax).
+      for (const item of b.items) {
+        const p = byId.get(item.productId);
+        if (p) bundleTax += taxFor(p, p.price, (item.qty ?? 1) * b.qty);
+      }
       bundleSpend += bundleTotal;
       bundleSavings += round2(priced.discount * b.qty);
 
@@ -421,7 +437,7 @@ export class CheckoutService {
       });
     }
 
-    return { config, bundleSpend: round2(bundleSpend), bundleSavings: round2(bundleSavings), lineItems };
+    return { config, bundleSpend: round2(bundleSpend), bundleSavings: round2(bundleSavings), lineItems, tax: round2(bundleTax) };
   }
 
   /** slug → category display name (from the CMS categories section), for error messages. */
@@ -487,14 +503,11 @@ export class CheckoutService {
     userId?: string,
     userRole?: UserRole,
   ): Promise<{
-    /** wallet = store credit covers everything: no card payment, confirm with paymentMode "wallet". */
-    mode: 'stripe' | 'demo' | 'wallet';
+    mode: 'stripe' | 'demo';
     clientSecret: string | null;
     paymentIntentId: string | null;
     pricing: {
       total: number;
-      walletUsed: number;
-      amountDue: number;
       shipping: number;
       discount: number;
       pointsRedeemed: number;
@@ -512,7 +525,6 @@ export class CheckoutService {
         shippingMethodId: input.shippingMethodId,
         pointsToRedeem: input.pointsToRedeem,
         userId,
-        useWallet: input.useWallet,
       },
       { strictPromo: true, strictPoints: true },
     );
@@ -523,19 +535,12 @@ export class CheckoutService {
 
     const pricingOut = {
       total: pricing.total,
-      walletUsed: pricing.walletUsed,
-      amountDue: pricing.amountDue,
       shipping: pricing.shipping,
       discount: pricing.discount,
       pointsRedeemed: pricing.pointsRedeemed,
       pointsDiscount: pricing.pointsDiscount,
       shippingMethod: pricing.shippingMethod,
     };
-
-    // Store credit pays for everything: nothing to charge.
-    if (pricing.amountDue <= 0 && pricing.walletUsed > 0) {
-      return { mode: 'wallet', clientSecret: null, paymentIntentId: null, pricing: pricingOut };
-    }
 
     if (!this.stripe) {
       this.logger.warn('Stripe secret key is not set. Falling back to demo mode.');
@@ -573,7 +578,6 @@ export class CheckoutService {
           promoCode: pricing.promoCode ?? '',
           userId: userId ?? '',
           pointsRedeemed: String(pricing.pointsRedeemed),
-          walletUsed: String(pricing.walletUsed),
         },
       });
 
@@ -608,18 +612,14 @@ export class CheckoutService {
         shippingMethodId: input.shippingMethodId,
         pointsToRedeem: input.pointsToRedeem,
         userId,
-        useWallet: input.useWallet,
       },
-      { strictPromo: input.paymentMode !== 'stripe', strictPoints: input.paymentMode !== 'stripe' },
+      {
+        strictPromo: input.paymentMode === 'demo',
+        strictPoints: input.paymentMode === 'demo',
+        // The card was already charged: record the order even if a product changed status meanwhile.
+        allowUnavailable: input.paymentMode === 'stripe' && Boolean(input.paymentIntentId),
+      },
     );
-
-    // Paid fully with store credit: there must be credit, and it must cover the whole order.
-    if (input.paymentMode === 'wallet') {
-      if (!userId) throw new BadRequestException('Sign in to pay with store credit.');
-      if (pricing.walletUsed <= 0 || pricing.amountDue > 0) {
-        throw new BadRequestException('Your store credit does not cover this order. Please pay the rest by card.');
-      }
-    }
 
     // Check if an order already exists for this paymentIntentId
     if (input.paymentIntentId) {
@@ -705,6 +705,7 @@ export class CheckoutService {
         shippingAddress: input.shippingAddress as any,
         shippingMethod: pricing.shippingMethod.id,
         shippingFee: pricing.shipping,
+        tax: pricing.tax,
         subtotal: pricing.subtotal,
         discount: pricing.discount,
         bundleSavings: pricing.bundleSavings,
@@ -714,12 +715,11 @@ export class CheckoutService {
         pointsEarned,
         promoCode: pricing.promoCode,
         total: pricing.total,
-        walletUsed: pricing.walletUsed,
         currency: 'gbp',
         status: orderStatus,
         paymentStatus,
         paymentMode: input.paymentMode ?? 'stripe',
-        paymentLabel: this.paymentLabelFor(input.paymentMode ?? 'stripe', pricing.walletUsed, cardLabel ?? input.paymentLabel),
+        paymentLabel: this.paymentLabelFor(input.paymentMode ?? 'stripe', cardLabel ?? input.paymentLabel),
         paymentIntentId: input.paymentIntentId ?? null,
         stripeChargeId,
         items: {
@@ -741,30 +741,6 @@ export class CheckoutService {
         items: true,
       },
     });
-
-    // Store credit: spend it now. Fully-credit orders must get all of it (else the order is undone);
-    // card orders were already charged for the rest, so they take what is there.
-    if (pricing.walletUsed > 0 && userId && this.walletService) {
-      try {
-        const taken = await this.walletService.payForOrder({
-          userId,
-          orderId: order.id,
-          orderNumber: order.orderNumber,
-          amount: pricing.walletUsed,
-          strict: input.paymentMode === 'wallet',
-        });
-        if (taken !== pricing.walletUsed) {
-          await this.prisma.order.update({ where: { id: order.id }, data: { walletUsed: taken } });
-          order.walletUsed = taken;
-        }
-      } catch (err) {
-        if (input.paymentMode === 'wallet') {
-          await this.prisma.order.delete({ where: { id: order.id } }).catch(() => undefined);
-          throw err;
-        }
-        this.logger.error(`Store credit not taken for #${order.orderNumber}: ${err instanceof Error ? err.message : err}`);
-      }
-    }
 
     if (pricing.promoCode) {
       await this.prisma.coupon.updateMany({
@@ -808,6 +784,7 @@ export class CheckoutService {
           bundleReward: order.bundleReward,
           promoCode: order.promoCode,
           shippingFee: order.shippingFee,
+          tax: order.tax,
           shippingMethod: order.shippingMethod,
           total: order.total,
           shippingAddress: shippingAddr,
@@ -1092,8 +1069,19 @@ export class CheckoutService {
 
     await this.syncLoyalty(order.id);
 
-    // The part paid with store credit goes back to the wallet.
-    await this.returnWallet(order);
+    // Tell the customer (always, for every refund).
+    if (this.mailService) {
+      void this.mailService
+        .sendRefundEmail({
+          to: order.customerEmail,
+          name: order.customerName,
+          orderNumber: order.orderNumber,
+          amount: order.total,
+          adminNote,
+          stripeRefundId,
+        })
+        .catch((err) => this.logger.warn(`Refund email failed for #${order.orderNumber}: ${err instanceof Error ? err.message : err}`));
+    }
 
     return {
       ...updatedRefund,
@@ -1217,24 +1205,13 @@ export class CheckoutService {
     });
     // Delivered → pending points become spendable; cancelled → points reversed / returned.
     await this.syncLoyalty(order.id);
-    if (status === OrderStatus.CANCELLED) await this.returnWallet(order);
     return updated;
   }
 
-  /** How an order was paid, in words: "Store credit", "Visa •••• 4242", "Store credit + Visa •••• 4242". */
-  private paymentLabelFor(mode: string, walletUsed: number, cardLabel?: string | null) {
-    if (mode === 'wallet') return 'Store credit';
+  /** How an order was paid, in words: "Visa •••• 4242" (from Stripe), or the card label from the form. */
+  private paymentLabelFor(mode: string, cardLabel?: string | null) {
     const card = (cardLabel ?? '').trim().slice(0, 80) || (mode === 'demo' ? 'Card (test payment)' : 'Card');
-    const label = card === 'Paid securely' ? 'Card' : card;
-    return walletUsed > 0 ? `Store credit + ${label}` : label;
-  }
-
-  /** Gives back the store credit an order used (once). Never breaks the caller. */
-  private async returnWallet(order: { id: string; orderNumber: string }) {
-    if (!this.walletService) return;
-    await this.walletService
-      .returnForOrder(order)
-      .catch((err) => this.logger.error(`Store credit return failed for #${order.orderNumber}: ${err instanceof Error ? err.message : err}`));
+    return card === 'Paid securely' ? 'Card' : card;
   }
 
   /** Re-checks an order's loyalty points after a status change. Never breaks the caller. */
