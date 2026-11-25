@@ -96,6 +96,11 @@ export type Blog = Prisma.BlogModel
  */
 export type LoyaltyTransaction = Prisma.LoyaltyTransactionModel
 /**
+ * Model Subscription
+ * 
+ */
+export type Subscription = Prisma.SubscriptionModel
+/**
  * Model WalletCard
  * Saved cards when Stripe is NOT configured (test / demo mode). Only what a receipt shows:
  * brand, last 4 and expiry — never the card number or CVC. With Stripe on, cards live in Stripe.

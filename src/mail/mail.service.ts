@@ -645,4 +645,60 @@ export class MailService {
       'REFUND',
     );
   }
+  /** Subscribe & Save emails to the customer: started, a renewal payment failed, or cancelled. */
+  async sendSubscriptionEmail(params: {
+    kind: 'started' | 'payment_failed' | 'cancelled';
+    to: string;
+    name: string;
+    productName: string;
+    optionLabel: string;
+    /** "every 4 months" */
+    frequency: string;
+    renewalAmount: number;
+    nextRenewalAt?: Date | null;
+    minOrders?: number;
+    /** Stripe page where the customer can pay / update the card (payment_failed) */
+    payUrl?: string | null;
+  }): Promise<void> {
+    const name = params.name || 'there';
+    const amount = `£${params.renewalAmount.toFixed(2)}`;
+    const next = params.nextRenewalAt ? params.nextRenewalAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+    const manage = `${this.storeUrl}/account/subscriptions`;
+    const what = `${params.productName} (${params.optionLabel})`;
+    let subject: string;
+    let lines: string[];
+    if (params.kind === 'started') {
+      subject = `Your Subscribe & Save for ${params.productName} has started`;
+      lines = [
+        `Your first delivery of ${what} is on its way with your order.`,
+        `After that, we'll send it ${params.frequency} and charge ${amount} each time (including delivery and any tax).`,
+        next ? `Next delivery and payment: ${next}.` : '',
+        params.minOrders && params.minOrders > 1 ? `Your plan includes a minimum of ${params.minOrders} deliveries; after that you can cancel any time.` : 'You can cancel any time.',
+      ];
+    } else if (params.kind === 'payment_failed') {
+      subject = `We couldn't take payment for your ${params.productName} subscription`;
+      lines = [
+        `We tried to charge ${amount} for your next delivery of ${what}, but the payment didn't go through.`,
+        "We'll try again over the next few days. To avoid missing your delivery, please check or update your card.",
+        params.payUrl ? `Pay or update your card: ${params.payUrl}` : '',
+      ];
+    } else {
+      subject = `Your ${params.productName} subscription has been cancelled`;
+      lines = [`Your Subscribe & Save for ${what} has been cancelled. You won't be charged again.`, 'You can start a new subscription any time from the product page.'];
+    }
+    const body = lines.filter(Boolean);
+    await this.sendSimple(
+      {
+        to: params.to,
+        subject,
+        text: [`Hi ${name},`, '', ...body, '', `Manage your subscriptions: ${manage}`, '', 'The Slimza team'].join('\n'),
+        html:
+          `<p>Hi ${escapeHtml(name)},</p>` +
+          body.map((l) => `<p>${escapeHtml(l)}</p>`).join('') +
+          (params.kind === 'payment_failed' && params.payUrl ? `<p><a href="${escapeHtml(params.payUrl)}">Pay or update your card</a></p>` : '') +
+          `<p><a href="${escapeHtml(manage)}">Manage your subscriptions</a></p><p>The Slimza team</p>`,
+      },
+      `SUBSCRIPTION ${params.kind.toUpperCase()}`,
+    );
+  }
 }

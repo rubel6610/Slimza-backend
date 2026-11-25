@@ -412,6 +412,7 @@ export const ModelName = {
   FranchiseApplication: 'FranchiseApplication',
   Blog: 'Blog',
   LoyaltyTransaction: 'LoyaltyTransaction',
+  Subscription: 'Subscription',
   WalletCard: 'WalletCard',
   ProductReview: 'ProductReview'
 } as const
@@ -429,7 +430,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "address" | "otpCode" | "refreshToken" | "cmsSection" | "newsletterLead" | "order" | "refundRequest" | "orderItem" | "product" | "coupon" | "mediaAsset" | "franchiseApplication" | "blog" | "loyaltyTransaction" | "walletCard" | "productReview"
+    modelProps: "user" | "address" | "otpCode" | "refreshToken" | "cmsSection" | "newsletterLead" | "order" | "refundRequest" | "orderItem" | "product" | "coupon" | "mediaAsset" | "franchiseApplication" | "blog" | "loyaltyTransaction" | "subscription" | "walletCard" | "productReview"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1423,6 +1424,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Subscription: {
+      payload: Prisma.$SubscriptionPayload<ExtArgs>
+      fields: Prisma.SubscriptionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SubscriptionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SubscriptionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionPayload>
+        }
+        findFirst: {
+          args: Prisma.SubscriptionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SubscriptionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionPayload>
+        }
+        findMany: {
+          args: Prisma.SubscriptionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionPayload>[]
+        }
+        create: {
+          args: Prisma.SubscriptionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionPayload>
+        }
+        createMany: {
+          args: Prisma.SubscriptionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.SubscriptionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionPayload>
+        }
+        update: {
+          args: Prisma.SubscriptionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionPayload>
+        }
+        deleteMany: {
+          args: Prisma.SubscriptionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SubscriptionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.SubscriptionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionPayload>
+        }
+        aggregate: {
+          args: Prisma.SubscriptionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSubscription>
+        }
+        groupBy: {
+          args: Prisma.SubscriptionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SubscriptionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SubscriptionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SubscriptionCountAggregateOutputType> | number
+        }
+      }
+    }
     WalletCard: {
       payload: Prisma.$WalletCardPayload<ExtArgs>
       fields: Prisma.WalletCardFieldRefs
@@ -1712,6 +1779,9 @@ export const OrderScalarFieldEnum = {
   shippingMethod: 'shippingMethod',
   shippingFee: 'shippingFee',
   tax: 'tax',
+  subscriptionId: 'subscriptionId',
+  subscriptionSequence: 'subscriptionSequence',
+  stripeInvoiceId: 'stripeInvoiceId',
   subtotal: 'subtotal',
   discount: 'discount',
   bundleSavings: 'bundleSavings',
@@ -1806,6 +1876,9 @@ export const ProductScalarFieldEnum = {
   variations: 'variations',
   supplyDuration: 'supplyDuration',
   packsPerMonth: 'packsPerMonth',
+  supplyOptions: 'supplyOptions',
+  subscriptionEnabled: 'subscriptionEnabled',
+  stripeProductId: 'stripeProductId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   archivedAt: 'archivedAt'
@@ -1898,6 +1971,40 @@ export const LoyaltyTransactionScalarFieldEnum = {
 } as const
 
 export type LoyaltyTransactionScalarFieldEnum = (typeof LoyaltyTransactionScalarFieldEnum)[keyof typeof LoyaltyTransactionScalarFieldEnum]
+
+
+export const SubscriptionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  status: 'status',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  stripeCustomerId: 'stripeCustomerId',
+  productName: 'productName',
+  productImage: 'productImage',
+  optionId: 'optionId',
+  optionLabel: 'optionLabel',
+  interval: 'interval',
+  intervalCount: 'intervalCount',
+  quantity: 'quantity',
+  unitPrice: 'unitPrice',
+  shippingMethod: 'shippingMethod',
+  shippingFee: 'shippingFee',
+  tax: 'tax',
+  renewalAmount: 'renewalAmount',
+  shippingAddress: 'shippingAddress',
+  paymentLabel: 'paymentLabel',
+  ordersCount: 'ordersCount',
+  minOrders: 'minOrders',
+  firstOrderId: 'firstOrderId',
+  nextRenewalAt: 'nextRenewalAt',
+  cancelledAt: 'cancelledAt',
+  cancelReason: 'cancelReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
 
 
 export const WalletCardScalarFieldEnum = {
@@ -2067,6 +2174,8 @@ export const OrderOrderByRelevanceFieldEnum = {
   customerName: 'customerName',
   customerPhone: 'customerPhone',
   shippingMethod: 'shippingMethod',
+  subscriptionId: 'subscriptionId',
+  stripeInvoiceId: 'stripeInvoiceId',
   promoCode: 'promoCode',
   currency: 'currency',
   paymentMode: 'paymentMode',
@@ -2117,7 +2226,8 @@ export const ProductOrderByRelevanceFieldEnum = {
   brand: 'brand',
   publishStatus: 'publishStatus',
   image: 'image',
-  supplyDuration: 'supplyDuration'
+  supplyDuration: 'supplyDuration',
+  stripeProductId: 'stripeProductId'
 } as const
 
 export type ProductOrderByRelevanceFieldEnum = (typeof ProductOrderByRelevanceFieldEnum)[keyof typeof ProductOrderByRelevanceFieldEnum]
@@ -2182,6 +2292,26 @@ export const LoyaltyTransactionOrderByRelevanceFieldEnum = {
 } as const
 
 export type LoyaltyTransactionOrderByRelevanceFieldEnum = (typeof LoyaltyTransactionOrderByRelevanceFieldEnum)[keyof typeof LoyaltyTransactionOrderByRelevanceFieldEnum]
+
+
+export const SubscriptionOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  stripeCustomerId: 'stripeCustomerId',
+  productName: 'productName',
+  productImage: 'productImage',
+  optionId: 'optionId',
+  optionLabel: 'optionLabel',
+  interval: 'interval',
+  shippingMethod: 'shippingMethod',
+  paymentLabel: 'paymentLabel',
+  firstOrderId: 'firstOrderId',
+  cancelReason: 'cancelReason'
+} as const
+
+export type SubscriptionOrderByRelevanceFieldEnum = (typeof SubscriptionOrderByRelevanceFieldEnum)[keyof typeof SubscriptionOrderByRelevanceFieldEnum]
 
 
 export const WalletCardOrderByRelevanceFieldEnum = {
@@ -2343,6 +2473,13 @@ export type EnumLoyaltyEntryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
  * Reference to a field of type 'LoyaltyEntryStatus'
  */
 export type EnumLoyaltyEntryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LoyaltyEntryStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'SubscriptionStatus'
+ */
+export type EnumSubscriptionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionStatus'>
     
 
 
@@ -2518,6 +2655,7 @@ export type GlobalOmitConfig = {
   franchiseApplication?: Prisma.FranchiseApplicationOmit
   blog?: Prisma.BlogOmit
   loyaltyTransaction?: Prisma.LoyaltyTransactionOmit
+  subscription?: Prisma.SubscriptionOmit
   walletCard?: Prisma.WalletCardOmit
   productReview?: Prisma.ProductReviewOmit
 }

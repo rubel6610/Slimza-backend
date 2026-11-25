@@ -20,8 +20,13 @@ export const cartLineInputSchema = z.object({
   sizeIndex: z.number().int().nonnegative().optional().default(0),
   months: z.number().int().positive().optional().default(1),
   qty: z.number().int().positive().max(50),
+  /** Supply option id (products with purchase options) */
+  optionId: z.string().trim().max(40).optional(),
+  /** One-time purchase (default) or Subscribe & Save */
+  purchase: z.enum(['once', 'subscription']).optional().default('once'),
 });
-export type CartLineInput = z.infer<typeof cartLineInputSchema>;
+/** Input shape: optional fields (purchase, sizeIndex…) may be left out by callers and tests. */
+export type CartLineInput = z.input<typeof cartLineInputSchema>;
 
 export const bundleItemInputSchema = z.object({
   productId: z.string().trim(),
@@ -44,6 +49,8 @@ export const createPaymentIntentSchema = z.object({
   shippingAddress: shippingAddressSchema,
   /** Loyalty points to spend (signed-in customers only). 0 = none. */
   pointsToRedeem: z.number().int().min(0).max(10_000_000).optional().default(0),
+  /** Customer agreed to the Subscribe & Save terms (minimum deliveries) — required with subscription lines. */
+  acceptSubscriptionTerms: z.boolean().optional().default(false),
   /** Pay with a saved card (Stripe PaymentMethod id). */
   savedCardId: z.string().trim().regex(/^pm_[A-Za-z0-9]+$/).optional(),
   /** Save the new card to the wallet for next time. */
@@ -64,6 +71,7 @@ export const confirmOrderSchema = z.object({
   shippingAddress: shippingAddressSchema,
   /** Must match what was sent to create-payment-intent. */
   pointsToRedeem: z.number().int().min(0).max(10_000_000).optional().default(0),
+  acceptSubscriptionTerms: z.boolean().optional().default(false),
 });
 export type ConfirmOrderInput = z.infer<typeof confirmOrderSchema>;
 

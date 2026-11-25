@@ -64,6 +64,7 @@ model User {
   orders              Order[]
   loyaltyTransactions LoyaltyTransaction[]
   walletCards         WalletCard[]
+  subscriptions       Subscription[]
   productReviews      ProductReview[]
 
   @@index([status])
@@ -182,6 +183,12 @@ model Order {
   shippingFee     Float         @default(0)
   /// Tax added on top for products whose price doesn't include it (never discounted)
   tax             Float         @default(0)
+  /// Set on renewal orders created by a Subscribe & Save subscription (the first order has items for several)
+  subscriptionId  String?
+  /// 2 = the subscription's second delivery, 3 = third… (null for normal orders)
+  subscriptionSequence Int?
+  /// Stripe invoice behind a subscription renewal order (unique: one order per invoice)
+  stripeInvoiceId String?       @unique
   subtotal        Float
   discount        Float         @default(0)
   bundleSavings   Float         @default(0)
@@ -295,11 +302,19 @@ model Product {
   variations      Json?
   supplyDuration  String?   @default("1 Month")
   packsPerMonth   Int?      @default(1)
+  /// Supply options shown on the product page ("120 – 4 Month Supply"…), each with its own price,
+  /// original price, badge and Subscribe & Save discount. See src/products/supply-options.ts.
+  supplyOptions   Json?
+  /// Subscribe & Save available for this product (needs supply options)
+  subscriptionEnabled Boolean @default(false)
+  /// Stripe Product used for this product's subscriptions (created on first use)
+  stripeProductId String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   /// Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
   archivedAt      DateTime?
   productReviews  ProductReview[]
+  subscriptions   Subscription[]
 
   @@index([slug])
   @@index([category])
@@ -459,6 +474,58 @@ model LoyaltyTransaction {
   @@index([userId, createdAt])
   @@index([orderId])
   @@index([type])
+}
+
+/// Subscribe & Save (src/subscriptions). One per subscribed basket line. Billing runs in Stripe; every
+/// paid renewal creates a normal Order. The first delivery is part of the checkout order.
+enum SubscriptionStatus {
+  ACTIVE
+  /// A renewal payment failed; Stripe is retrying
+  PAST_DUE
+  CANCELLED
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  userId               String
+  productId            String?
+  status               SubscriptionStatus @default(ACTIVE)
+  stripeSubscriptionId String?            @unique
+  stripeCustomerId     String?
+  productName          String
+  productImage         String             @default("")
+  /// The chosen supply option, e.g. "120 – 4 Month Supply"
+  optionId             String
+  optionLabel          String
+  /// Renews every intervalCount interval(s) — same as the supply length ("month" × 4)
+  interval             String
+  intervalCount        Int
+  quantity             Int                @default(1)
+  /// Subscription price per pack (after the Subscribe & Save discount)
+  unitPrice            Float
+  shippingMethod       String
+  shippingFee          Float
+  tax                  Float              @default(0)
+  /// What each renewal charges: unitPrice × quantity + delivery + tax
+  renewalAmount        Float
+  shippingAddress      Json
+  paymentLabel         String             @default("")
+  /// Paid deliveries so far (the first order counts as 1)
+  ordersCount          Int                @default(1)
+  /// Deliveries required before the customer may cancel (from the settings when they subscribed)
+  minOrders            Int                @default(2)
+  firstOrderId         String?
+  nextRenewalAt        DateTime?
+  cancelledAt          DateTime?
+  cancelReason         String?            @db.VarChar(300)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
 }
 
 /// Saved cards when Stripe is NOT configured (test / demo mode). Only what a receipt shows:

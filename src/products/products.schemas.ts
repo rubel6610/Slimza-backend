@@ -1,12 +1,14 @@
 import { z } from 'zod';
 import { archiveFilterSchema } from '../common/archive/archive.js';
 import { STOCK_STATUSES } from './product-availability.js';
+import { supplyOptionsSchema } from './supply-options.js';
 
 export const createProductSchema = z.object({
   name: z.string().trim().min(1, 'Product name is required'),
   slug: z.string().trim().optional(),
   description: z.string().trim().optional().default(''),
-  price: z.coerce.number().min(0, 'Price must be 0 or greater'),
+  /** Not set by the dashboard any more: worked out from the purchase options (the cheapest one). */
+  price: z.coerce.number().min(0, 'Price must be 0 or greater').optional().default(0),
   originalPrice: z.coerce.number().optional(),
   discountPercent: z.coerce.number().min(0).max(100).optional().default(0),
   taxIncluded: z.boolean().optional().default(true),
@@ -31,6 +33,10 @@ export const createProductSchema = z.object({
   variations: z.unknown().optional(),
   supplyDuration: z.string().trim().optional().default('1 Month'),
   packsPerMonth: z.coerce.number().int().min(1).optional().default(1),
+  /** Purchase options on the product page (see supply-options.ts). */
+  supplyOptions: supplyOptionsSchema.optional(),
+  /** Subscribe & Save available (needs at least one supply option). */
+  subscriptionEnabled: z.boolean().optional(),
   /** Wellness Product Hub groups this product belongs to (omit to leave them unchanged). */
   hubGroupIds: z.array(z.string().trim().min(1).max(60)).max(40).optional(),
 });

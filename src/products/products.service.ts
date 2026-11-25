@@ -16,6 +16,7 @@ import {
 } from '../common/archive/archive.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { MediaService } from '../media/media.service.js';
+import { priceFromOptions, readSupplyOptions } from './supply-options.js';
 import { WellnessHubService } from '../wellness-hub/wellness-hub.service.js';
 import {
   PUBLIC_PRODUCT_WHERE,
@@ -642,6 +643,11 @@ export class ProductsService implements OnModuleInit {
   }
 
   async create(input: CreateProductInput) {
+    // Every product is sold through its purchase options (weekly / monthly supplies).
+    if (!input.supplyOptions?.length) {
+      throw new BadRequestException('Add at least one purchase option (e.g. "1 Month Supply") with its price.');
+    }
+    const optionPrice = priceFromOptions(input.supplyOptions);
     const baseSlug = input.slug?.trim() || this.slugify(input.name);
     const slug = await this.generateUniqueSlug(baseSlug);
 
@@ -657,9 +663,10 @@ export class ProductsService implements OnModuleInit {
         slug,
         name: input.name,
         description: input.description ?? '',
-        price: input.price,
-        originalPrice: input.originalPrice ?? null,
-        discountPercent: input.discountPercent ?? 0,
+        // Price comes from the purchase options (the cheapest one).
+        price: optionPrice?.price ?? input.price,
+        originalPrice: optionPrice ? optionPrice.originalPrice : (input.originalPrice ?? null),
+        discountPercent: optionPrice?.discountPercent ?? input.discountPercent ?? 0,
         taxIncluded: input.taxIncluded ?? true,
         taxType: input.taxType ?? 'percent',
         taxValue: input.taxIncluded === false ? (input.taxValue ?? 0) : 0,
@@ -682,6 +689,8 @@ export class ProductsService implements OnModuleInit {
         variations: (input.variations as Prisma.InputJsonValue) ?? null,
         supplyDuration: input.supplyDuration ?? '1 Month',
         packsPerMonth: input.packsPerMonth ?? 1,
+        supplyOptions: (input.supplyOptions ?? []) as unknown as Prisma.InputJsonValue,
+        subscriptionEnabled: Boolean(input.subscriptionEnabled && input.supplyOptions?.length),
       },
     });
 
@@ -695,6 +704,11 @@ export class ProductsService implements OnModuleInit {
     if (!existing) {
       throw new NotFoundException(`Product with ID "${id}" not found`);
     }
+    if (input.supplyOptions && input.supplyOptions.length === 0) {
+      throw new BadRequestException('A product needs at least one purchase option.');
+    }
+    // New options → new shop price; otherwise keep the price in step with the options it already has.
+    const optionPrice = priceFromOptions(input.supplyOptions ?? readSupplyOptions(existing.supplyOptions));
 
     let slug = existing.slug;
     if (input.slug && input.slug !== existing.slug) {
@@ -709,9 +723,14 @@ export class ProductsService implements OnModuleInit {
         ...(input.name !== undefined && { name: input.name }),
         slug,
         ...(input.description !== undefined && { description: input.description }),
-        ...(input.price !== undefined && { price: input.price }),
-        ...(input.originalPrice !== undefined && { originalPrice: input.originalPrice }),
-        ...(input.discountPercent !== undefined && { discountPercent: input.discountPercent }),
+        // With purchase options the price is theirs (cheapest option); otherwise keep the old fields.
+        ...(optionPrice
+          ? { price: optionPrice.price, originalPrice: optionPrice.originalPrice, discountPercent: optionPrice.discountPercent }
+          : {
+              ...(input.price !== undefined && { price: input.price }),
+              ...(input.originalPrice !== undefined && { originalPrice: input.originalPrice }),
+              ...(input.discountPercent !== undefined && { discountPercent: input.discountPercent }),
+            }),
         ...(input.taxIncluded !== undefined && { taxIncluded: input.taxIncluded }),
         ...(input.taxType !== undefined && { taxType: input.taxType }),
         ...(input.taxValue !== undefined && { taxValue: input.taxIncluded === true ? 0 : input.taxValue }),
@@ -738,6 +757,8 @@ export class ProductsService implements OnModuleInit {
         ...(input.variations !== undefined && { variations: input.variations as Prisma.InputJsonValue }),
         ...(input.supplyDuration !== undefined && { supplyDuration: input.supplyDuration }),
         ...(input.packsPerMonth !== undefined && { packsPerMonth: input.packsPerMonth }),
+        ...(input.supplyOptions !== undefined && { supplyOptions: input.supplyOptions as unknown as Prisma.InputJsonValue }),
+        ...(input.subscriptionEnabled !== undefined && { subscriptionEnabled: input.subscriptionEnabled }),
       },
     });
 

@@ -29,6 +29,7 @@ export type AggregateOrder = {
 export type OrderAvgAggregateOutputType = {
   shippingFee: number | null
   tax: number | null
+  subscriptionSequence: number | null
   subtotal: number | null
   discount: number | null
   bundleSavings: number | null
@@ -42,6 +43,7 @@ export type OrderAvgAggregateOutputType = {
 export type OrderSumAggregateOutputType = {
   shippingFee: number | null
   tax: number | null
+  subscriptionSequence: number | null
   subtotal: number | null
   discount: number | null
   bundleSavings: number | null
@@ -62,6 +64,9 @@ export type OrderMinAggregateOutputType = {
   shippingMethod: string | null
   shippingFee: number | null
   tax: number | null
+  subscriptionId: string | null
+  subscriptionSequence: number | null
+  stripeInvoiceId: string | null
   subtotal: number | null
   discount: number | null
   bundleSavings: number | null
@@ -93,6 +98,9 @@ export type OrderMaxAggregateOutputType = {
   shippingMethod: string | null
   shippingFee: number | null
   tax: number | null
+  subscriptionId: string | null
+  subscriptionSequence: number | null
+  stripeInvoiceId: string | null
   subtotal: number | null
   discount: number | null
   bundleSavings: number | null
@@ -125,6 +133,9 @@ export type OrderCountAggregateOutputType = {
   shippingMethod: number
   shippingFee: number
   tax: number
+  subscriptionId: number
+  subscriptionSequence: number
+  stripeInvoiceId: number
   subtotal: number
   discount: number
   bundleSavings: number
@@ -152,6 +163,7 @@ export type OrderCountAggregateOutputType = {
 export type OrderAvgAggregateInputType = {
   shippingFee?: true
   tax?: true
+  subscriptionSequence?: true
   subtotal?: true
   discount?: true
   bundleSavings?: true
@@ -165,6 +177,7 @@ export type OrderAvgAggregateInputType = {
 export type OrderSumAggregateInputType = {
   shippingFee?: true
   tax?: true
+  subscriptionSequence?: true
   subtotal?: true
   discount?: true
   bundleSavings?: true
@@ -185,6 +198,9 @@ export type OrderMinAggregateInputType = {
   shippingMethod?: true
   shippingFee?: true
   tax?: true
+  subscriptionId?: true
+  subscriptionSequence?: true
+  stripeInvoiceId?: true
   subtotal?: true
   discount?: true
   bundleSavings?: true
@@ -216,6 +232,9 @@ export type OrderMaxAggregateInputType = {
   shippingMethod?: true
   shippingFee?: true
   tax?: true
+  subscriptionId?: true
+  subscriptionSequence?: true
+  stripeInvoiceId?: true
   subtotal?: true
   discount?: true
   bundleSavings?: true
@@ -248,6 +267,9 @@ export type OrderCountAggregateInputType = {
   shippingMethod?: true
   shippingFee?: true
   tax?: true
+  subscriptionId?: true
+  subscriptionSequence?: true
+  stripeInvoiceId?: true
   subtotal?: true
   discount?: true
   bundleSavings?: true
@@ -368,6 +390,9 @@ export type OrderGroupByOutputType = {
   shippingMethod: string
   shippingFee: number
   tax: number
+  subscriptionId: string | null
+  subscriptionSequence: number | null
+  stripeInvoiceId: string | null
   subtotal: number
   discount: number
   bundleSavings: number
@@ -424,6 +449,9 @@ export type OrderWhereInput = {
   shippingMethod?: Prisma.StringFilter<"Order"> | string
   shippingFee?: Prisma.FloatFilter<"Order"> | number
   tax?: Prisma.FloatFilter<"Order"> | number
+  subscriptionId?: Prisma.StringNullableFilter<"Order"> | string | null
+  subscriptionSequence?: Prisma.IntNullableFilter<"Order"> | number | null
+  stripeInvoiceId?: Prisma.StringNullableFilter<"Order"> | string | null
   subtotal?: Prisma.FloatFilter<"Order"> | number
   discount?: Prisma.FloatFilter<"Order"> | number
   bundleSavings?: Prisma.FloatFilter<"Order"> | number
@@ -460,6 +488,9 @@ export type OrderOrderByWithRelationInput = {
   shippingMethod?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   tax?: Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionSequence?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripeInvoiceId?: Prisma.SortOrderInput | Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
@@ -489,6 +520,7 @@ export type OrderOrderByWithRelationInput = {
 export type OrderWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   orderNumber?: string
+  stripeInvoiceId?: string
   paymentIntentId?: string
   AND?: Prisma.OrderWhereInput | Prisma.OrderWhereInput[]
   OR?: Prisma.OrderWhereInput[]
@@ -501,6 +533,8 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   shippingMethod?: Prisma.StringFilter<"Order"> | string
   shippingFee?: Prisma.FloatFilter<"Order"> | number
   tax?: Prisma.FloatFilter<"Order"> | number
+  subscriptionId?: Prisma.StringNullableFilter<"Order"> | string | null
+  subscriptionSequence?: Prisma.IntNullableFilter<"Order"> | number | null
   subtotal?: Prisma.FloatFilter<"Order"> | number
   discount?: Prisma.FloatFilter<"Order"> | number
   bundleSavings?: Prisma.FloatFilter<"Order"> | number
@@ -523,7 +557,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   items?: Prisma.OrderItemListRelationFilter
   refundRequest?: Prisma.XOR<Prisma.RefundRequestNullableScalarRelationFilter, Prisma.RefundRequestWhereInput> | null
-}, "id" | "orderNumber" | "paymentIntentId">
+}, "id" | "orderNumber" | "stripeInvoiceId" | "paymentIntentId">
 
 export type OrderOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -536,6 +570,9 @@ export type OrderOrderByWithAggregationInput = {
   shippingMethod?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   tax?: Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionSequence?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripeInvoiceId?: Prisma.SortOrderInput | Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
@@ -577,6 +614,9 @@ export type OrderScalarWhereWithAggregatesInput = {
   shippingMethod?: Prisma.StringWithAggregatesFilter<"Order"> | string
   shippingFee?: Prisma.FloatWithAggregatesFilter<"Order"> | number
   tax?: Prisma.FloatWithAggregatesFilter<"Order"> | number
+  subscriptionId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  subscriptionSequence?: Prisma.IntNullableWithAggregatesFilter<"Order"> | number | null
+  stripeInvoiceId?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   subtotal?: Prisma.FloatWithAggregatesFilter<"Order"> | number
   discount?: Prisma.FloatWithAggregatesFilter<"Order"> | number
   bundleSavings?: Prisma.FloatWithAggregatesFilter<"Order"> | number
@@ -609,6 +649,9 @@ export type OrderCreateInput = {
   shippingMethod?: string
   shippingFee?: number
   tax?: number
+  subscriptionId?: string | null
+  subscriptionSequence?: number | null
+  stripeInvoiceId?: string | null
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -645,6 +688,9 @@ export type OrderUncheckedCreateInput = {
   shippingMethod?: string
   shippingFee?: number
   tax?: number
+  subscriptionId?: string | null
+  subscriptionSequence?: number | null
+  stripeInvoiceId?: string | null
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -679,6 +725,9 @@ export type OrderUpdateInput = {
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
   tax?: Prisma.FloatFieldUpdateOperationsInput | number
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionSequence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -715,6 +764,9 @@ export type OrderUncheckedUpdateInput = {
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
   tax?: Prisma.FloatFieldUpdateOperationsInput | number
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionSequence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -750,6 +802,9 @@ export type OrderCreateManyInput = {
   shippingMethod?: string
   shippingFee?: number
   tax?: number
+  subscriptionId?: string | null
+  subscriptionSequence?: number | null
+  stripeInvoiceId?: string | null
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -782,6 +837,9 @@ export type OrderUpdateManyMutationInput = {
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
   tax?: Prisma.FloatFieldUpdateOperationsInput | number
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionSequence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -815,6 +873,9 @@ export type OrderUncheckedUpdateManyInput = {
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
   tax?: Prisma.FloatFieldUpdateOperationsInput | number
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionSequence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -864,6 +925,9 @@ export type OrderCountOrderByAggregateInput = {
   shippingMethod?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   tax?: Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrder
+  subscriptionSequence?: Prisma.SortOrder
+  stripeInvoiceId?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
@@ -889,6 +953,7 @@ export type OrderCountOrderByAggregateInput = {
 export type OrderAvgOrderByAggregateInput = {
   shippingFee?: Prisma.SortOrder
   tax?: Prisma.SortOrder
+  subscriptionSequence?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
@@ -909,6 +974,9 @@ export type OrderMaxOrderByAggregateInput = {
   shippingMethod?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   tax?: Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrder
+  subscriptionSequence?: Prisma.SortOrder
+  stripeInvoiceId?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
@@ -940,6 +1008,9 @@ export type OrderMinOrderByAggregateInput = {
   shippingMethod?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   tax?: Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrder
+  subscriptionSequence?: Prisma.SortOrder
+  stripeInvoiceId?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
@@ -964,6 +1035,7 @@ export type OrderMinOrderByAggregateInput = {
 export type OrderSumOrderByAggregateInput = {
   shippingFee?: Prisma.SortOrder
   tax?: Prisma.SortOrder
+  subscriptionSequence?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   bundleSavings?: Prisma.SortOrder
@@ -1029,6 +1101,14 @@ export type FloatFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type EnumOrderStatusFieldUpdateOperationsInput = {
   set?: $Enums.OrderStatus
 }
@@ -1075,6 +1155,9 @@ export type OrderCreateWithoutUserInput = {
   shippingMethod?: string
   shippingFee?: number
   tax?: number
+  subscriptionId?: string | null
+  subscriptionSequence?: number | null
+  stripeInvoiceId?: string | null
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -1109,6 +1192,9 @@ export type OrderUncheckedCreateWithoutUserInput = {
   shippingMethod?: string
   shippingFee?: number
   tax?: number
+  subscriptionId?: string | null
+  subscriptionSequence?: number | null
+  stripeInvoiceId?: string | null
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -1173,6 +1259,9 @@ export type OrderScalarWhereInput = {
   shippingMethod?: Prisma.StringFilter<"Order"> | string
   shippingFee?: Prisma.FloatFilter<"Order"> | number
   tax?: Prisma.FloatFilter<"Order"> | number
+  subscriptionId?: Prisma.StringNullableFilter<"Order"> | string | null
+  subscriptionSequence?: Prisma.IntNullableFilter<"Order"> | number | null
+  stripeInvoiceId?: Prisma.StringNullableFilter<"Order"> | string | null
   subtotal?: Prisma.FloatFilter<"Order"> | number
   discount?: Prisma.FloatFilter<"Order"> | number
   bundleSavings?: Prisma.FloatFilter<"Order"> | number
@@ -1205,6 +1294,9 @@ export type OrderCreateWithoutRefundRequestInput = {
   shippingMethod?: string
   shippingFee?: number
   tax?: number
+  subscriptionId?: string | null
+  subscriptionSequence?: number | null
+  stripeInvoiceId?: string | null
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -1240,6 +1332,9 @@ export type OrderUncheckedCreateWithoutRefundRequestInput = {
   shippingMethod?: string
   shippingFee?: number
   tax?: number
+  subscriptionId?: string | null
+  subscriptionSequence?: number | null
+  stripeInvoiceId?: string | null
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -1289,6 +1384,9 @@ export type OrderUpdateWithoutRefundRequestInput = {
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
   tax?: Prisma.FloatFieldUpdateOperationsInput | number
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionSequence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1324,6 +1422,9 @@ export type OrderUncheckedUpdateWithoutRefundRequestInput = {
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
   tax?: Prisma.FloatFieldUpdateOperationsInput | number
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionSequence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1357,6 +1458,9 @@ export type OrderCreateWithoutItemsInput = {
   shippingMethod?: string
   shippingFee?: number
   tax?: number
+  subscriptionId?: string | null
+  subscriptionSequence?: number | null
+  stripeInvoiceId?: string | null
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -1392,6 +1496,9 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   shippingMethod?: string
   shippingFee?: number
   tax?: number
+  subscriptionId?: string | null
+  subscriptionSequence?: number | null
+  stripeInvoiceId?: string | null
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -1441,6 +1548,9 @@ export type OrderUpdateWithoutItemsInput = {
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
   tax?: Prisma.FloatFieldUpdateOperationsInput | number
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionSequence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1476,6 +1586,9 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
   tax?: Prisma.FloatFieldUpdateOperationsInput | number
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionSequence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1509,6 +1622,9 @@ export type OrderCreateManyUserInput = {
   shippingMethod?: string
   shippingFee?: number
   tax?: number
+  subscriptionId?: string | null
+  subscriptionSequence?: number | null
+  stripeInvoiceId?: string | null
   subtotal: number
   discount?: number
   bundleSavings?: number
@@ -1541,6 +1657,9 @@ export type OrderUpdateWithoutUserInput = {
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
   tax?: Prisma.FloatFieldUpdateOperationsInput | number
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionSequence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1575,6 +1694,9 @@ export type OrderUncheckedUpdateWithoutUserInput = {
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
   tax?: Prisma.FloatFieldUpdateOperationsInput | number
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionSequence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1609,6 +1731,9 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
   shippingMethod?: Prisma.StringFieldUpdateOperationsInput | string
   shippingFee?: Prisma.FloatFieldUpdateOperationsInput | number
   tax?: Prisma.FloatFieldUpdateOperationsInput | number
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionSequence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotal?: Prisma.FloatFieldUpdateOperationsInput | number
   discount?: Prisma.FloatFieldUpdateOperationsInput | number
   bundleSavings?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1673,6 +1798,9 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   shippingMethod?: boolean
   shippingFee?: boolean
   tax?: boolean
+  subscriptionId?: boolean
+  subscriptionSequence?: boolean
+  stripeInvoiceId?: boolean
   subtotal?: boolean
   discount?: boolean
   bundleSavings?: boolean
@@ -1712,6 +1840,9 @@ export type OrderSelectScalar = {
   shippingMethod?: boolean
   shippingFee?: boolean
   tax?: boolean
+  subscriptionId?: boolean
+  subscriptionSequence?: boolean
+  stripeInvoiceId?: boolean
   subtotal?: boolean
   discount?: boolean
   bundleSavings?: boolean
@@ -1734,7 +1865,7 @@ export type OrderSelectScalar = {
   archivedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "userId" | "customerEmail" | "customerName" | "customerPhone" | "shippingAddress" | "shippingMethod" | "shippingFee" | "tax" | "subtotal" | "discount" | "bundleSavings" | "bundleReward" | "pointsRedeemed" | "pointsDiscount" | "pointsEarned" | "promoCode" | "total" | "currency" | "status" | "paymentStatus" | "paymentMode" | "paymentLabel" | "paymentIntentId" | "stripeChargeId" | "metadata" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "userId" | "customerEmail" | "customerName" | "customerPhone" | "shippingAddress" | "shippingMethod" | "shippingFee" | "tax" | "subscriptionId" | "subscriptionSequence" | "stripeInvoiceId" | "subtotal" | "discount" | "bundleSavings" | "bundleReward" | "pointsRedeemed" | "pointsDiscount" | "pointsEarned" | "promoCode" | "total" | "currency" | "status" | "paymentStatus" | "paymentMode" | "paymentLabel" | "paymentIntentId" | "stripeChargeId" | "metadata" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Order$userArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
@@ -1763,6 +1894,18 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
      * Tax added on top for products whose price doesn't include it (never discounted)
      */
     tax: number
+    /**
+     * Set on renewal orders created by a Subscribe & Save subscription (the first order has items for several)
+     */
+    subscriptionId: string | null
+    /**
+     * 2 = the subscription's second delivery, 3 = third… (null for normal orders)
+     */
+    subscriptionSequence: number | null
+    /**
+     * Stripe invoice behind a subscription renewal order (unique: one order per invoice)
+     */
+    stripeInvoiceId: string | null
     subtotal: number
     discount: number
     bundleSavings: number
@@ -2177,6 +2320,9 @@ export interface OrderFieldRefs {
   readonly shippingMethod: Prisma.FieldRef<"Order", 'String'>
   readonly shippingFee: Prisma.FieldRef<"Order", 'Float'>
   readonly tax: Prisma.FieldRef<"Order", 'Float'>
+  readonly subscriptionId: Prisma.FieldRef<"Order", 'String'>
+  readonly subscriptionSequence: Prisma.FieldRef<"Order", 'Int'>
+  readonly stripeInvoiceId: Prisma.FieldRef<"Order", 'String'>
   readonly subtotal: Prisma.FieldRef<"Order", 'Float'>
   readonly discount: Prisma.FieldRef<"Order", 'Float'>
   readonly bundleSavings: Prisma.FieldRef<"Order", 'Float'>

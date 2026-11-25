@@ -66,6 +66,7 @@ export const ModelName = {
   FranchiseApplication: 'FranchiseApplication',
   Blog: 'Blog',
   LoyaltyTransaction: 'LoyaltyTransaction',
+  Subscription: 'Subscription',
   WalletCard: 'WalletCard',
   ProductReview: 'ProductReview'
 } as const
@@ -204,6 +205,9 @@ export const OrderScalarFieldEnum = {
   shippingMethod: 'shippingMethod',
   shippingFee: 'shippingFee',
   tax: 'tax',
+  subscriptionId: 'subscriptionId',
+  subscriptionSequence: 'subscriptionSequence',
+  stripeInvoiceId: 'stripeInvoiceId',
   subtotal: 'subtotal',
   discount: 'discount',
   bundleSavings: 'bundleSavings',
@@ -298,6 +302,9 @@ export const ProductScalarFieldEnum = {
   variations: 'variations',
   supplyDuration: 'supplyDuration',
   packsPerMonth: 'packsPerMonth',
+  supplyOptions: 'supplyOptions',
+  subscriptionEnabled: 'subscriptionEnabled',
+  stripeProductId: 'stripeProductId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   archivedAt: 'archivedAt'
@@ -390,6 +397,40 @@ export const LoyaltyTransactionScalarFieldEnum = {
 } as const
 
 export type LoyaltyTransactionScalarFieldEnum = (typeof LoyaltyTransactionScalarFieldEnum)[keyof typeof LoyaltyTransactionScalarFieldEnum]
+
+
+export const SubscriptionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  status: 'status',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  stripeCustomerId: 'stripeCustomerId',
+  productName: 'productName',
+  productImage: 'productImage',
+  optionId: 'optionId',
+  optionLabel: 'optionLabel',
+  interval: 'interval',
+  intervalCount: 'intervalCount',
+  quantity: 'quantity',
+  unitPrice: 'unitPrice',
+  shippingMethod: 'shippingMethod',
+  shippingFee: 'shippingFee',
+  tax: 'tax',
+  renewalAmount: 'renewalAmount',
+  shippingAddress: 'shippingAddress',
+  paymentLabel: 'paymentLabel',
+  ordersCount: 'ordersCount',
+  minOrders: 'minOrders',
+  firstOrderId: 'firstOrderId',
+  nextRenewalAt: 'nextRenewalAt',
+  cancelledAt: 'cancelledAt',
+  cancelReason: 'cancelReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
 
 
 export const WalletCardScalarFieldEnum = {
@@ -559,6 +600,8 @@ export const OrderOrderByRelevanceFieldEnum = {
   customerName: 'customerName',
   customerPhone: 'customerPhone',
   shippingMethod: 'shippingMethod',
+  subscriptionId: 'subscriptionId',
+  stripeInvoiceId: 'stripeInvoiceId',
   promoCode: 'promoCode',
   currency: 'currency',
   paymentMode: 'paymentMode',
@@ -609,7 +652,8 @@ export const ProductOrderByRelevanceFieldEnum = {
   brand: 'brand',
   publishStatus: 'publishStatus',
   image: 'image',
-  supplyDuration: 'supplyDuration'
+  supplyDuration: 'supplyDuration',
+  stripeProductId: 'stripeProductId'
 } as const
 
 export type ProductOrderByRelevanceFieldEnum = (typeof ProductOrderByRelevanceFieldEnum)[keyof typeof ProductOrderByRelevanceFieldEnum]
@@ -674,6 +718,26 @@ export const LoyaltyTransactionOrderByRelevanceFieldEnum = {
 } as const
 
 export type LoyaltyTransactionOrderByRelevanceFieldEnum = (typeof LoyaltyTransactionOrderByRelevanceFieldEnum)[keyof typeof LoyaltyTransactionOrderByRelevanceFieldEnum]
+
+
+export const SubscriptionOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  stripeCustomerId: 'stripeCustomerId',
+  productName: 'productName',
+  productImage: 'productImage',
+  optionId: 'optionId',
+  optionLabel: 'optionLabel',
+  interval: 'interval',
+  shippingMethod: 'shippingMethod',
+  paymentLabel: 'paymentLabel',
+  firstOrderId: 'firstOrderId',
+  cancelReason: 'cancelReason'
+} as const
+
+export type SubscriptionOrderByRelevanceFieldEnum = (typeof SubscriptionOrderByRelevanceFieldEnum)[keyof typeof SubscriptionOrderByRelevanceFieldEnum]
 
 
 export const WalletCardOrderByRelevanceFieldEnum = {

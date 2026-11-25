@@ -31,7 +31,9 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { cardBrandName } from '../wallet/wallet-rules.js';
 import { unavailableReason } from '../products/product-availability.js';
 import { taxFor } from '../products/product-tax.js';
+import { fallbackOption, intervalText, optionUnitPrice, readSupplyOptions, type SupplyOption } from '../products/supply-options.js';
 import { WalletService } from '../wallet/wallet.service.js';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import type {
   CartBundleInput,
   CartLineInput,
@@ -69,6 +71,20 @@ export interface CalculatedPricing {
   shippingMethod: { id: string; name: string; fee: number; eta: string };
   /** Tax on products whose price doesn't include it — on the full price, never discounted. */
   tax: number;
+  /**
+   * Subscribe & Save lines. Their first delivery is part of this order; each becomes a subscription
+   * that renews every supply length at `unitPrice × quantity` + delivery + `tax` (never discounted).
+   */
+  subscriptionLines: Array<{
+    productId: string;
+    productName: string;
+    productImage: string;
+    option: SupplyOption;
+    quantity: number;
+    unitPrice: number;
+    /** Tax on one delivery of this line */
+    tax: number;
+  }>;
   /** What the customer pays: products after every discount, plus the full delivery fee and tax. */
   total: number;
   /** total in pence (Stripe). */
@@ -101,6 +117,7 @@ export class CheckoutService {
     @Optional() private readonly mailService?: MailService,
     @Optional() private readonly loyaltyService?: LoyaltyService,
     @Optional() private readonly walletService?: WalletService,
+    @Optional() private readonly subscriptionsService?: SubscriptionsService,
   ) {
     const secretKey =
       this.configService.get<string>('STRIPE_SECRET_KEY') ??
@@ -148,6 +165,8 @@ export class CheckoutService {
        * already charged for (the product may have changed status while the customer paid).
        */
       allowUnavailable?: boolean;
+      /** Subscribe & Save switched on in the dashboard (callers read the settings). */
+      subscriptionsEnabled?: boolean;
     },
   ): Promise<CalculatedPricing> {
     const lines = input.lines ?? [];
@@ -157,6 +176,7 @@ export class CheckoutService {
     let rawLinesSubtotal = 0;
     // Tax is worked out on full prices (before coupons, bundle discounts or points) and never discounted.
     let tax = 0;
+    const subscriptionLines: CalculatedPricing['subscriptionLines'] = [];
 
     for (const line of lines) {
       if (!line.qty || line.qty <= 0) continue;
@@ -165,6 +185,9 @@ export class CheckoutService {
       let basePrice = product ? product.price : 25;
       let image = product?.image ?? '';
       let lineTax: { taxIncluded?: boolean | null; taxType?: string | null; taxValue?: number | null } = { taxIncluded: true };
+      // Supply option chosen on the product page (Dashboard → Products → Purchase options)
+      let option: SupplyOption | null = null;
+      let canSubscribe = false;
       const sizeType = product ? product.sizeType : 'powder';
 
       if (!product && this.prisma.product?.findFirst) {
@@ -185,7 +208,45 @@ export class CheckoutService {
           basePrice = dbProduct.price;
           image = dbProduct.image ?? '';
           lineTax = dbProduct;
+          const productOptions = readSupplyOptions(dbProduct.supplyOptions);
+          // No option named (quick add, "Buy again"…) → the product's first option.
+          option = line.optionId ? (productOptions.find((o) => o.id === line.optionId) ?? null) : fallbackOption(productOptions);
+          canSubscribe = dbProduct.subscriptionEnabled;
+          if (line.optionId && !option) {
+            throw new BadRequestException(`That supply option for "${dbProduct.name}" is no longer available. Please choose it again.`);
+          }
         }
+      }
+
+      if (line.purchase === 'subscription') {
+        if (!option || !canSubscribe) throw new BadRequestException(`"${name}" isn't available on Subscribe & Save.`);
+        if (!options?.subscriptionsEnabled) throw new BadRequestException('Subscribe & Save is not available right now.');
+      }
+
+      if (option) {
+        // Supply option: its own price (minus the Subscribe & Save discount for subscriptions).
+        const purchase = line.purchase === 'subscription' ? 'subscription' : 'once';
+        const unitPrice = optionUnitPrice(option, purchase);
+        const lineTotal = round2(unitPrice * line.qty);
+        rawLinesSubtotal += lineTotal;
+        // Tax on the full option price — Subscribe & Save never lowers the tax.
+        const optionTax = taxFor(lineTax, option.price, line.qty);
+        tax += optionTax;
+        lineItems.push({
+          productId: line.productId,
+          productName: name,
+          productImage: image,
+          sizeLabel: option.label,
+          planLabel: purchase === 'subscription' ? `Subscribe & Save · ${intervalText(option)}` : 'One-time purchase',
+          quantity: line.qty,
+          unitPrice,
+          totalPrice: lineTotal,
+          isBundle: false,
+        });
+        if (purchase === 'subscription') {
+          subscriptionLines.push({ productId: line.productId, productName: name, productImage: image, option, quantity: line.qty, unitPrice, tax: optionTax });
+        }
+        continue;
       }
 
       const sizeTable = SIZE_TABLES[sizeType];
@@ -305,6 +366,7 @@ export class CheckoutService {
       shipping,
       shippingMethod: selectedShipping,
       tax,
+      subscriptionLines,
       total,
       totalInPence,
       promoCode: appliedPromoCode,
@@ -526,12 +588,14 @@ export class CheckoutService {
         pointsToRedeem: input.pointsToRedeem,
         userId,
       },
-      { strictPromo: true, strictPoints: true },
+      { strictPromo: true, strictPoints: true, subscriptionsEnabled: await this.subscriptionsOn() },
     );
 
     if (pricing.lineItems.length === 0 || pricing.total <= 0) {
       throw new BadRequestException('Shopping basket is empty or has a total of zero.');
     }
+    const hasSubscriptions = pricing.subscriptionLines.length > 0;
+    if (hasSubscriptions) this.assertCanSubscribe(userId, input.acceptSubscriptionTerms);
 
     const pricingOut = {
       total: pricing.total,
@@ -554,7 +618,8 @@ export class CheckoutService {
       if (input.savedCardId) {
         customer = await this.walletService.assertCardBelongs(userId, input.savedCardId);
         paymentMethod = input.savedCardId;
-      } else if (input.saveCard) {
+      } else if (input.saveCard || hasSubscriptions) {
+        // Subscribe & Save renewals are charged to this card later, so it is always saved.
         customer = await this.walletService.ensureCustomer(userId);
       }
     }
@@ -568,7 +633,7 @@ export class CheckoutService {
         },
         ...(customer && { customer }),
         ...(paymentMethod && { payment_method: paymentMethod }),
-        ...(customer && !paymentMethod && input.saveCard && { setup_future_usage: 'off_session' as const }),
+        ...(customer && (input.saveCard || hasSubscriptions) && { setup_future_usage: 'off_session' as const }),
         receipt_email: input.shippingAddress.email,
         metadata: {
           customerName: input.shippingAddress.name,
@@ -618,8 +683,15 @@ export class CheckoutService {
         strictPoints: input.paymentMode === 'demo',
         // The card was already charged: record the order even if a product changed status meanwhile.
         allowUnavailable: input.paymentMode === 'stripe' && Boolean(input.paymentIntentId),
+        subscriptionsEnabled: input.paymentMode === 'stripe' ? true : await this.subscriptionsOn(),
       },
     );
+    if (pricing.subscriptionLines.length > 0) {
+      if (input.paymentMode !== 'stripe' || !input.paymentIntentId) {
+        throw new BadRequestException('Subscribe & Save needs a card payment. Please pay by card.');
+      }
+      this.assertCanSubscribe(userId, input.acceptSubscriptionTerms);
+    }
 
     // Check if an order already exists for this paymentIntentId
     if (input.paymentIntentId) {
@@ -637,6 +709,9 @@ export class CheckoutService {
     const orderStatus: OrderStatus = OrderStatus.PLACED;
     let stripeChargeId: string | null = null;
     let cardLabel: string | null = null;
+    // Card + Stripe customer of this payment: Subscribe & Save renewals are charged to them.
+    let paidWithCard: string | null = null;
+    let stripeCustomerId: string | null = null;
 
     if (input.paymentIntentId && this.stripe) {
       try {
@@ -648,6 +723,8 @@ export class CheckoutService {
         if (pm && typeof pm !== 'string' && pm.card) {
           cardLabel = `${cardBrandName(pm.card.brand)} •••• ${pm.card.last4}`;
         }
+        paidWithCard = typeof pm === 'string' ? pm : (pm?.id ?? null);
+        stripeCustomerId = typeof intent.customer === 'string' ? intent.customer : (intent.customer?.id ?? null);
         if (intent.status === 'succeeded') {
           paymentStatus = PaymentStatus.PAID;
           if (typeof intent.latest_charge === 'string') {
@@ -741,6 +818,21 @@ export class CheckoutService {
         items: true,
       },
     });
+
+    // Subscribe & Save: the first delivery is in this order; start the renewals now it's paid.
+    if (pricing.subscriptionLines.length > 0 && userId && paymentStatus === PaymentStatus.PAID && this.subscriptionsService) {
+      await this.subscriptionsService.startFromOrder({
+        userId,
+        order,
+        lines: pricing.subscriptionLines,
+        shippingMethod: pricing.shippingMethod.id,
+        shippingFee: pricing.shipping,
+        shippingAddress: input.shippingAddress,
+        paymentLabel: order.paymentLabel,
+        stripeCustomerId,
+        paymentMethodId: paidWithCard,
+      });
+    }
 
     if (pricing.promoCode) {
       await this.prisma.coupon.updateMany({
@@ -1208,6 +1300,18 @@ export class CheckoutService {
     return updated;
   }
 
+  /** Subscribe & Save switched on in the dashboard, and Stripe set up (renewals need it). */
+  private async subscriptionsOn() {
+    if (!this.subscriptionsService || !this.stripe) return false;
+    return (await this.subscriptionsService.publicSettings()).enabled;
+  }
+
+  /** Subscriptions need a signed-in customer who agreed to the terms (minimum deliveries). */
+  private assertCanSubscribe(userId: string | undefined, accepted: boolean | undefined) {
+    if (!userId) throw new BadRequestException('Please sign in to use Subscribe & Save.');
+    if (!accepted) throw new BadRequestException('Please agree to the Subscribe & Save terms to continue.');
+  }
+
   /** How an order was paid, in words: "Visa •••• 4242" (from Stripe), or the card label from the form. */
   private paymentLabelFor(mode: string, cardLabel?: string | null) {
     const card = (cardLabel ?? '').trim().slice(0, 80) || (mode === 'demo' ? 'Card (test payment)' : 'Card');
@@ -1341,6 +1445,13 @@ export class CheckoutService {
           },
         });
         await this.syncLoyaltyForPaymentIntent(intent.id);
+      } else if (event.type === 'invoice.paid') {
+        // Subscribe & Save renewal → new order
+        await this.subscriptionsService?.recordRenewal(event.data.object as Stripe.Invoice);
+      } else if (event.type === 'invoice.payment_failed') {
+        await this.subscriptionsService?.markPaymentFailed(event.data.object as Stripe.Invoice);
+      } else if (event.type === 'customer.subscription.deleted') {
+        await this.subscriptionsService?.markCancelled((event.data.object as Stripe.Subscription).id);
       } else if (event.type === 'charge.refunded') {
         const charge = event.data.object as Stripe.Charge;
         const paymentIntentId =
