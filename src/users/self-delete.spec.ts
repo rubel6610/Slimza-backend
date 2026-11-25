@@ -26,7 +26,8 @@ async function setup(overrides: Record<string, unknown> = {}) {
     refreshToken: { updateMany: vi.fn().mockResolvedValue({ count: 2 }) },
   };
   const mail = { sendAccountDeletedEmail: vi.fn().mockResolvedValue(undefined), sendAccountRestoredEmail: vi.fn().mockResolvedValue(undefined) };
-  return { service: new UsersService(prisma as never, {} as never, mail as never), prisma, user, mail };
+  const storage = { uploadFile: vi.fn(), deleteFile: vi.fn().mockResolvedValue({ message: 'ok' }) };
+  return { service: new UsersService(prisma as never, mail as never, storage as never), prisma, user, mail };
 }
 
 describe('customer deletes their own account (soft delete)', () => {

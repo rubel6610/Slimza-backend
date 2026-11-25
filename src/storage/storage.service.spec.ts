@@ -14,6 +14,7 @@ describe('StorageService', () => {
           provide: ConfigService,
           useValue: {
             getOrThrow: vi.fn((key: string) => `test-${key}`),
+            get: vi.fn(() => undefined),
           },
         },
       ],

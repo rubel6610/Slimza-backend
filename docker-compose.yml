@@ -108,6 +108,7 @@ services:
       - S3_ACCESS_KEY=${MINIO_ROOT_USER:-minioadmin}
       - S3_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
       - S3_BUCKET=slimza-files
+      - S3_PUBLIC_URL=${S3_PUBLIC_URL:-http://127.0.0.1:9000/slimza-files}
     restart: unless-stopped
 
 volumes:

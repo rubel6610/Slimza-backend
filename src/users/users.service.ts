@@ -16,7 +16,6 @@ import { UserRole, UserStatus } from '../generated/prisma/enums.js';
 import { serializeUser } from '../auth/auth.service.js';
 import { verifyPassword } from '../auth/crypto.util.js';
 import { MailService } from '../mail/mail.service.js';
-import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
   DeleteMyAccountInput,
@@ -26,6 +25,7 @@ import type {
   UpdateAddressInput,
   UpdateProfileInput,
 } from './users.schemas.js';
+import { StorageService } from '../storage/storage.service.js';
 
 export interface UploadedAvatarFile {
   buffer: Buffer;
@@ -48,8 +48,8 @@ export class UsersService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly mediaService: MediaService,
     private readonly mailService: MailService,
+    private readonly storageService: StorageService,
   ) {}
 
   async getMe(userId: string) {
@@ -125,13 +125,11 @@ export class UsersService {
     });
     if (!existing) throw new NotFoundException('User not found');
 
-    const filename = `${userId}-${Date.now()}.${ext}`;
-    const { url: nextAvatarUrl } = await this.mediaService.saveAsset(
+    const { url: nextAvatarUrl } = await this.storageService.uploadFile(
+      file,
       'avatars',
-      filename,
-      file.mimetype,
-      file.buffer,
     );
+
     const updated = await this.prisma.user.update({
       where: { id: userId },
       data: { avatarUrl: nextAvatarUrl },
@@ -140,7 +138,7 @@ export class UsersService {
       },
     });
 
-    await this.deleteLocalAvatarIfExists(existing.avatarUrl);
+    await this.deleteAvatarIfExists(existing.avatarUrl);
     return serializeUser(updated);
   }
 
@@ -158,13 +156,23 @@ export class UsersService {
       },
     });
 
-    await this.deleteLocalAvatarIfExists(existing.avatarUrl);
+    await this.deleteAvatarIfExists(existing.avatarUrl);
     return serializeUser(updated);
   }
 
-  private async deleteLocalAvatarIfExists(avatarUrl: string) {
-    if (!avatarUrl.startsWith('/uploads/avatars/')) return;
-    await this.mediaService.deleteByUrl(avatarUrl);
+  private async deleteAvatarIfExists(avatarUrl: string) {
+    if (!avatarUrl) return;
+
+    const marker = 'avatars/';
+    const idx = avatarUrl.indexOf(marker);
+    if (idx !== -1) {
+      const key = avatarUrl.slice(idx).split('?')[0].split('#')[0];
+      await this.storageService.deleteFile(key).catch((err) => {
+        this.logger.warn(
+          `Failed to delete old MinIO avatar "${key}": ${String(err)}`,
+        );
+      });
+    }
   }
 
   async addAddress(userId: string, input: CreateAddressInput) {
@@ -479,6 +487,7 @@ export class UsersService {
     const user = await this.findManageableUser(id, actingAdminId);
     assertArchivedBeforeDelete(user, `User ${user.email}`);
     await this.prisma.user.delete({ where: { id: user.id } });
+    await this.deleteAvatarIfExists(user.avatarUrl);
     this.logger.warn(`Permanently deleted user ${user.email}`);
     return { ok: true as const };
   }

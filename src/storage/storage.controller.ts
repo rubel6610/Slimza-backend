@@ -2,19 +2,21 @@ import {
   BadRequestException,
   Controller,
   Delete,
-  Param,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { StorageService, type UploadedStorageFile } from './storage.service.js';
+import { Roles } from '../auth/decorators/roles.decorator.js';
+import { UserRole } from '../generated/prisma/enums.js';
 
 @Controller('storage')
 export class StorageController {
   constructor(private readonly storageService: StorageService) {}
-
+  @Roles(UserRole.ADMIN)
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -23,7 +25,7 @@ export class StorageController {
       },
     }),
   )
-  async uploadFile(@UploadedFile() file?: Express.Multer.File) {
+  async uploadFile(@UploadedFile() file?: UploadedStorageFile) {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
@@ -42,8 +44,13 @@ export class StorageController {
     return this.storageService.uploadFile(file);
   }
 
-  @Delete(':key')
-  async deleteFile(@Param('key') key: string) {
-    return this.storageService.deleteFile(key);
+  @Roles(UserRole.ADMIN)
+  @Delete()
+  async deleteFile(@Query('key') key?: string) {
+    const cleaned = key?.trim();
+    if (!cleaned) {
+      throw new BadRequestException('File key is required');
+    }
+    return this.storageService.deleteFile(cleaned);
   }
 }
