@@ -7,7 +7,7 @@ import { UserRole } from '../generated/prisma/enums.js';
 import { SubscriptionsService } from './subscriptions.service.js';
 
 const idParam = z.string().trim().min(1).max(64);
-const adminListQuery = z.object({ status: z.enum(['ACTIVE', 'PAST_DUE', 'CANCELLED']).optional() });
+const adminListQuery = z.object({ status: z.enum(['ACTIVE', 'PAST_DUE', 'PAUSED', 'CANCELLED']).optional() });
 const cancelBody = z.object({ reason: z.string().trim().max(300).optional() });
 const settingsBody = z.object({ data: z.unknown() });
 
@@ -38,6 +38,30 @@ export class SubscriptionsController {
   @Post('mine/:id/cancel')
   cancelMine(@CurrentUser() user: AuthUserPayload, @Param('id', { schema: idParam }) id: string) {
     return this.subscriptions.cancelMine(user.sub, id);
+  }
+
+  @Roles(UserRole.CUSTOMER)
+  @Post('mine/:id/pause')
+  pauseMine(@CurrentUser() user: AuthUserPayload, @Param('id', { schema: idParam }) id: string) {
+    return this.subscriptions.pauseMine(user.sub, id);
+  }
+
+  @Roles(UserRole.CUSTOMER)
+  @Post('mine/:id/resume')
+  resumeMine(@CurrentUser() user: AuthUserPayload, @Param('id', { schema: idParam }) id: string) {
+    return this.subscriptions.resumeMine(user.sub, id);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Post('admin/:id/pause')
+  adminPause(@Param('id', { schema: idParam }) id: string) {
+    return this.subscriptions.adminSetPaused(id, true);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Post('admin/:id/resume')
+  adminResume(@Param('id', { schema: idParam }) id: string) {
+    return this.subscriptions.adminSetPaused(id, false);
   }
 
   @Roles(UserRole.ADMIN)

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { CheckoutService } from '../checkout/checkout.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { addInterval, intervalText, optionUnitPrice, readSupplyOptions, supplyOptionsSchema } from '../products/supply-options.js';
-import { commitmentText, readSubscriptionSettings } from './subscription-settings.js';
+import { commitmentText, parseSubscriptionSettingsForSave, pickFrequency, readSubscriptionSettings } from './subscription-settings.js';
 import { SubscriptionsService } from './subscriptions.service.js';
 
 const fourMonths = { id: 'o120', label: '120 – 4 Month Supply', interval: 'month' as const, intervalCount: 4, price: 24.99, compareAtPrice: 29.99, servings: 120, badge: 'Most popular', subscribeDiscountPercent: 20 };
@@ -11,7 +11,8 @@ const fourMonths = { id: 'o120', label: '120 – 4 Month Supply', interval: 'mon
 describe('supply options', () => {
   it('prices one-time and Subscribe & Save', () => {
     expect(optionUnitPrice(fourMonths, 'once')).toBe(24.99);
-    expect(optionUnitPrice(fourMonths, 'subscription')).toBe(19.99);
+    expect(optionUnitPrice(fourMonths, 'subscription', 20)).toBe(19.99); // store-wide "Save 20%"
+    expect(optionUnitPrice(fourMonths, 'subscription', 0)).toBe(24.99);
     expect(intervalText(fourMonths)).toBe('every 4 months');
     expect(intervalText({ interval: 'week', intervalCount: 2 })).toBe('every 2 weeks');
     expect(intervalText({ interval: 'month', intervalCount: 1 })).toBe('every month');
@@ -25,7 +26,17 @@ describe('supply options', () => {
   });
 
   it('settings and commitment text', () => {
-    expect(readSubscriptionSettings(undefined)).toEqual({ enabled: true, minOrders: 2 });
+    expect(readSubscriptionSettings(undefined)).toMatchObject({ enabled: true, minOrders: 1, discountPercent: 15, discountOnFirstOrder: false, defaultFrequencyId: 'month-1' });
+    // Settings saved before the store-wide discount keep their values and get the new defaults.
+    const old = readSubscriptionSettings({ enabled: false, minOrders: 3 });
+    expect(old).toMatchObject({ enabled: false, minOrders: 3, discountPercent: 15 });
+    // Monthly on; weekly / 2 weeks / 6 months / yearly available but off.
+    expect(old.frequencies.filter((f) => f.active).map((f) => f.label)).toEqual(['Every month']);
+    expect(old.frequencies.map((f) => f.id)).toEqual(['month-1', 'week-1', 'week-2', 'month-6', 'month-12']);
+    expect(pickFrequency(old, 'week-1').id).toBe('month-1'); // switched off → the default
+    const withWeekly = { ...old, frequencies: old.frequencies.map((f) => ({ ...f, active: true })) };
+    expect(pickFrequency(withWeekly, 'week-1')).toMatchObject({ interval: 'week', intervalCount: 1 });
+    expect(parseSubscriptionSettingsForSave({ ...old, frequencies: old.frequencies.map((f) => ({ ...f, active: false })) })).toMatchObject({ ok: false });
     expect(commitmentText(2)).toBe('Minimum 2 deliveries, then cancel any time.');
     expect(commitmentText(1)).toBe('Cancel any time.');
   });
@@ -52,15 +63,42 @@ describe('checkout with supply options', () => {
     expect(pricing.lineItems[0]).toMatchObject({ sizeLabel: '120 – 4 Month Supply', planLabel: 'One-time purchase' });
   });
 
-  it('Subscribe & Save uses the discounted price; tax stays on the full price', async () => {
+  it('Subscribe & Save: first order at the normal price, 15% off every renewal; tax on the full price', async () => {
     const pricing = await checkout({ taxIncluded: false, taxType: 'percent', taxValue: 10 }).calculatePricing(
       { lines: [line('subscription')], shippingMethodId: 'uk-express' },
       { subscriptionsEnabled: true },
     );
-    expect(pricing.subtotal).toBe(39.98);
-    expect(pricing.tax).toBe(5); // 10% of 2 × £24.99, not of the subscription price
-    expect(pricing.subscriptionLines[0]).toMatchObject({ quantity: 2, unitPrice: 19.99, tax: 5 });
-    expect(pricing.lineItems[0].planLabel).toBe('Subscribe & Save · every 4 months');
+    expect(pricing.subtotal).toBe(49.98); // 2 × £24.99 today
+    expect(pricing.tax).toBe(5); // 10% of 2 × £24.99
+    expect(pricing.subscriptionLines[0]).toMatchObject({ quantity: 2, unitPrice: 24.99, renewalUnitPrice: 21.24, tax: 5 });
+    // The customer's frequency, not the package length (default: every month).
+    expect(pricing.subscriptionLines[0].frequency).toMatchObject({ id: 'month-1', interval: 'month', intervalCount: 1 });
+    expect(pricing.lineItems[0].planLabel).toBe('Subscribe & Save · Every month');
+  });
+
+  it('"discount on the first order" on: the first order gets the 15% too', async () => {
+    const service = checkout({});
+    const prisma = (service as unknown as { prisma: { cmsSection: { findUnique: ReturnType<typeof vi.fn> } } }).prisma;
+    prisma.cmsSection.findUnique.mockImplementation(({ where }) =>
+      Promise.resolve(where.key === 'subscriptions' ? { data: { enabled: true, minOrders: 1, discountOnFirstOrder: true } } : null),
+    );
+    const pricing = await service.calculatePricing({ lines: [line('subscription')] }, { subscriptionsEnabled: true });
+    expect(pricing.subscriptionLines[0]).toMatchObject({ unitPrice: 21.24, renewalUnitPrice: 21.24 });
+  });
+
+  it("client's example: £49.98 with the 50% code = £24.99 (one-time and the first subscription order), renewals £21.24", async () => {
+    const pack = { ...fourMonths, price: 49.98, compareAtPrice: null };
+    const withCoupon = (purchase: 'once' | 'subscription') => {
+      const service = checkout({ supplyOptions: [pack] });
+      const prisma = (service as unknown as { prisma: { coupon: { findUnique: ReturnType<typeof vi.fn> } } }).prisma;
+      prisma.coupon.findUnique.mockResolvedValue({ code: 'SLIMZA50', discountPercent: 50, isActive: true, generateDate: '2000-01-01', expiredDate: '2999-12-31', customerRange: 0, uses: 0, archivedAt: null });
+      return service.calculatePricing({ lines: [{ ...line(purchase), qty: 1 }], promoCode: 'SLIMZA50' }, { subscriptionsEnabled: true });
+    };
+    const once = await withCoupon('once');
+    expect([once.subtotal, once.discount, once.total]).toEqual([49.98, 24.99, 24.99]); // 50% of £49.98, not of £24.99
+    const sub = await withCoupon('subscription');
+    expect([sub.subtotal, sub.discount, sub.total]).toEqual([49.98, 24.99, 24.99]);
+    expect(sub.subscriptionLines[0].renewalUnitPrice).toBe(21.24); // £49.98 × 85% × 50%
   });
 
   it('refuses subscriptions when they are off, or the product has none', async () => {
@@ -123,12 +161,28 @@ describe('SubscriptionsService', () => {
     expect(res).toMatchObject({ status: 'CANCELLED' });
   });
 
+  it('customers can pause and resume; a paused plan skips missed renewal dates', async () => {
+    const paused = await subscriptionsService({ ...baseSub, stripeSubscriptionId: null }).service.pauseMine('u1', 's1');
+    expect(paused).toMatchObject({ status: 'PAUSED', canResume: true, canPause: false });
+    const past = new Date(Date.now() - 40 * 86_400_000);
+    const { service, prisma } = subscriptionsService({ ...baseSub, stripeSubscriptionId: null, status: 'PAUSED', interval: 'month', intervalCount: 1, nextRenewalAt: past });
+    const resumed = await service.resumeMine('u1', 's1');
+    expect(resumed.status).toBe('ACTIVE');
+    expect(prisma.subscription.update.mock.calls[0][0].data.nextRenewalAt.getTime()).toBeGreaterThan(Date.now());
+    await expect(subscriptionsService({ ...baseSub, status: 'CANCELLED' }).service.pauseMine('u1', 's1')).rejects.toThrow(/cancelled/);
+  });
+
   it('without Stripe a new subscription is recorded as not started (the first order is still paid)', async () => {
     const { service, prisma } = subscriptionsService(null);
     const [row] = await service.startFromOrder({
       userId: 'u1',
       order: { id: 'o1', orderNumber: 'SLZ-1', customerEmail: 'sam@example.com', customerName: 'Sam' },
-      lines: [{ productId: 'db-1', productName: 'CoQ10', productImage: '', option: fourMonths, quantity: 1, unitPrice: 19.99, tax: 0 }],
+      lines: [
+        {
+          productId: 'db-1', productName: 'CoQ10', productImage: '', option: fourMonths, quantity: 1, unitPrice: 19.99, renewalUnitPrice: 19.99, tax: 0,
+          frequency: { id: 'month-1', label: 'Every month', interval: 'month', intervalCount: 1 },
+        },
+      ],
       shippingMethod: 'uk-standard',
       shippingFee: 3.99,
       shippingAddress: {},
@@ -138,7 +192,7 @@ describe('SubscriptionsService', () => {
     });
     expect(row).toMatchObject({ status: 'CANCELLED' });
     // Renewal = subscription price × qty + delivery + tax
-    expect(prisma.subscription.create.mock.calls[0][0].data).toMatchObject({ renewalAmount: 23.98, ordersCount: 1, minOrders: 2 });
+    expect(prisma.subscription.create.mock.calls[0][0].data).toMatchObject({ renewalAmount: 23.98, ordersCount: 1, minOrders: 1, interval: 'month', intervalCount: 1 });
   });
 });
 

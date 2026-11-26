@@ -117,6 +117,7 @@ export type LoyaltyEntryStatus = (typeof LoyaltyEntryStatus)[keyof typeof Loyalt
 export const SubscriptionStatus = {
   ACTIVE: 'ACTIVE',
   PAST_DUE: 'PAST_DUE',
+  PAUSED: 'PAUSED',
   CANCELLED: 'CANCELLED'
 } as const
 

@@ -489,6 +489,8 @@ enum SubscriptionStatus {
   ACTIVE
   /// A renewal payment failed; Stripe is retrying
   PAST_DUE
+  /// Paused by the customer/admin: no renewals are charged until it is resumed
+  PAUSED
   CANCELLED
 }
 

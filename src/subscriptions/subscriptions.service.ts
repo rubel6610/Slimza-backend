@@ -22,8 +22,12 @@ export interface NewSubscriptionLine {
   productName: string;
   productImage: string;
   option: SupplyOption;
+  /** How often the customer chose (Subscribe & Save frequency) */
+  frequency: { id: string; label: string; interval: 'week' | 'month'; intervalCount: number };
   quantity: number;
   unitPrice: number;
+  /** Per-pack price of every renewal (same as the first order, coupon included) */
+  renewalUnitPrice: number;
   tax: number;
 }
 
@@ -102,8 +106,10 @@ export class SubscriptionsService {
     const settings = await this.settings();
     const created: Subscription[] = [];
     for (const line of input.lines) {
-      const renewalAmount = round2(line.unitPrice * line.quantity + input.shippingFee + line.tax);
-      const nextRenewalAt = addInterval(new Date(), line.option);
+      // Every renewal costs what this first order cost (Subscribe & Save + the coupon used), plus delivery and tax.
+      const renewalAmount = round2(line.renewalUnitPrice * line.quantity + input.shippingFee + line.tax);
+      // The customer chose how often (every week / 2 weeks / month), not the package length.
+      const nextRenewalAt = addInterval(new Date(), line.frequency);
       const row = await this.prisma.subscription.create({
         data: {
           userId: input.userId,
@@ -112,10 +118,10 @@ export class SubscriptionsService {
           productImage: line.productImage,
           optionId: line.option.id,
           optionLabel: line.option.label,
-          interval: line.option.interval,
-          intervalCount: line.option.intervalCount,
+          interval: line.frequency.interval,
+          intervalCount: line.frequency.intervalCount,
           quantity: line.quantity,
-          unitPrice: line.unitPrice,
+          unitPrice: line.renewalUnitPrice,
           shippingMethod: input.shippingMethod,
           shippingFee: input.shippingFee,
           tax: line.tax,
@@ -144,15 +150,15 @@ export class SubscriptionsService {
                 currency: 'gbp',
                 product: stripeProduct,
                 unit_amount: Math.round(renewalAmount * 100),
-                recurring: { interval: line.option.interval, interval_count: line.option.intervalCount },
+                recurring: { interval: line.frequency.interval, interval_count: line.frequency.intervalCount },
               },
               quantity: 1,
             },
           ],
-          // The first delivery was paid at checkout: the first renewal is one supply length away.
+          // The first delivery was paid at checkout: the first renewal is one frequency away.
           trial_end: Math.floor(nextRenewalAt.getTime() / 1000),
           proration_behavior: 'none',
-          description: `${line.productName} — ${line.option.label} × ${line.quantity}, ${intervalText(line.option)} (order #${input.order.orderNumber})`,
+          description: `${line.productName} — ${line.option.label} × ${line.quantity}, ${line.frequency.label.toLowerCase()} (order #${input.order.orderNumber})`,
           metadata: { subscriptionId: row.id, userId: input.userId, firstOrder: input.order.orderNumber },
         });
         created.push(await this.prisma.subscription.update({ where: { id: row.id }, data: { stripeSubscriptionId: sub.id } }));
@@ -163,7 +169,7 @@ export class SubscriptionsService {
             name: input.order.customerName,
             productName: line.productName,
             optionLabel: line.option.label,
-            frequency: intervalText(line.option),
+            frequency: line.frequency.label.toLowerCase(),
             renewalAmount,
             nextRenewalAt,
             minOrders: settings.minOrders,
@@ -330,7 +336,26 @@ export class SubscriptionsService {
     return this.toView(await this.cancel(sub, 'Cancelled by the customer'));
   }
 
+  /** Pause: no renewals are charged (or delivered) until the customer resumes. */
+  async pauseMine(userId: string, id: string) {
+    const sub = await this.prisma.subscription.findFirst({ where: { id, userId } });
+    if (!sub) throw new NotFoundException('Subscription not found');
+    return this.toView(await this.setPaused(sub, true));
+  }
+
+  async resumeMine(userId: string, id: string) {
+    const sub = await this.prisma.subscription.findFirst({ where: { id, userId } });
+    if (!sub) throw new NotFoundException('Subscription not found');
+    return this.toView(await this.setPaused(sub, false));
+  }
+
   // ---- Admin -----------------------------------------------------------------------------
+
+  async adminSetPaused(id: string, paused: boolean) {
+    const sub = await this.prisma.subscription.findUnique({ where: { id } });
+    if (!sub) throw new NotFoundException('Subscription not found');
+    return this.toView(await this.setPaused(sub, paused));
+  }
 
   async adminList(status?: string) {
     const rows = await this.prisma.subscription.findMany({
@@ -356,7 +381,7 @@ export class SubscriptionsService {
   async adminRenewNow(id: string) {
     const sub = await this.prisma.subscription.findUnique({ where: { id } });
     if (!sub) throw new NotFoundException('Subscription not found');
-    if (sub.status === 'CANCELLED' || !sub.stripeSubscriptionId) throw new BadRequestException('Only active subscriptions can be renewed.');
+    if (sub.status === 'CANCELLED' || sub.status === 'PAUSED' || !sub.stripeSubscriptionId) throw new BadRequestException('Only active subscriptions can be renewed.');
     if (!this.stripe) throw new BadRequestException('Stripe is not configured.');
     const current = await this.stripe.subscriptions.retrieve(sub.stripeSubscriptionId);
     await this.stripe.subscriptions.update(
@@ -377,6 +402,32 @@ export class SubscriptionsService {
   }
 
   // ---- Helpers ---------------------------------------------------------------------------
+
+  /**
+   * Stripe pause_collection "void": renewal invoices while paused are voided (nothing charged, no
+   * order). Resuming continues on the normal schedule from the next renewal date.
+   */
+  private async setPaused(sub: Subscription, paused: boolean) {
+    if (sub.status === 'CANCELLED') throw new BadRequestException('This subscription is cancelled.');
+    if (paused === (sub.status === 'PAUSED')) return sub;
+    if (sub.stripeSubscriptionId && this.stripe) {
+      await this.stripe.subscriptions
+        .update(sub.stripeSubscriptionId, { pause_collection: paused ? { behavior: 'void' } : '' } as Stripe.SubscriptionUpdateParams)
+        .catch((err) => {
+          throw new BadRequestException(`Stripe: ${err?.message ?? err}`);
+        });
+    }
+    let nextRenewalAt = sub.nextRenewalAt;
+    if (!paused && nextRenewalAt) {
+      // Skipped renewals while paused: the next one is the first renewal date still ahead.
+      const freq = { interval: sub.interval as 'week' | 'month', intervalCount: sub.intervalCount };
+      while (nextRenewalAt < new Date()) nextRenewalAt = addInterval(nextRenewalAt, freq);
+    }
+    return this.prisma.subscription.update({
+      where: { id: sub.id },
+      data: { status: paused ? 'PAUSED' : 'ACTIVE', nextRenewalAt },
+    });
+  }
 
   private async cancel(sub: Subscription, reason: string) {
     if (sub.stripeSubscriptionId && this.stripe) {
@@ -423,6 +474,8 @@ export class SubscriptionsService {
       ordersCount: s.ordersCount,
       minOrders: s.minOrders,
       canCancel: s.status !== 'CANCELLED' && s.ordersCount >= s.minOrders,
+      canPause: s.status === 'ACTIVE' || s.status === 'PAST_DUE',
+      canResume: s.status === 'PAUSED',
       nextRenewalAt: s.nextRenewalAt,
       cancelledAt: s.cancelledAt,
       cancelReason: s.cancelReason,

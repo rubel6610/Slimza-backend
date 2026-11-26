@@ -54,9 +54,13 @@ export function readSupplyOptions(raw: unknown): SupplyOption[] {
 export type PurchaseType = 'once' | 'subscription';
 
 /** Price of one pack of this option for the chosen purchase type. */
-export function optionUnitPrice(option: SupplyOption, purchase: PurchaseType): number {
-  if (purchase !== 'subscription' || !option.subscribeDiscountPercent) return round2(option.price);
-  return round2(option.price * (1 - option.subscribeDiscountPercent / 100));
+/**
+ * Price of one pack. Subscribe & Save takes the store-wide discount (Dashboard → Subscriptions →
+ * Settings, "Save 20% on every order"); one-time purchases pay the option price.
+ */
+export function optionUnitPrice(option: SupplyOption, purchase: PurchaseType, subscribePercent = 0): number {
+  if (purchase !== 'subscription' || !subscribePercent) return round2(option.price);
+  return round2(option.price * (1 - subscribePercent / 100));
 }
 
 /** "every 4 months" / "every 2 weeks" / "every month" */

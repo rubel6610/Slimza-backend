@@ -24,6 +24,8 @@ export const cartLineInputSchema = z.object({
   optionId: z.string().trim().max(40).optional(),
   /** One-time purchase (default) or Subscribe & Save */
   purchase: z.enum(['once', 'subscription']).optional().default('once'),
+  /** Subscribe & Save: how often (a frequency id from the subscription settings, e.g. "week-2") */
+  frequencyId: z.string().trim().max(30).optional(),
 });
 /** Input shape: optional fields (purchase, sizeIndex…) may be left out by callers and tests. */
 export type CartLineInput = z.input<typeof cartLineInputSchema>;

@@ -32,6 +32,12 @@ import { cardBrandName } from '../wallet/wallet-rules.js';
 import { unavailableReason } from '../products/product-availability.js';
 import { taxFor } from '../products/product-tax.js';
 import { pickMethod, quoteShipping, readShippingConfig, SHIPPING_CMS_KEY, type ShippingAddressLike } from '../shipping/shipping-config.js';
+import {
+  pickFrequency,
+  readSubscriptionSettings,
+  SUBSCRIPTION_SETTINGS_KEY,
+  type SubscriptionSettings,
+} from '../subscriptions/subscription-settings.js';
 import { fallbackOption, intervalText, optionUnitPrice, readSupplyOptions, type SupplyOption } from '../products/supply-options.js';
 import { WalletService } from '../wallet/wallet.service.js';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
@@ -82,8 +88,13 @@ export interface CalculatedPricing {
     productName: string;
     productImage: string;
     option: SupplyOption;
+    /** How often the customer chose to receive it (Subscribe & Save frequency) */
+    frequency: { id: string; label: string; interval: 'week' | 'month'; intervalCount: number };
     quantity: number;
+    /** Price of one pack on this order, before the coupon (normal price unless "discount on the first order" is on) */
     unitPrice: number;
+    /** What each renewal charges per pack: the same as this order (coupon included), so the price never jumps */
+    renewalUnitPrice: number;
     /** Tax on one delivery of this line */
     tax: number;
   }>;
@@ -184,6 +195,7 @@ export class CheckoutService {
     const shippingConfig = await this.loadShippingConfig();
     let weightGrams = 0;
     const subscriptionLines: CalculatedPricing['subscriptionLines'] = [];
+    let subscriptionSettings: SubscriptionSettings | null = null;
 
     for (const line of lines) {
       if (!line.qty || line.qty <= 0) continue;
@@ -226,6 +238,7 @@ export class CheckoutService {
       }
 
       if (line.purchase === 'subscription') {
+        subscriptionSettings ??= await this.loadSubscriptionSettings();
         if (!option || !canSubscribe) throw new BadRequestException(`"${name}" isn't available on Subscribe & Save.`);
         if (!options?.subscriptionsEnabled) throw new BadRequestException('Subscribe & Save is not available right now.');
       }
@@ -233,7 +246,11 @@ export class CheckoutService {
       if (option) {
         // Supply option: its own price (minus the Subscribe & Save discount for subscriptions).
         const purchase = line.purchase === 'subscription' ? 'subscription' : 'once';
-        const unitPrice = optionUnitPrice(option, purchase);
+        const frequency = purchase === 'subscription' && subscriptionSettings ? pickFrequency(subscriptionSettings, line.frequencyId) : null;
+        // Subscribe & Save: the recurring price takes the store-wide discount; the first order only
+        // does when "discount on the first order" is on (client brief: first order at normal price).
+        const recurringPrice = optionUnitPrice(option, purchase, subscriptionSettings?.discountPercent ?? 0);
+        const unitPrice = frequency && !subscriptionSettings?.discountOnFirstOrder ? optionUnitPrice(option, 'once') : recurringPrice;
         const lineTotal = round2(unitPrice * line.qty);
         rawLinesSubtotal += lineTotal;
         // Tax on the full option price — Subscribe & Save never lowers the tax.
@@ -245,14 +262,24 @@ export class CheckoutService {
           productName: name,
           productImage: image,
           sizeLabel: option.label,
-          planLabel: purchase === 'subscription' ? `Subscribe & Save · ${intervalText(option)}` : 'One-time purchase',
+          planLabel: frequency ? `Subscribe & Save · ${frequency.label}` : 'One-time purchase',
           quantity: line.qty,
           unitPrice,
           totalPrice: lineTotal,
           isBundle: false,
         });
-        if (purchase === 'subscription') {
-          subscriptionLines.push({ productId: line.productId, productName: name, productImage: image, option, quantity: line.qty, unitPrice, tax: optionTax });
+        if (frequency) {
+          subscriptionLines.push({
+            productId: line.productId,
+            productName: name,
+            productImage: image,
+            option,
+            frequency: { id: frequency.id, label: frequency.label, interval: frequency.interval, intervalCount: frequency.intervalCount },
+            quantity: line.qty,
+            unitPrice,
+            renewalUnitPrice: recurringPrice, // the coupon is added below, once it's known
+            tax: optionTax,
+          });
         }
         continue;
       }
@@ -338,6 +365,9 @@ export class CheckoutService {
     }
     const couponBase = bundleConfig.discounts.allowCoupons ? subtotal : round2(rawLinesSubtotal);
     const discount = round2(couponBase * promoRate);
+    // Subscribe & Save renewals keep the price of this order: the coupon stays on every delivery
+    // (e.g. £49.98 → 50% code = £24.99 first order → 15% Subscribe & Save = £21.24 every renewal).
+    for (const sub of subscriptionLines) sub.renewalUnitPrice = round2(sub.renewalUnitPrice * (1 - promoRate));
 
     const { spendReward } = bundleConfig;
     const bundleReward =
@@ -1364,6 +1394,12 @@ export class CheckoutService {
   }
 
   /** Dashboard → Shipping settings (CMS section "shipping"), or the defaults. */
+  /** Dashboard → Subscriptions → Settings (store-wide discount + delivery frequencies), or the defaults. */
+  private async loadSubscriptionSettings(): Promise<SubscriptionSettings> {
+    const record = this.prisma.cmsSection?.findUnique ? await this.prisma.cmsSection.findUnique({ where: { key: SUBSCRIPTION_SETTINGS_KEY } }) : null;
+    return readSubscriptionSettings(record?.data);
+  }
+
   private async loadShippingConfig() {
     const record = this.prisma.cmsSection?.findUnique ? await this.prisma.cmsSection.findUnique({ where: { key: SHIPPING_CMS_KEY } }) : null;
     return readShippingConfig(record?.data);
