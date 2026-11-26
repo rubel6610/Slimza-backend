@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildHubFromCategories, parseWellnessHubForSave } from './wellness-hub-config.js';
+import { parseWellnessHubForSave } from './wellness-hub-config.js';
 import { WellnessHubService } from './wellness-hub.service.js';
 
 const group = (over: Record<string, unknown> = {}) => ({
@@ -16,23 +16,6 @@ describe('wellness hub config', () => {
     expect(parseWellnessHubForSave({ enabled: true, title: 'Hub', groups: [group(), group({ id: 'g2' })] }).ok).toBe(false);
     expect(parseWellnessHubForSave({ enabled: true, title: 'Hub', groups: [group({ slug: 'Not ok!' })] }).ok).toBe(false);
     expect(parseWellnessHubForSave({ enabled: true, title: 'Hub', groups: [group({ name: '' })] }).ok).toBe(false);
-  });
-
-  it('builds the first hub from the categories, with their products', () => {
-    const hub = buildHubFromCategories(
-      [
-        { id: 'cat-1', slug: 'cleanse-reset', name: 'Cleanse & Reset', image: '/a.png', active: true },
-        { id: 'cat-2', slug: 'daily-energy', name: 'Daily Energy', image: '', active: false },
-      ],
-      [
-        { id: 'p1', category: 'cleanse-reset', categories: [] },
-        { id: 'p2', category: 'total-wellness', categories: ['total-wellness', 'daily-energy'] },
-      ],
-    );
-    expect(hub.groups.map((g) => [g.slug, g.productIds, g.active, g.image])).toEqual([
-      ['cleanse-reset', ['p1'], true, '/a.png'],
-      ['daily-energy', ['p2'], false, ''],
-    ]);
   });
 });
 
@@ -58,12 +41,6 @@ describe('WellnessHubService', () => {
     const { service } = make({ data: stored });
     await expect(service.publicGroup('hidden')).rejects.toThrow(/not found/);
     await expect(service.publicGroup('nope')).rejects.toThrow(/not found/);
-  });
-
-  it('does not overwrite an existing hub when seeding', async () => {
-    const { service, prisma } = make({ key: 'wellness_hub' });
-    await service.seedFromCategoriesIfMissing();
-    expect(prisma.cmsSection.create).not.toHaveBeenCalled();
   });
 });
 

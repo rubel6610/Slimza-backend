@@ -141,7 +141,7 @@ export const CMS_ARCHIVABLE_LISTS = {
 };
 ```
 
-Every item in those lists needs a **unique string `id`**. (The default `banner_slides` had two slides with `id: 'slide-2'`. This was fixed in `DEFAULT_CMS_DATA`. If a database already stores duplicate ids from an earlier seed, give them unique ids.)
+Every item in those lists needs a **unique string `id`**. If stored data ever has duplicate ids, give them unique ids in the dashboard.
 
 ---
 

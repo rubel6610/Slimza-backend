@@ -101,13 +101,6 @@ export class CmsController {
     return this.cmsService.deleteArchivedSectionItem(key, itemId);
   }
 
-  /** Restores defaults. Items you added are moved to the archive, not deleted. */
-  @Roles(UserRole.ADMIN)
-  @Post(':key/reset')
-  resetSection(@Param('key', { schema: cmsKeyParamSchema }) key: string) {
-    return this.cmsService.resetSection(key);
-  }
-
   @Roles(UserRole.ADMIN)
   @Post('upload')
   @UseInterceptors(

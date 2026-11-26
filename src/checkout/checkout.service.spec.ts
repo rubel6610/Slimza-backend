@@ -41,6 +41,12 @@ describe('CheckoutService', () => {
         create: vi.fn(),
         update: vi.fn(),
       },
+      // Products only come from the database: p01 is a £27.99 product.
+      product: {
+        findFirst: vi.fn().mockResolvedValue({ id: 'p01', slug: 'p01', name: 'Slimza Detox Elixir', price: 27.99, image: '', stockStatus: 'In Stock', archivedAt: null, supplyOptions: null, subscriptionEnabled: false, taxIncluded: true }),
+        findMany: vi.fn().mockResolvedValue([]),
+      },
+      cmsSection: { findUnique: vi.fn().mockResolvedValue(null) },
       $transaction: vi.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
     };
 
@@ -64,7 +70,12 @@ describe('CheckoutService', () => {
     );
   });
 
-  it('calculates pricing correctly with catalog items and shipping', async () => {
+  it('refuses a product that is not in the database (no catalogue in code)', async () => {
+    mockPrisma.product.findFirst.mockResolvedValueOnce(null);
+    await expect(service.calculatePricing({ lines: [{ productId: 'ghost', sizeIndex: 0, months: 1, qty: 1 }] })).rejects.toThrow(/no longer available/);
+  });
+
+  it('calculates pricing correctly with database products and shipping', async () => {
     const pricing = await service.calculatePricing({
       lines: [{ productId: 'p01', sizeIndex: 0, months: 1, qty: 1 }],
       shippingAddress: { country: 'France' },
@@ -88,6 +99,7 @@ describe('CheckoutService', () => {
       expiredDate: '2099-12-31',
       isActive: true,
     });
+    mockPrisma.product.findFirst.mockResolvedValueOnce({ id: 'p02', slug: 'p02', name: 'Matcha', price: 39.99, image: '', stockStatus: 'In Stock', archivedAt: null, supplyOptions: null, subscriptionEnabled: false, taxIncluded: true });
 
     const pricing = await service.calculatePricing({
       lines: [{ productId: 'p02', sizeIndex: 0, months: 1, qty: 1 }],

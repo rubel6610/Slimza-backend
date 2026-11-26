@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RedisService } from '../redis/redis.service.js';
-import { CmsService, DEFAULT_CMS_DATA } from './cms.service.js';
+import { CmsService } from './cms.service.js';
 
 describe('CmsService', () => {
   let service: CmsService;
@@ -51,14 +51,14 @@ describe('CmsService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should return all sections merging database records with defaults', async () => {
+  it('returns only the sections stored in the database (no defaults in code)', async () => {
     mockPrisma.cmsSection.findMany.mockResolvedValue([
       { key: 'bundle_banner', data: { imageUrl: '/custom.png', active: true } },
     ]);
 
     const result = await service.getAllSections();
     expect(result.bundle_banner).toEqual({ imageUrl: '/custom.png', active: true });
-    expect(result.header).toEqual(DEFAULT_CMS_DATA.header);
+    expect(result.header).toBeUndefined();
     expect(mockRedisService.wrap).toHaveBeenCalledWith('cms:all', 300, expect.any(Function));
   });
 

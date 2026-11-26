@@ -27,10 +27,9 @@ export const createProductSchema = z.object({
   featured: z.boolean().optional().default(false),
   featuredRank: z.coerce.number().int().optional().default(99),
   offered: z.boolean().optional().default(false),
-  image: z.string().trim().optional().default('/products/tea/teatox-green.png'),
+  image: z.string().trim().optional().default(''),
   gallery: z.array(z.string()).optional().default([]),
   sizes: z.unknown().optional(),
-  variations: z.unknown().optional(),
   supplyDuration: z.string().trim().optional().default('1 Month'),
   packsPerMonth: z.coerce.number().int().min(1).optional().default(1),
   /** Purchase options on the product page (see supply-options.ts). */

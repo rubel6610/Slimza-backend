@@ -141,7 +141,6 @@ export type ProductCountAggregateOutputType = {
   image: number
   gallery: number
   sizes: number
-  variations: number
   supplyDuration: number
   packsPerMonth: number
   supplyOptions: number
@@ -269,7 +268,6 @@ export type ProductCountAggregateInputType = {
   image?: true
   gallery?: true
   sizes?: true
-  variations?: true
   supplyDuration?: true
   packsPerMonth?: true
   supplyOptions?: true
@@ -394,7 +392,6 @@ export type ProductGroupByOutputType = {
   image: string
   gallery: runtime.JsonValue | null
   sizes: runtime.JsonValue | null
-  variations: runtime.JsonValue | null
   supplyDuration: string | null
   packsPerMonth: number | null
   supplyOptions: runtime.JsonValue | null
@@ -455,7 +452,6 @@ export type ProductWhereInput = {
   image?: Prisma.StringFilter<"Product"> | string
   gallery?: Prisma.JsonNullableFilter<"Product">
   sizes?: Prisma.JsonNullableFilter<"Product">
-  variations?: Prisma.JsonNullableFilter<"Product">
   supplyDuration?: Prisma.StringNullableFilter<"Product"> | string | null
   packsPerMonth?: Prisma.IntNullableFilter<"Product"> | number | null
   supplyOptions?: Prisma.JsonNullableFilter<"Product">
@@ -495,7 +491,6 @@ export type ProductOrderByWithRelationInput = {
   image?: Prisma.SortOrder
   gallery?: Prisma.SortOrderInput | Prisma.SortOrder
   sizes?: Prisma.SortOrderInput | Prisma.SortOrder
-  variations?: Prisma.SortOrderInput | Prisma.SortOrder
   supplyDuration?: Prisma.SortOrderInput | Prisma.SortOrder
   packsPerMonth?: Prisma.SortOrderInput | Prisma.SortOrder
   supplyOptions?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -539,7 +534,6 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   image?: Prisma.StringFilter<"Product"> | string
   gallery?: Prisma.JsonNullableFilter<"Product">
   sizes?: Prisma.JsonNullableFilter<"Product">
-  variations?: Prisma.JsonNullableFilter<"Product">
   supplyDuration?: Prisma.StringNullableFilter<"Product"> | string | null
   packsPerMonth?: Prisma.IntNullableFilter<"Product"> | number | null
   supplyOptions?: Prisma.JsonNullableFilter<"Product">
@@ -579,7 +573,6 @@ export type ProductOrderByWithAggregationInput = {
   image?: Prisma.SortOrder
   gallery?: Prisma.SortOrderInput | Prisma.SortOrder
   sizes?: Prisma.SortOrderInput | Prisma.SortOrder
-  variations?: Prisma.SortOrderInput | Prisma.SortOrder
   supplyDuration?: Prisma.SortOrderInput | Prisma.SortOrder
   packsPerMonth?: Prisma.SortOrderInput | Prisma.SortOrder
   supplyOptions?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -625,7 +618,6 @@ export type ProductScalarWhereWithAggregatesInput = {
   image?: Prisma.StringWithAggregatesFilter<"Product"> | string
   gallery?: Prisma.JsonNullableWithAggregatesFilter<"Product">
   sizes?: Prisma.JsonNullableWithAggregatesFilter<"Product">
-  variations?: Prisma.JsonNullableWithAggregatesFilter<"Product">
   supplyDuration?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   packsPerMonth?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
   supplyOptions?: Prisma.JsonNullableWithAggregatesFilter<"Product">
@@ -663,7 +655,6 @@ export type ProductCreateInput = {
   image?: string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: string | null
   packsPerMonth?: number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -703,7 +694,6 @@ export type ProductUncheckedCreateInput = {
   image?: string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: string | null
   packsPerMonth?: number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -743,7 +733,6 @@ export type ProductUpdateInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -783,7 +772,6 @@ export type ProductUncheckedUpdateInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -823,7 +811,6 @@ export type ProductCreateManyInput = {
   image?: string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: string | null
   packsPerMonth?: number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -861,7 +848,6 @@ export type ProductUpdateManyMutationInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -899,7 +885,6 @@ export type ProductUncheckedUpdateManyInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -943,7 +928,6 @@ export type ProductCountOrderByAggregateInput = {
   image?: Prisma.SortOrder
   gallery?: Prisma.SortOrder
   sizes?: Prisma.SortOrder
-  variations?: Prisma.SortOrder
   supplyDuration?: Prisma.SortOrder
   packsPerMonth?: Prisma.SortOrder
   supplyOptions?: Prisma.SortOrder
@@ -1117,7 +1101,6 @@ export type ProductCreateWithoutSubscriptionsInput = {
   image?: string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: string | null
   packsPerMonth?: number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1156,7 +1139,6 @@ export type ProductUncheckedCreateWithoutSubscriptionsInput = {
   image?: string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: string | null
   packsPerMonth?: number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1211,7 +1193,6 @@ export type ProductUpdateWithoutSubscriptionsInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1250,7 +1231,6 @@ export type ProductUncheckedUpdateWithoutSubscriptionsInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1289,7 +1269,6 @@ export type ProductCreateWithoutProductReviewsInput = {
   image?: string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: string | null
   packsPerMonth?: number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1328,7 +1307,6 @@ export type ProductUncheckedCreateWithoutProductReviewsInput = {
   image?: string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: string | null
   packsPerMonth?: number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1383,7 +1361,6 @@ export type ProductUpdateWithoutProductReviewsInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1422,7 +1399,6 @@ export type ProductUncheckedUpdateWithoutProductReviewsInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  variations?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1501,7 +1477,6 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   image?: boolean
   gallery?: boolean
   sizes?: boolean
-  variations?: boolean
   supplyDuration?: boolean
   packsPerMonth?: boolean
   supplyOptions?: boolean
@@ -1544,7 +1519,6 @@ export type ProductSelectScalar = {
   image?: boolean
   gallery?: boolean
   sizes?: boolean
-  variations?: boolean
   supplyDuration?: boolean
   packsPerMonth?: boolean
   supplyOptions?: boolean
@@ -1555,7 +1529,7 @@ export type ProductSelectScalar = {
   archivedAt?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "price" | "originalPrice" | "discountPercent" | "taxIncluded" | "taxType" | "taxValue" | "unlimitedStock" | "stockQuantity" | "stockStatus" | "category" | "categories" | "brand" | "tags" | "publishStatus" | "featured" | "featuredRank" | "offered" | "rating" | "reviewCount" | "image" | "gallery" | "sizes" | "variations" | "supplyDuration" | "packsPerMonth" | "supplyOptions" | "subscriptionEnabled" | "stripeProductId" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "price" | "originalPrice" | "discountPercent" | "taxIncluded" | "taxType" | "taxValue" | "unlimitedStock" | "stockQuantity" | "stockStatus" | "category" | "categories" | "brand" | "tags" | "publishStatus" | "featured" | "featuredRank" | "offered" | "rating" | "reviewCount" | "image" | "gallery" | "sizes" | "supplyDuration" | "packsPerMonth" | "supplyOptions" | "subscriptionEnabled" | "stripeProductId" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["product"]>
 export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   productReviews?: boolean | Prisma.Product$productReviewsArgs<ExtArgs>
   subscriptions?: boolean | Prisma.Product$subscriptionsArgs<ExtArgs>
@@ -1604,7 +1578,6 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     image: string
     gallery: runtime.JsonValue | null
     sizes: runtime.JsonValue | null
-    variations: runtime.JsonValue | null
     supplyDuration: string | null
     packsPerMonth: number | null
     /**
@@ -2023,7 +1996,6 @@ export interface ProductFieldRefs {
   readonly image: Prisma.FieldRef<"Product", 'String'>
   readonly gallery: Prisma.FieldRef<"Product", 'Json'>
   readonly sizes: Prisma.FieldRef<"Product", 'Json'>
-  readonly variations: Prisma.FieldRef<"Product", 'Json'>
   readonly supplyDuration: Prisma.FieldRef<"Product", 'String'>
   readonly packsPerMonth: Prisma.FieldRef<"Product", 'Int'>
   readonly supplyOptions: Prisma.FieldRef<"Product", 'Json'>

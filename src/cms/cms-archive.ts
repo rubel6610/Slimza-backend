@@ -162,26 +162,3 @@ export function removeArchivedCmsItem(key: string, data: unknown, id: string): u
   return withCmsItems(key, data, items.filter((_, i) => i !== index));
 }
 
-/**
- * Reset-to-defaults that never deletes. Returns the default content plus every
- * current item whose id is not in the defaults, moved to the archive.
- */
-export function resetCmsSectionKeepingCustomItems(
-  key: string,
-  current: unknown,
-  defaults: unknown,
-  now: Date = new Date(),
-): unknown {
-  if (!isArchivableSection(key)) return defaults;
-
-  const defaultItems = getCmsItems(key, defaults) ?? [];
-  const defaultIds = new Set(defaultItems.map(itemId).filter(Boolean));
-  const customItems = (getCmsItems(key, current) ?? [])
-    .filter((item) => {
-      const id = itemId(item);
-      return id !== null && !defaultIds.has(id);
-    })
-    .map((item) => (isArchivedCmsItem(item) ? item : { ...item, archivedAt: now.toISOString() }));
-
-  return withCmsItems(key, defaults, [...defaultItems, ...customItems]);
-}

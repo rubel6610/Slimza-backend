@@ -56,7 +56,6 @@ import {
 } from '../bundle/bundle-config.js';
 import { bundleRuleError, priceBundle, type BundleLine } from '../bundle/bundle-pricing.js';
 import {
-  BACKEND_CATALOG,
   SIZE_TABLES,
   SUPPLY_PLAN_DISCOUNTS,
   round2,
@@ -199,20 +198,23 @@ export class CheckoutService {
 
     for (const line of lines) {
       if (!line.qty || line.qty <= 0) continue;
-      let product = BACKEND_CATALOG[line.productId];
-      let name = product ? product.name : `Product ${line.productId}`;
-      let basePrice = product ? product.price : 25;
-      let image = product?.image ?? '';
+      // Products come only from the database (Dashboard → Products) — no catalogue in code.
+      let name = '';
+      let basePrice = 0;
+      let image = '';
       let lineTax: { taxIncluded?: boolean | null; taxType?: string | null; taxValue?: number | null } = { taxIncluded: true };
       // Supply option chosen on the product page (Dashboard → Products → Purchase options)
       let option: SupplyOption | null = null;
       let canSubscribe = false;
-      const sizeType = product ? product.sizeType : 'powder';
+      const sizeType = 'powder' as const;
 
-      if (!product && this.prisma.product?.findFirst) {
+      {
         const dbProduct = await this.prisma.product.findFirst({
           where: { OR: [{ id: line.productId }, { slug: line.productId }] },
         });
+        if (!dbProduct) {
+          throw new BadRequestException('A product in your basket is no longer available. Please remove it and try again.');
+        }
         // Archived products are hidden from the shop and cannot be bought,
         // even if a stale basket still references them.
         if (dbProduct?.archivedAt) {

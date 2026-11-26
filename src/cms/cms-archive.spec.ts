@@ -9,7 +9,6 @@ import {
 import {
   mergeCmsSectionUpdate,
   removeArchivedCmsItem,
-  resetCmsSectionKeepingCustomItems,
   setCmsItemArchived,
   stripArchivedItems,
 } from './cms-archive.js';
@@ -110,15 +109,5 @@ describe('CMS item archive', () => {
   it('strips archived items for public readers', () => {
     expect(stripArchivedItems('banner_slides', [live('s1'), archived('s2')])).toEqual([live('s1')]);
     expect(stripArchivedItems('terms', { content: 'x' })).toEqual({ content: 'x' });
-  });
-
-  it('reset moves custom items to the archive instead of deleting them', () => {
-    const defaults = [live('feat-1')];
-    const current = [live('feat-1', { title: 'Edited' }), live('custom'), archived('old')];
-    expect(resetCmsSectionKeepingCustomItems('features', current, defaults, NOW)).toEqual([
-      live('feat-1'),
-      live('custom', { archivedAt: NOW.toISOString() }),
-      archived('old'),
-    ]);
   });
 });

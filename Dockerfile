@@ -22,6 +22,7 @@ FROM node:24-alpine AS production
 WORKDIR /app
 
 ENV NODE_ENV=production
+
 ENV PORT=5173
 
 COPY package*.json ./

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_TESTIMONIALS_CONFIG, parseTestimonialsForSave } from './testimonials-config.js';
+import { parseTestimonialsForSave } from './testimonials-config.js';
+
+// Test data only (the real reviews come from Dashboard → CMS → Customer Reviews).
+const DEFAULT_TESTIMONIALS_CONFIG = {
+  enabled: true,
+  title: 'What Our Customers Say',
+  items: [{ id: 't-1', name: 'Test Customer', quote: 'Great products.', rating: 5, imageUrl: '', location: '', active: true, archivedAt: null }],
+};
 
 describe('testimonials config', () => {
   it('accepts the defaults', () => {

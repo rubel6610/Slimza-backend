@@ -30,16 +30,6 @@ export const testimonialsConfigSchema = z.object({
 
 export type TestimonialsConfig = z.infer<typeof testimonialsConfigSchema>;
 
-export const DEFAULT_TESTIMONIALS_CONFIG: TestimonialsConfig = {
-  enabled: true,
-  title: 'What Our Customers Say',
-  items: [
-    { id: 'testimonial-1', name: 'Sarah M.', quote: 'Slimza has completely changed my energy levels. I feel amazing!', rating: 5, imageUrl: '', location: '', active: true, archivedAt: null },
-    { id: 'testimonial-2', name: 'James T.', quote: 'Great quality products and super fast delivery.', rating: 5, imageUrl: '', location: '', active: true, archivedAt: null },
-    { id: 'testimonial-3', name: 'Emily R.', quote: "Love the bundle option — it's so easy and saves money!", rating: 5, imageUrl: '', location: '', active: true, archivedAt: null },
-  ],
-};
-
 export function parseTestimonialsForSave(
   raw: unknown,
 ): { ok: true; data: TestimonialsConfig } | { ok: false; message: string } {

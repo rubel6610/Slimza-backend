@@ -303,10 +303,9 @@ model Product {
   rating          Float     @default(0)
   /// Number of PUBLISHED reviews. Kept in sync by ReviewsService.
   reviewCount     Int       @default(0)
-  image           String    @default("/products/tea/teatox-green.png")
+  image           String    @default("")
   gallery         Json?
   sizes           Json?
-  variations      Json?
   supplyDuration  String?   @default("1 Month")
   packsPerMonth   Int?      @default(1)
   /// Supply options shown on the product page ("120 – 4 Month Supply"…), each with its own price,

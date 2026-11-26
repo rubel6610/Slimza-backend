@@ -9,7 +9,8 @@ import { CheckoutService } from './checkout.service.js';
 function makeService(balance: number) {
   const prisma = {
     cmsSection: { findUnique: vi.fn().mockResolvedValue(null) },
-    product: { findFirst: vi.fn().mockResolvedValue(null), findMany: vi.fn().mockResolvedValue([]) },
+    // A database product priced £27.99 (products only come from the database).
+    product: { findFirst: vi.fn().mockResolvedValue({ id: 'p01', slug: 'p01', name: 'Slimza Detox Elixir', price: 27.99, image: '', stockStatus: 'In Stock', archivedAt: null, supplyOptions: null, subscriptionEnabled: false, taxIncluded: true }), findMany: vi.fn().mockResolvedValue([]) },
     coupon: { findUnique: vi.fn().mockResolvedValue(null) },
   };
   const loyalty = {
@@ -24,7 +25,7 @@ function makeService(balance: number) {
   );
 }
 
-// p01 = £27.99 (static catalogue), France tracked delivery (Zone 1, up to 250g) £10.95
+// p01 = £27.99 (database product), France tracked delivery (Zone 1, up to 250g) £10.95
 const line = { productId: 'p01', sizeIndex: 0, months: 1, qty: 1 };
 
 describe('CheckoutService — loyalty points', () => {

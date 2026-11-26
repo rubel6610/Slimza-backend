@@ -69,37 +69,6 @@ export function parseWellnessHubForSave(raw: unknown): { ok: true; data: Wellnes
 }
 
 /**
- * First version of the hub, built from the shop categories that the homepage used to show:
- * same names, images and order, each holding the products that were in that category.
- */
-export function buildHubFromCategories(
-  categories: unknown,
-  products: Array<{ id: string; category: string; categories: unknown }>,
-): WellnessHubConfig {
-  const list = Array.isArray(categories) ? categories : [];
-  const groups: HubGroup[] = [];
-  for (const raw of list) {
-    if (!raw || typeof raw !== 'object') continue;
-    const c = raw as Record<string, unknown>;
-    const slug = typeof c.slug === 'string' ? c.slug.trim().toLowerCase() : '';
-    if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || groups.some((g) => g.slug === slug)) continue;
-    const inCategory = (p: (typeof products)[number]) =>
-      p.category === slug || (Array.isArray(p.categories) && p.categories.includes(slug));
-    groups.push({
-      id: `hub-${slug}`,
-      slug,
-      name: String(c.name ?? slug).trim().slice(0, 60) || slug,
-      description: '',
-      image: typeof c.image === 'string' ? c.image.slice(0, 1000) : '',
-      productIds: products.filter(inCategory).map((p) => p.id).slice(0, MAX_GROUP_PRODUCTS),
-      active: c.active !== false,
-      archivedAt: typeof c.archivedAt === 'string' ? c.archivedAt : null,
-    });
-  }
-  return { ...EMPTY_WELLNESS_HUB, groups };
-}
-
-/**
  * Puts a product in exactly these groups (from the product form). Groups it is newly added to get it
  * at the end; groups it stays in keep its position; groups not listed lose it. Unknown ids are ignored.
  */

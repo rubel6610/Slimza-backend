@@ -1,11 +1,9 @@
-import { Injectable, Logger, NotFoundException, Optional, type OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
 import type { Prisma } from '../generated/prisma/client.js';
-import { DEFAULT_CMS_DATA } from '../cms/cms.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PUBLIC_PRODUCT_WHERE } from '../products/product-search.js';
 import { RedisService } from '../redis/redis.service.js';
 import {
-  buildHubFromCategories,
   parseWellnessHubForSave,
   removeProductsFromHub,
   setProductGroups,
@@ -17,37 +15,13 @@ const WELLNESS_HUB_CACHE_TTL_SECONDS = 300;
 
 /** Wellness Product Hub groups (config in wellness-hub-config.ts). */
 @Injectable()
-export class WellnessHubService implements OnModuleInit {
+export class WellnessHubService {
   private readonly logger = new Logger(WellnessHubService.name);
 
   constructor(
     private readonly prisma: PrismaService,
     @Optional() private readonly redis?: RedisService,
   ) {}
-
-  async onModuleInit() {
-    await this.seedFromCategoriesIfMissing().catch((err) => this.logger.warn(`Wellness hub seed skipped: ${String(err)}`));
-  }
-
-  /**
-   * One-off: the homepage hub used to show the shop categories. The first time this runs, the hub
-   * gets one group per category (same name, image, order) holding that category's products.
-   * After that the hub and the categories are edited separately.
-   */
-  async seedFromCategoriesIfMissing() {
-    const existing = await this.prisma.cmsSection.findUnique({ where: { key: WELLNESS_HUB_CMS_KEY }, select: { key: true } });
-    if (existing) return;
-    const categories = await this.prisma.cmsSection.findUnique({ where: { key: 'categories' } });
-    const products = await this.prisma.product.findMany({
-      where: PUBLIC_PRODUCT_WHERE,
-      orderBy: [{ featuredRank: 'asc' }, { createdAt: 'desc' }],
-      select: { id: true, category: true, categories: true },
-    });
-    const hub = buildHubFromCategories(categories?.data ?? DEFAULT_CMS_DATA.categories, products);
-    await this.prisma.cmsSection.create({ data: { key: WELLNESS_HUB_CMS_KEY, data: hub as unknown as Prisma.InputJsonValue } });
-    await this.invalidateCache();
-    this.logger.log(`Created the Wellness Product Hub from ${hub.groups.length} categories`);
-  }
 
   async getConfig(): Promise<WellnessHubConfig> {
     const record = await this.prisma.cmsSection.findUnique({ where: { key: WELLNESS_HUB_CMS_KEY } });

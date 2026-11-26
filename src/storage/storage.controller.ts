@@ -6,12 +6,21 @@ import {
   Query,
   UploadedFile,
   UseInterceptors,
+  Body,
 } from '@nestjs/common';
 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { StorageService, type UploadedStorageFile } from './storage.service.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { UserRole } from '../generated/prisma/enums.js';
+
+import { z } from 'zod';
+
+const presignBody = z.object({
+  folder: z.enum(['cms', 'products']),
+  filename: z.string().trim().min(1).max(120),
+  contentType: z.enum(['image/jpeg', 'image/png', 'image/webp', 'image/gif']),
+});
 
 @Controller('storage')
 export class StorageController {
@@ -52,5 +61,14 @@ export class StorageController {
       throw new BadRequestException('File key is required');
     }
     return this.storageService.deleteFile(cleaned);
+  }
+  @Roles(UserRole.ADMIN)
+  @Post('presign')
+  presign(@Body({ schema: presignBody }) body: z.infer<typeof presignBody>) {
+    return this.storageService.createUploadUrl(
+      body.folder,
+      body.filename,
+      body.contentType,
+    );
   }
 }
