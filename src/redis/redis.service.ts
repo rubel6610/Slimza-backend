@@ -20,6 +20,7 @@ export class RedisService implements OnModuleDestroy {
       this.logger.log('Connected to Redis');
     });
   }
+
   async getJson<T>(key: string): Promise<T | null> {
     try {
       const raw = await this.client.get(this.prefix + key);

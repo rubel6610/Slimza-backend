@@ -90,7 +90,6 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-      - slimza-uploads:/app/uploads
     environment:
       - NODE_ENV=production
       - PORT=5173
@@ -113,6 +112,5 @@ services:
 
 volumes:
   slimza-mysql-data:
-  slimza-uploads:
   slimza-redis-data:
   slimza-minio-data:

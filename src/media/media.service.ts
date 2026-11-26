@@ -1,26 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
-import { extname, join } from 'node:path';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { StorageService } from '../storage/storage.service.js';
 
 export type MediaFolder = 'cms' | 'products' | 'avatars';
 
 const ALLOWED_FOLDERS = new Set<string>(['cms', 'products', 'avatars']);
 
-const EXT_TO_MIME: Record<string, string> = {
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.png': 'image/png',
-  '.webp': 'image/webp',
-  '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
-};
-
 @Injectable()
 export class MediaService {
   private readonly logger = new Logger(MediaService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly storage: StorageService) {}
 
   isAllowedFolder(folder: string): folder is MediaFolder {
     return ALLOWED_FOLDERS.has(folder);
@@ -37,96 +26,22 @@ export class MediaService {
     );
   }
 
-  async saveAsset(
-    folder: MediaFolder,
-    filename: string,
-    mimeType: string,
-    buffer: Buffer,
-  ): Promise<{ url: string }> {
-    const bytes = Uint8Array.from(buffer);
-
-    await this.prisma.mediaAsset.upsert({
-      where: { folder_filename: { folder, filename } },
-      create: {
-        folder,
-        filename,
-        mimeType,
-        size: buffer.length,
-        data: bytes,
-      },
-      update: {
-        mimeType,
-        size: buffer.length,
-        data: bytes,
-      },
-    });
-
-    // Best-effort local disk mirror for local development inspection
-    try {
-      const dir = join(process.cwd(), 'uploads', folder);
-      await mkdir(dir, { recursive: true });
-      await writeFile(join(dir, filename), buffer);
-    } catch (err) {
-      this.logger.debug(
-        `Skipping local disk mirror for ${folder}/${filename}: ${String(err)}`,
-      );
-    }
-
-    return { url: `/uploads/${folder}/${filename}` };
+  /** Upload to MinIO; returns the public URL to save. */
+  async saveAsset(folder: MediaFolder, filename: string, mimeType: string, buffer: Buffer): Promise<{ url: string }> {
+    const { url } = await this.storage.putObject(`${folder}/${filename}`, buffer, mimeType);
+    return { url };
   }
 
-  async getAsset(
-    folder: string,
-    filename: string,
-  ): Promise<{ mimeType: string; data: Buffer } | null> {
-    if (!this.isAllowedFolder(folder) || !this.isSafeFilename(filename)) {
-      return null;
-    }
-
-    const record = await this.prisma.mediaAsset.findUnique({
-      where: { folder_filename: { folder, filename } },
-      select: { mimeType: true, data: true },
-    });
-
-    if (record) {
-      return {
-        mimeType: record.mimeType,
-        data: Buffer.from(record.data),
-      };
-    }
-
-    // Fallback to local disk for any pre-existing uploaded files
-    try {
-      const diskPath = join(process.cwd(), 'uploads', folder, filename);
-      const data = await readFile(diskPath);
-      const ext = extname(filename).toLowerCase();
-      const mimeType = EXT_TO_MIME[ext] ?? 'application/octet-stream';
-      return { mimeType, data };
-    } catch {
-      return null;
-    }
+  /** MinIO URL for a legacy /uploads/<folder>/<filename> link (null if it isn't one of ours). */
+  legacyUrl(folder: string, filename: string): string | null {
+    if (!this.isAllowedFolder(folder) || !this.isSafeFilename(filename)) return null;
+    return this.storage.publicUrl(`${folder}/${filename}`);
   }
 
+  /** Delete a file by its saved URL (MinIO or legacy /uploads link). Other URLs are ignored. */
   async deleteByUrl(url: string): Promise<void> {
-    const match = /^\/uploads\/(cms|products|avatars)\/([^/\\]+)$/.exec(url);
-    if (!match) return;
-    const [, folder, filename] = match;
-    if (!this.isSafeFilename(filename)) return;
-
-    try {
-      await this.prisma.mediaAsset.deleteMany({
-        where: { folder, filename },
-      });
-    } catch (err) {
-      this.logger.debug(
-        `Failed to delete media asset ${folder}/${filename} from DB: ${String(err)}`,
-      );
-    }
-
-    try {
-      await unlink(join(process.cwd(), 'uploads', folder, filename));
-    } catch {
-      // File may not exist on disk; ignore.
-    }
+    const key = this.storage.keyFromUrl(url);
+    if (!key || !this.isAllowedFolder(key.split('/')[0])) return;
+    await this.storage.deleteFile(key).catch((err) => this.logger.warn(`Could not delete ${key} from MinIO: ${String(err)}`));
   }
 }

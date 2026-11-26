@@ -30,8 +30,7 @@ RUN npm ci --omit=dev && npm cache clean --force
 
 COPY --from=builder --chown=node:node /app/dist ./dist
 
-RUN mkdir -p /app/uploads \
-    && chown -R node:node /app/uploads
+# Uploaded files live in MinIO (S3_*), not on disk.
 
 USER node
 

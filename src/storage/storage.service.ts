@@ -118,6 +118,38 @@ export class StorageService implements OnModuleInit {
       url: `${this.publicBaseUrl}/${key}`,
     };
   }
+  /**
+   * Upload under a key you choose ("cms/1795-banner.png"). Used by CMS and product uploads
+   * (MediaService) so a file keeps its name. Returns the public URL that is saved in the database.
+   */
+  async putObject(key: string, body: Buffer, contentType: string) {
+    const cleanKey = key.split('/').filter(Boolean).join('/');
+    await this.s3.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: cleanKey,
+        Body: body,
+        ContentType: contentType,
+        // File names are unique (timestamp / uuid), so browsers may cache them forever.
+        CacheControl: 'public, max-age=31536000, immutable',
+      }),
+    );
+    return { key: cleanKey, url: this.publicUrl(cleanKey) };
+  }
+
+  /** Public URL of an object: S3_PUBLIC_URL/<key>. */
+  publicUrl(key: string) {
+    return `${this.publicBaseUrl}/${key.split('/').filter(Boolean).join('/')}`;
+  }
+
+  /** Object key for one of our file URLs (MinIO URL or legacy /uploads/<folder>/<file>), else null. */
+  keyFromUrl(url: string): string | null {
+    const clean = url.split('?')[0].split('#')[0];
+    if (clean.startsWith(`${this.publicBaseUrl}/`)) return clean.slice(this.publicBaseUrl.length + 1) || null;
+    const legacy = /^(?:https?:\/\/[^/]+)?\/uploads\/([a-z]+\/[^/\\]+)$/.exec(clean);
+    return legacy ? legacy[1] : null;
+  }
+
   async deleteFile(key: string) {
     await this.s3.send(
       new DeleteObjectCommand({
