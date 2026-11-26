@@ -14,6 +14,18 @@ export const updateProfileSchema = z.object({
   avatarUrl: z.string().trim().max(500).optional(),
 });
 
+export const presignAvatarSchema = z.object({
+  filename: z.string().trim().min(1, 'Filename is required').max(120),
+  contentType: z.enum([
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+  ]),
+});
+export type PresignAvatarInput = z.infer<typeof presignAvatarSchema>;
+
 export const createAddressSchema = z.object({
   label: z.string().trim().max(50).optional().default('Address'),
   name: z.string().trim().min(1, 'Full name is required').max(120),

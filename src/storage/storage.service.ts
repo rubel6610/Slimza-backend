@@ -187,7 +187,7 @@ export class StorageService implements OnModuleInit {
   }
 
   async createUploadUrl(
-    folder: 'cms' | 'products',
+    folder: 'cms' | 'products' | 'avatars',
     filename: string,
     contentType: string,
     expiresIn = 300,

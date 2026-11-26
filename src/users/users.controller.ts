@@ -29,6 +29,7 @@ import {
   adminUsersQuerySchema,
   createAddressSchema,
   deleteMyAccountSchema,
+  presignAvatarSchema,
   suspendUserSchema,
   updateAddressSchema,
   updateProfileSchema,
@@ -37,6 +38,7 @@ import {
   type AdminUsersQuery,
   type CreateAddressInput,
   type DeleteMyAccountInput,
+  type PresignAvatarInput,
   type SuspendUserInput,
   type UpdateAddressInput,
   type UpdateProfileInput,
@@ -77,6 +79,10 @@ export class UsersController {
     @UploadedFile() file?: UploadedAvatarFile,
   ) {
     return this.usersService.updateAvatar(user.sub, file);
+  }
+  @Post('me/avatar/presign')
+  presignAvatar(@Body({ schema: presignAvatarSchema }) body: PresignAvatarInput) {
+    return this.usersService.presignAvatar(body);
   }
 
   @Delete('me/avatar')

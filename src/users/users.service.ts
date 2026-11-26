@@ -22,6 +22,7 @@ import type {
   AdminUsersPageQuery,
   AdminUsersQuery,
   CreateAddressInput,
+  PresignAvatarInput,
   UpdateAddressInput,
   UpdateProfileInput,
 } from './users.schemas.js';
@@ -101,7 +102,19 @@ export class UsersService {
       },
     });
 
+    if (input.avatarUrl !== undefined && input.avatarUrl !== existing.avatarUrl) {
+      await this.deleteAvatarIfExists(existing.avatarUrl);
+    }
+
     return serializeUser(updated);
+  }
+
+  presignAvatar(input: PresignAvatarInput) {
+    return this.storageService.createUploadUrl(
+      'avatars',
+      input.filename,
+      input.contentType,
+    );
   }
 
   async updateAvatar(userId: string, file?: UploadedAvatarFile) {
