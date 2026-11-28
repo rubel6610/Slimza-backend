@@ -3,10 +3,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { CheckoutService } from '../checkout/checkout.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { addInterval, intervalText, optionUnitPrice, readSupplyOptions, supplyOptionsSchema } from '../products/supply-options.js';
-import { commitmentText, parseSubscriptionSettingsForSave, pickFrequency, readSubscriptionSettings } from './subscription-settings.js';
+import { commitmentText, parseSubscriptionSettingsForSave, readSubscriptionSettings, subscribePercentFor } from './subscription-settings.js';
 import { SubscriptionsService } from './subscriptions.service.js';
 
-const fourMonths = { id: 'o120', label: '120 – 4 Month Supply', interval: 'month' as const, intervalCount: 4, price: 24.99, compareAtPrice: 29.99, servings: 120, badge: 'Most popular', subscribeDiscountPercent: 20 };
+const fourMonths = { id: 'o120', label: '120 – 4 Month Supply', interval: 'month' as const, intervalCount: 4, price: 24.99, compareAtPrice: 29.99, servings: 120, badge: 'Most popular', subscribeDiscountOverride: null };
 
 describe('supply options', () => {
   it('prices one-time and Subscribe & Save', () => {
@@ -26,17 +26,19 @@ describe('supply options', () => {
   });
 
   it('settings and commitment text', () => {
-    expect(readSubscriptionSettings(undefined)).toMatchObject({ enabled: true, minOrders: 1, discountPercent: 15, discountOnFirstOrder: false, defaultFrequencyId: 'month-1' });
+    expect(readSubscriptionSettings(undefined)).toMatchObject({ enabled: true, minOrders: 1, discountPercent: 15, discountOnFirstOrder: false });
     // Settings saved before the store-wide discount keep their values and get the new defaults.
     const old = readSubscriptionSettings({ enabled: false, minOrders: 3 });
     expect(old).toMatchObject({ enabled: false, minOrders: 3, discountPercent: 15 });
-    // Monthly on; weekly / 2 weeks / 6 months / yearly available but off.
-    expect(old.frequencies.filter((f) => f.active).map((f) => f.label)).toEqual(['Every month']);
-    expect(old.frequencies.map((f) => f.id)).toEqual(['month-1', 'week-1', 'week-2', 'month-6', 'month-12']);
-    expect(pickFrequency(old, 'week-1').id).toBe('month-1'); // switched off → the default
-    const withWeekly = { ...old, frequencies: old.frequencies.map((f) => ({ ...f, active: true })) };
-    expect(pickFrequency(withWeekly, 'week-1')).toMatchObject({ interval: 'week', intervalCount: 1 });
-    expect(parseSubscriptionSettingsForSave({ ...old, frequencies: old.frequencies.map((f) => ({ ...f, active: false })) })).toMatchObject({ ok: false });
+    // Settings saved with the old frequency list still load (the list is ignored).
+    expect(readSubscriptionSettings({ enabled: true, minOrders: 1, frequencies: [{ id: 'week-1' }], defaultFrequencyId: 'week-1' })).toEqual({ enabled: true, minOrders: 1, discountPercent: 15, discountOnFirstOrder: false });
+    expect(parseSubscriptionSettingsForSave({ enabled: true, minOrders: 1, discountPercent: 95 })).toMatchObject({ ok: false });
+    // A package's own % wins over the store-wide one; empty = store-wide.
+    expect(subscribePercentFor({ subscribeDiscountOverride: null }, old)).toBe(15);
+    expect(subscribePercentFor({ subscribeDiscountOverride: 20 }, old)).toBe(20);
+    expect(subscribePercentFor({ subscribeDiscountOverride: 0 }, old)).toBe(0);
+    // Old packages saved with subscribeDiscountPercent read as "use the store-wide %".
+    expect(readSupplyOptions([{ ...fourMonths, subscribeDiscountOverride: undefined, subscribeDiscountPercent: 10 }])[0].subscribeDiscountOverride).toBeNull();
     expect(commitmentText(2)).toBe('Minimum 2 deliveries, then cancel any time.');
     expect(commitmentText(1)).toBe('Cancel any time.');
   });
@@ -71,9 +73,22 @@ describe('checkout with supply options', () => {
     expect(pricing.subtotal).toBe(49.98); // 2 × £24.99 today
     expect(pricing.tax).toBe(5); // 10% of 2 × £24.99
     expect(pricing.subscriptionLines[0]).toMatchObject({ quantity: 2, unitPrice: 24.99, renewalUnitPrice: 21.24, tax: 5 });
-    // The customer's frequency, not the package length (default: every month).
-    expect(pricing.subscriptionLines[0].frequency).toMatchObject({ id: 'month-1', interval: 'month', intervalCount: 1 });
-    expect(pricing.lineItems[0].planLabel).toBe('Subscribe & Save · Every month');
+    // Renews as often as the supply lasts: a 4-month supply every 4 months, never monthly.
+    expect(pricing.subscriptionLines[0].frequency).toMatchObject({ interval: 'month', intervalCount: 4 });
+    expect(pricing.lineItems[0].planLabel).toBe('Subscribe & Save · Every 4 months');
+  });
+
+  it("each package renews on its own supply length, with its own % when it has one", async () => {
+    const one = { ...fourMonths, id: 'o30', label: '1 Month Supply', intervalCount: 1, price: 10, compareAtPrice: null };
+    const three = { ...fourMonths, id: 'o90', label: '3 Month Supply', intervalCount: 3, price: 30, compareAtPrice: null, subscribeDiscountOverride: 20 };
+    const service = checkout({ supplyOptions: [one, three] });
+    const pricing = await service.calculatePricing(
+      { lines: [{ productId: 'db-1', optionId: 'o30', purchase: 'subscription', qty: 1 }, { productId: 'db-1', optionId: 'o90', purchase: 'subscription', qty: 1 }] },
+      { subscriptionsEnabled: true },
+    );
+    const [a, b] = pricing.subscriptionLines;
+    expect([a.frequency.intervalCount, a.unitPrice, a.renewalUnitPrice]).toEqual([1, 10, 8.5]); // store-wide 15%
+    expect([b.frequency.intervalCount, b.unitPrice, b.renewalUnitPrice]).toEqual([3, 30, 24]); // its own 20%
   });
 
   it('"discount on the first order" on: the first order gets the 15% too', async () => {

@@ -33,12 +33,12 @@ import { unavailableReason } from '../products/product-availability.js';
 import { taxFor } from '../products/product-tax.js';
 import { pickMethod, quoteShipping, readShippingConfig, SHIPPING_CMS_KEY, type ShippingAddressLike } from '../shipping/shipping-config.js';
 import {
-  pickFrequency,
   readSubscriptionSettings,
+  subscribePercentFor,
   SUBSCRIPTION_SETTINGS_KEY,
   type SubscriptionSettings,
 } from '../subscriptions/subscription-settings.js';
-import { fallbackOption, intervalText, optionUnitPrice, readSupplyOptions, type SupplyOption } from '../products/supply-options.js';
+import { fallbackOption, intervalLabel, intervalText, optionUnitPrice, readSupplyOptions, type SupplyOption } from '../products/supply-options.js';
 import { WalletService } from '../wallet/wallet.service.js';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import type {
@@ -87,7 +87,7 @@ export interface CalculatedPricing {
     productName: string;
     productImage: string;
     option: SupplyOption;
-    /** How often the customer chose to receive it (Subscribe & Save frequency) */
+    /** How often it renews — the supply length of the chosen package */
     frequency: { id: string; label: string; interval: 'week' | 'month'; intervalCount: number };
     quantity: number;
     /** Price of one pack on this order, before the coupon (normal price unless "discount on the first order" is on) */
@@ -248,10 +248,14 @@ export class CheckoutService {
       if (option) {
         // Supply option: its own price (minus the Subscribe & Save discount for subscriptions).
         const purchase = line.purchase === 'subscription' ? 'subscription' : 'once';
-        const frequency = purchase === 'subscription' && subscriptionSettings ? pickFrequency(subscriptionSettings, line.frequencyId) : null;
-        // Subscribe & Save: the recurring price takes the store-wide discount; the first order only
-        // does when "discount on the first order" is on (client brief: first order at normal price).
-        const recurringPrice = optionUnitPrice(option, purchase, subscriptionSettings?.discountPercent ?? 0);
+        // Subscribe & Save renews as often as the supply lasts (2-month supply → every 2 months).
+        const frequency =
+          purchase === 'subscription' && subscriptionSettings
+            ? { id: `${option.interval}-${option.intervalCount}`, label: intervalLabel(option), interval: option.interval, intervalCount: option.intervalCount }
+            : null;
+        // The recurring price takes the package's Subscribe & Save % (or the store-wide one); the first
+        // order only does when "discount on the first order" is on (client brief: first order at normal price).
+        const recurringPrice = optionUnitPrice(option, purchase, subscriptionSettings ? subscribePercentFor(option, subscriptionSettings) : 0);
         const unitPrice = frequency && !subscriptionSettings?.discountOnFirstOrder ? optionUnitPrice(option, 'once') : recurringPrice;
         const lineTotal = round2(unitPrice * line.qty);
         rawLinesSubtotal += lineTotal;
@@ -1396,7 +1400,7 @@ export class CheckoutService {
   }
 
   /** Dashboard → Shipping settings (CMS section "shipping"), or the defaults. */
-  /** Dashboard → Subscriptions → Settings (store-wide discount + delivery frequencies), or the defaults. */
+  /** Dashboard → Subscriptions → Settings (store-wide discount, first-order discount), or the defaults. */
   private async loadSubscriptionSettings(): Promise<SubscriptionSettings> {
     const record = this.prisma.cmsSection?.findUnique ? await this.prisma.cmsSection.findUnique({ where: { key: SUBSCRIPTION_SETTINGS_KEY } }) : null;
     return readSubscriptionSettings(record?.data);

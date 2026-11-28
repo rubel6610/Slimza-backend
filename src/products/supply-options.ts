@@ -1,11 +1,12 @@
 /**
  * Supply options (Dashboard → Products → Purchase options), e.g.
  *   "60 – 2 Month Supply" · £16.99 · 2 months
- *   "120 – 4 Month Supply" · £24.99 (was £29.99) · 4 months · "Most popular" · Subscribe & Save 20%
+ *   "120 – 4 Month Supply" · £24.99 (was £29.99) · 4 months · "Most popular"
  *
  * One-time purchase: pay the option price once, the whole supply is delivered once.
- * Subscribe & Save: pay the price minus the option's subscription discount; the same supply is
- * delivered and charged again every `intervalCount` × `interval` (supply length = renewal frequency).
+ * Subscribe & Save: the same supply is delivered and charged again every `intervalCount` × `interval`
+ * (supply length = renewal frequency: a 2-month supply renews every 2 months). Renewals take the
+ * store-wide Subscribe & Save %, or `subscribeDiscountOverride` when the package has its own.
  */
 import { z } from 'zod';
 
@@ -24,8 +25,8 @@ export const supplyOptionSchema = z.object({
   /** Servings in this option (optional) → "£0.16 / serving" */
   servings: z.coerce.number().int().min(0).max(100_000).nullable().optional(),
   badge: z.string().trim().max(30).optional().default(''),
-  /** Subscribe & Save discount for this option, in % (0 = no subscription discount) */
-  subscribeDiscountPercent: z.coerce.number().min(0).max(90).optional().default(0),
+  /** This package's own Subscribe & Save %. Empty (null) = the store-wide % from Dashboard → Subscriptions → Settings. */
+  subscribeDiscountOverride: z.coerce.number().min(0).max(90).nullable().optional().default(null),
   /** Packed weight of one of these, in grams (international shipping is priced by weight). Empty = the default from Dashboard → Shipping. */
   weightGrams: z.coerce.number().int().min(0).max(50_000).nullable().optional(),
 });
@@ -53,14 +54,19 @@ export function readSupplyOptions(raw: unknown): SupplyOption[] {
 
 export type PurchaseType = 'once' | 'subscription';
 
-/** Price of one pack of this option for the chosen purchase type. */
 /**
- * Price of one pack. Subscribe & Save takes the store-wide discount (Dashboard → Subscriptions →
- * Settings, "Save 20% on every order"); one-time purchases pay the option price.
+ * Price of one pack. Subscribe & Save takes `subscribePercent` off (the package's own % or the
+ * store-wide one — see subscribePercentFor); one-time purchases pay the option price.
  */
 export function optionUnitPrice(option: SupplyOption, purchase: PurchaseType, subscribePercent = 0): number {
   if (purchase !== 'subscription' || !subscribePercent) return round2(option.price);
   return round2(option.price * (1 - subscribePercent / 100));
+}
+
+/** "Every 4 months" — shown on orders and emails. */
+export function intervalLabel(option: Pick<SupplyOption, 'interval' | 'intervalCount'>): string {
+  const t = intervalText(option);
+  return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
 /** "every 4 months" / "every 2 weeks" / "every month" */

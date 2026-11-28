@@ -22,7 +22,7 @@ export interface NewSubscriptionLine {
   productName: string;
   productImage: string;
   option: SupplyOption;
-  /** How often the customer chose (Subscribe & Save frequency) */
+  /** How often it renews — the supply length of the chosen package */
   frequency: { id: string; label: string; interval: 'week' | 'month'; intervalCount: number };
   quantity: number;
   unitPrice: number;
