@@ -30,20 +30,24 @@ export type ProductAvgAggregateOutputType = {
   price: number | null
   originalPrice: number | null
   discountPercent: number | null
+  taxValue: number | null
   stockQuantity: number | null
   featuredRank: number | null
   rating: number | null
   reviewCount: number | null
+  packsPerMonth: number | null
 }
 
 export type ProductSumAggregateOutputType = {
   price: number | null
   originalPrice: number | null
   discountPercent: number | null
+  taxValue: number | null
   stockQuantity: number | null
   featuredRank: number | null
   rating: number | null
   reviewCount: number | null
+  packsPerMonth: number | null
 }
 
 export type ProductMinAggregateOutputType = {
@@ -55,6 +59,8 @@ export type ProductMinAggregateOutputType = {
   originalPrice: number | null
   discountPercent: number | null
   taxIncluded: boolean | null
+  taxType: string | null
+  taxValue: number | null
   unlimitedStock: boolean | null
   stockQuantity: number | null
   stockStatus: string | null
@@ -67,8 +73,13 @@ export type ProductMinAggregateOutputType = {
   rating: number | null
   reviewCount: number | null
   image: string | null
+  supplyDuration: string | null
+  packsPerMonth: number | null
+  subscriptionEnabled: boolean | null
+  stripeProductId: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  archivedAt: Date | null
 }
 
 export type ProductMaxAggregateOutputType = {
@@ -80,6 +91,8 @@ export type ProductMaxAggregateOutputType = {
   originalPrice: number | null
   discountPercent: number | null
   taxIncluded: boolean | null
+  taxType: string | null
+  taxValue: number | null
   unlimitedStock: boolean | null
   stockQuantity: number | null
   stockStatus: string | null
@@ -92,8 +105,13 @@ export type ProductMaxAggregateOutputType = {
   rating: number | null
   reviewCount: number | null
   image: string | null
+  supplyDuration: string | null
+  packsPerMonth: number | null
+  subscriptionEnabled: boolean | null
+  stripeProductId: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  archivedAt: Date | null
 }
 
 export type ProductCountAggregateOutputType = {
@@ -105,10 +123,13 @@ export type ProductCountAggregateOutputType = {
   originalPrice: number
   discountPercent: number
   taxIncluded: number
+  taxType: number
+  taxValue: number
   unlimitedStock: number
   stockQuantity: number
   stockStatus: number
   category: number
+  categories: number
   brand: number
   tags: number
   publishStatus: number
@@ -120,8 +141,14 @@ export type ProductCountAggregateOutputType = {
   image: number
   gallery: number
   sizes: number
+  supplyDuration: number
+  packsPerMonth: number
+  supplyOptions: number
+  subscriptionEnabled: number
+  stripeProductId: number
   createdAt: number
   updatedAt: number
+  archivedAt: number
   _all: number
 }
 
@@ -130,20 +157,24 @@ export type ProductAvgAggregateInputType = {
   price?: true
   originalPrice?: true
   discountPercent?: true
+  taxValue?: true
   stockQuantity?: true
   featuredRank?: true
   rating?: true
   reviewCount?: true
+  packsPerMonth?: true
 }
 
 export type ProductSumAggregateInputType = {
   price?: true
   originalPrice?: true
   discountPercent?: true
+  taxValue?: true
   stockQuantity?: true
   featuredRank?: true
   rating?: true
   reviewCount?: true
+  packsPerMonth?: true
 }
 
 export type ProductMinAggregateInputType = {
@@ -155,6 +186,8 @@ export type ProductMinAggregateInputType = {
   originalPrice?: true
   discountPercent?: true
   taxIncluded?: true
+  taxType?: true
+  taxValue?: true
   unlimitedStock?: true
   stockQuantity?: true
   stockStatus?: true
@@ -167,8 +200,13 @@ export type ProductMinAggregateInputType = {
   rating?: true
   reviewCount?: true
   image?: true
+  supplyDuration?: true
+  packsPerMonth?: true
+  subscriptionEnabled?: true
+  stripeProductId?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
 }
 
 export type ProductMaxAggregateInputType = {
@@ -180,6 +218,8 @@ export type ProductMaxAggregateInputType = {
   originalPrice?: true
   discountPercent?: true
   taxIncluded?: true
+  taxType?: true
+  taxValue?: true
   unlimitedStock?: true
   stockQuantity?: true
   stockStatus?: true
@@ -192,8 +232,13 @@ export type ProductMaxAggregateInputType = {
   rating?: true
   reviewCount?: true
   image?: true
+  supplyDuration?: true
+  packsPerMonth?: true
+  subscriptionEnabled?: true
+  stripeProductId?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
 }
 
 export type ProductCountAggregateInputType = {
@@ -205,10 +250,13 @@ export type ProductCountAggregateInputType = {
   originalPrice?: true
   discountPercent?: true
   taxIncluded?: true
+  taxType?: true
+  taxValue?: true
   unlimitedStock?: true
   stockQuantity?: true
   stockStatus?: true
   category?: true
+  categories?: true
   brand?: true
   tags?: true
   publishStatus?: true
@@ -220,8 +268,14 @@ export type ProductCountAggregateInputType = {
   image?: true
   gallery?: true
   sizes?: true
+  supplyDuration?: true
+  packsPerMonth?: true
+  supplyOptions?: true
+  subscriptionEnabled?: true
+  stripeProductId?: true
   createdAt?: true
   updatedAt?: true
+  archivedAt?: true
   _all?: true
 }
 
@@ -320,12 +374,15 @@ export type ProductGroupByOutputType = {
   originalPrice: number | null
   discountPercent: number
   taxIncluded: boolean
+  taxType: string
+  taxValue: number
   unlimitedStock: boolean
   stockQuantity: number
   stockStatus: string
   category: string
+  categories: runtime.JsonValue | null
   brand: string
-  tags: string[]
+  tags: runtime.JsonValue | null
   publishStatus: string
   featured: boolean
   featuredRank: number
@@ -333,10 +390,16 @@ export type ProductGroupByOutputType = {
   rating: number
   reviewCount: number
   image: string
-  gallery: string[]
+  gallery: runtime.JsonValue | null
   sizes: runtime.JsonValue | null
+  supplyDuration: string | null
+  packsPerMonth: number | null
+  supplyOptions: runtime.JsonValue | null
+  subscriptionEnabled: boolean
+  stripeProductId: string | null
   createdAt: Date
   updatedAt: Date
+  archivedAt: Date | null
   _count: ProductCountAggregateOutputType | null
   _avg: ProductAvgAggregateOutputType | null
   _sum: ProductSumAggregateOutputType | null
@@ -371,12 +434,15 @@ export type ProductWhereInput = {
   originalPrice?: Prisma.FloatNullableFilter<"Product"> | number | null
   discountPercent?: Prisma.FloatFilter<"Product"> | number
   taxIncluded?: Prisma.BoolFilter<"Product"> | boolean
+  taxType?: Prisma.StringFilter<"Product"> | string
+  taxValue?: Prisma.FloatFilter<"Product"> | number
   unlimitedStock?: Prisma.BoolFilter<"Product"> | boolean
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   stockStatus?: Prisma.StringFilter<"Product"> | string
   category?: Prisma.StringFilter<"Product"> | string
+  categories?: Prisma.JsonNullableFilter<"Product">
   brand?: Prisma.StringFilter<"Product"> | string
-  tags?: Prisma.StringNullableListFilter<"Product">
+  tags?: Prisma.JsonNullableFilter<"Product">
   publishStatus?: Prisma.StringFilter<"Product"> | string
   featured?: Prisma.BoolFilter<"Product"> | boolean
   featuredRank?: Prisma.IntFilter<"Product"> | number
@@ -384,10 +450,18 @@ export type ProductWhereInput = {
   rating?: Prisma.FloatFilter<"Product"> | number
   reviewCount?: Prisma.IntFilter<"Product"> | number
   image?: Prisma.StringFilter<"Product"> | string
-  gallery?: Prisma.StringNullableListFilter<"Product">
+  gallery?: Prisma.JsonNullableFilter<"Product">
   sizes?: Prisma.JsonNullableFilter<"Product">
+  supplyDuration?: Prisma.StringNullableFilter<"Product"> | string | null
+  packsPerMonth?: Prisma.IntNullableFilter<"Product"> | number | null
+  supplyOptions?: Prisma.JsonNullableFilter<"Product">
+  subscriptionEnabled?: Prisma.BoolFilter<"Product"> | boolean
+  stripeProductId?: Prisma.StringNullableFilter<"Product"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableFilter<"Product"> | Date | string | null
+  productReviews?: Prisma.ProductReviewListRelationFilter
+  subscriptions?: Prisma.SubscriptionListRelationFilter
 }
 
 export type ProductOrderByWithRelationInput = {
@@ -399,12 +473,15 @@ export type ProductOrderByWithRelationInput = {
   originalPrice?: Prisma.SortOrderInput | Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   taxIncluded?: Prisma.SortOrder
+  taxType?: Prisma.SortOrder
+  taxValue?: Prisma.SortOrder
   unlimitedStock?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   stockStatus?: Prisma.SortOrder
   category?: Prisma.SortOrder
+  categories?: Prisma.SortOrderInput | Prisma.SortOrder
   brand?: Prisma.SortOrder
-  tags?: Prisma.SortOrder
+  tags?: Prisma.SortOrderInput | Prisma.SortOrder
   publishStatus?: Prisma.SortOrder
   featured?: Prisma.SortOrder
   featuredRank?: Prisma.SortOrder
@@ -412,10 +489,19 @@ export type ProductOrderByWithRelationInput = {
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
   image?: Prisma.SortOrder
-  gallery?: Prisma.SortOrder
+  gallery?: Prisma.SortOrderInput | Prisma.SortOrder
   sizes?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplyDuration?: Prisma.SortOrderInput | Prisma.SortOrder
+  packsPerMonth?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplyOptions?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionEnabled?: Prisma.SortOrder
+  stripeProductId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  productReviews?: Prisma.ProductReviewOrderByRelationAggregateInput
+  subscriptions?: Prisma.SubscriptionOrderByRelationAggregateInput
+  _relevance?: Prisma.ProductOrderByRelevanceInput
 }
 
 export type ProductWhereUniqueInput = Prisma.AtLeast<{
@@ -430,12 +516,15 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   originalPrice?: Prisma.FloatNullableFilter<"Product"> | number | null
   discountPercent?: Prisma.FloatFilter<"Product"> | number
   taxIncluded?: Prisma.BoolFilter<"Product"> | boolean
+  taxType?: Prisma.StringFilter<"Product"> | string
+  taxValue?: Prisma.FloatFilter<"Product"> | number
   unlimitedStock?: Prisma.BoolFilter<"Product"> | boolean
   stockQuantity?: Prisma.IntFilter<"Product"> | number
   stockStatus?: Prisma.StringFilter<"Product"> | string
   category?: Prisma.StringFilter<"Product"> | string
+  categories?: Prisma.JsonNullableFilter<"Product">
   brand?: Prisma.StringFilter<"Product"> | string
-  tags?: Prisma.StringNullableListFilter<"Product">
+  tags?: Prisma.JsonNullableFilter<"Product">
   publishStatus?: Prisma.StringFilter<"Product"> | string
   featured?: Prisma.BoolFilter<"Product"> | boolean
   featuredRank?: Prisma.IntFilter<"Product"> | number
@@ -443,10 +532,18 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   rating?: Prisma.FloatFilter<"Product"> | number
   reviewCount?: Prisma.IntFilter<"Product"> | number
   image?: Prisma.StringFilter<"Product"> | string
-  gallery?: Prisma.StringNullableListFilter<"Product">
+  gallery?: Prisma.JsonNullableFilter<"Product">
   sizes?: Prisma.JsonNullableFilter<"Product">
+  supplyDuration?: Prisma.StringNullableFilter<"Product"> | string | null
+  packsPerMonth?: Prisma.IntNullableFilter<"Product"> | number | null
+  supplyOptions?: Prisma.JsonNullableFilter<"Product">
+  subscriptionEnabled?: Prisma.BoolFilter<"Product"> | boolean
+  stripeProductId?: Prisma.StringNullableFilter<"Product"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableFilter<"Product"> | Date | string | null
+  productReviews?: Prisma.ProductReviewListRelationFilter
+  subscriptions?: Prisma.SubscriptionListRelationFilter
 }, "id" | "slug">
 
 export type ProductOrderByWithAggregationInput = {
@@ -458,12 +555,15 @@ export type ProductOrderByWithAggregationInput = {
   originalPrice?: Prisma.SortOrderInput | Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   taxIncluded?: Prisma.SortOrder
+  taxType?: Prisma.SortOrder
+  taxValue?: Prisma.SortOrder
   unlimitedStock?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   stockStatus?: Prisma.SortOrder
   category?: Prisma.SortOrder
+  categories?: Prisma.SortOrderInput | Prisma.SortOrder
   brand?: Prisma.SortOrder
-  tags?: Prisma.SortOrder
+  tags?: Prisma.SortOrderInput | Prisma.SortOrder
   publishStatus?: Prisma.SortOrder
   featured?: Prisma.SortOrder
   featuredRank?: Prisma.SortOrder
@@ -471,10 +571,16 @@ export type ProductOrderByWithAggregationInput = {
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
   image?: Prisma.SortOrder
-  gallery?: Prisma.SortOrder
+  gallery?: Prisma.SortOrderInput | Prisma.SortOrder
   sizes?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplyDuration?: Prisma.SortOrderInput | Prisma.SortOrder
+  packsPerMonth?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplyOptions?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionEnabled?: Prisma.SortOrder
+  stripeProductId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ProductCountOrderByAggregateInput
   _avg?: Prisma.ProductAvgOrderByAggregateInput
   _max?: Prisma.ProductMaxOrderByAggregateInput
@@ -494,12 +600,15 @@ export type ProductScalarWhereWithAggregatesInput = {
   originalPrice?: Prisma.FloatNullableWithAggregatesFilter<"Product"> | number | null
   discountPercent?: Prisma.FloatWithAggregatesFilter<"Product"> | number
   taxIncluded?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
+  taxType?: Prisma.StringWithAggregatesFilter<"Product"> | string
+  taxValue?: Prisma.FloatWithAggregatesFilter<"Product"> | number
   unlimitedStock?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   stockQuantity?: Prisma.IntWithAggregatesFilter<"Product"> | number
   stockStatus?: Prisma.StringWithAggregatesFilter<"Product"> | string
   category?: Prisma.StringWithAggregatesFilter<"Product"> | string
+  categories?: Prisma.JsonNullableWithAggregatesFilter<"Product">
   brand?: Prisma.StringWithAggregatesFilter<"Product"> | string
-  tags?: Prisma.StringNullableListFilter<"Product">
+  tags?: Prisma.JsonNullableWithAggregatesFilter<"Product">
   publishStatus?: Prisma.StringWithAggregatesFilter<"Product"> | string
   featured?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   featuredRank?: Prisma.IntWithAggregatesFilter<"Product"> | number
@@ -507,27 +616,36 @@ export type ProductScalarWhereWithAggregatesInput = {
   rating?: Prisma.FloatWithAggregatesFilter<"Product"> | number
   reviewCount?: Prisma.IntWithAggregatesFilter<"Product"> | number
   image?: Prisma.StringWithAggregatesFilter<"Product"> | string
-  gallery?: Prisma.StringNullableListFilter<"Product">
+  gallery?: Prisma.JsonNullableWithAggregatesFilter<"Product">
   sizes?: Prisma.JsonNullableWithAggregatesFilter<"Product">
+  supplyDuration?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
+  packsPerMonth?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
+  supplyOptions?: Prisma.JsonNullableWithAggregatesFilter<"Product">
+  subscriptionEnabled?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
+  stripeProductId?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
+  archivedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Product"> | Date | string | null
 }
 
 export type ProductCreateInput = {
   id?: string
   slug: string
   name: string
-  description?: string
+  description: string
   price: number
   originalPrice?: number | null
   discountPercent?: number
   taxIncluded?: boolean
+  taxType?: string
+  taxValue?: number
   unlimitedStock?: boolean
   stockQuantity?: number
   stockStatus?: string
   category?: string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   brand?: string
-  tags?: Prisma.ProductCreatetagsInput | string[]
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   publishStatus?: string
   featured?: boolean
   featuredRank?: number
@@ -535,27 +653,38 @@ export type ProductCreateInput = {
   rating?: number
   reviewCount?: number
   image?: string
-  gallery?: Prisma.ProductCreategalleryInput | string[]
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: string | null
+  packsPerMonth?: number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: boolean
+  stripeProductId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
+  productReviews?: Prisma.ProductReviewCreateNestedManyWithoutProductInput
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProductInput
 }
 
 export type ProductUncheckedCreateInput = {
   id?: string
   slug: string
   name: string
-  description?: string
+  description: string
   price: number
   originalPrice?: number | null
   discountPercent?: number
   taxIncluded?: boolean
+  taxType?: string
+  taxValue?: number
   unlimitedStock?: boolean
   stockQuantity?: number
   stockStatus?: string
   category?: string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   brand?: string
-  tags?: Prisma.ProductCreatetagsInput | string[]
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   publishStatus?: string
   featured?: boolean
   featuredRank?: number
@@ -563,10 +692,18 @@ export type ProductUncheckedCreateInput = {
   rating?: number
   reviewCount?: number
   image?: string
-  gallery?: Prisma.ProductCreategalleryInput | string[]
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: string | null
+  packsPerMonth?: number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: boolean
+  stripeProductId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
+  productReviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutProductInput
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type ProductUpdateInput = {
@@ -578,12 +715,15 @@ export type ProductUpdateInput = {
   originalPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.FloatFieldUpdateOperationsInput | number
   taxIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxType?: Prisma.StringFieldUpdateOperationsInput | string
+  taxValue?: Prisma.FloatFieldUpdateOperationsInput | number
   unlimitedStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   stockStatus?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   brand?: Prisma.StringFieldUpdateOperationsInput | string
-  tags?: Prisma.ProductUpdatetagsInput | string[]
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   publishStatus?: Prisma.StringFieldUpdateOperationsInput | string
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featuredRank?: Prisma.IntFieldUpdateOperationsInput | number
@@ -591,10 +731,18 @@ export type ProductUpdateInput = {
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
   image?: Prisma.StringFieldUpdateOperationsInput | string
-  gallery?: Prisma.ProductUpdategalleryInput | string[]
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stripeProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  productReviews?: Prisma.ProductReviewUpdateManyWithoutProductNestedInput
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProductNestedInput
 }
 
 export type ProductUncheckedUpdateInput = {
@@ -606,12 +754,15 @@ export type ProductUncheckedUpdateInput = {
   originalPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.FloatFieldUpdateOperationsInput | number
   taxIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxType?: Prisma.StringFieldUpdateOperationsInput | string
+  taxValue?: Prisma.FloatFieldUpdateOperationsInput | number
   unlimitedStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   stockStatus?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   brand?: Prisma.StringFieldUpdateOperationsInput | string
-  tags?: Prisma.ProductUpdatetagsInput | string[]
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   publishStatus?: Prisma.StringFieldUpdateOperationsInput | string
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featuredRank?: Prisma.IntFieldUpdateOperationsInput | number
@@ -619,27 +770,38 @@ export type ProductUncheckedUpdateInput = {
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
   image?: Prisma.StringFieldUpdateOperationsInput | string
-  gallery?: Prisma.ProductUpdategalleryInput | string[]
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stripeProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  productReviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutProductNestedInput
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type ProductCreateManyInput = {
   id?: string
   slug: string
   name: string
-  description?: string
+  description: string
   price: number
   originalPrice?: number | null
   discountPercent?: number
   taxIncluded?: boolean
+  taxType?: string
+  taxValue?: number
   unlimitedStock?: boolean
   stockQuantity?: number
   stockStatus?: string
   category?: string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   brand?: string
-  tags?: Prisma.ProductCreatetagsInput | string[]
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   publishStatus?: string
   featured?: boolean
   featuredRank?: number
@@ -647,10 +809,16 @@ export type ProductCreateManyInput = {
   rating?: number
   reviewCount?: number
   image?: string
-  gallery?: Prisma.ProductCreategalleryInput | string[]
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: string | null
+  packsPerMonth?: number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: boolean
+  stripeProductId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  archivedAt?: Date | string | null
 }
 
 export type ProductUpdateManyMutationInput = {
@@ -662,12 +830,15 @@ export type ProductUpdateManyMutationInput = {
   originalPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.FloatFieldUpdateOperationsInput | number
   taxIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxType?: Prisma.StringFieldUpdateOperationsInput | string
+  taxValue?: Prisma.FloatFieldUpdateOperationsInput | number
   unlimitedStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   stockStatus?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   brand?: Prisma.StringFieldUpdateOperationsInput | string
-  tags?: Prisma.ProductUpdatetagsInput | string[]
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   publishStatus?: Prisma.StringFieldUpdateOperationsInput | string
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featuredRank?: Prisma.IntFieldUpdateOperationsInput | number
@@ -675,10 +846,16 @@ export type ProductUpdateManyMutationInput = {
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
   image?: Prisma.StringFieldUpdateOperationsInput | string
-  gallery?: Prisma.ProductUpdategalleryInput | string[]
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stripeProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ProductUncheckedUpdateManyInput = {
@@ -690,12 +867,15 @@ export type ProductUncheckedUpdateManyInput = {
   originalPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.FloatFieldUpdateOperationsInput | number
   taxIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxType?: Prisma.StringFieldUpdateOperationsInput | string
+  taxValue?: Prisma.FloatFieldUpdateOperationsInput | number
   unlimitedStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   stockStatus?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.StringFieldUpdateOperationsInput | string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   brand?: Prisma.StringFieldUpdateOperationsInput | string
-  tags?: Prisma.ProductUpdatetagsInput | string[]
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   publishStatus?: Prisma.StringFieldUpdateOperationsInput | string
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featuredRank?: Prisma.IntFieldUpdateOperationsInput | number
@@ -703,18 +883,22 @@ export type ProductUncheckedUpdateManyInput = {
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
   image?: Prisma.StringFieldUpdateOperationsInput | string
-  gallery?: Prisma.ProductUpdategalleryInput | string[]
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stripeProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
-export type StringNullableListFilter<$PrismaModel = never> = {
-  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
-  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
-  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
-  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
-  isEmpty?: boolean
+export type ProductOrderByRelevanceInput = {
+  fields: Prisma.ProductOrderByRelevanceFieldEnum | Prisma.ProductOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type ProductCountOrderByAggregateInput = {
@@ -726,10 +910,13 @@ export type ProductCountOrderByAggregateInput = {
   originalPrice?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   taxIncluded?: Prisma.SortOrder
+  taxType?: Prisma.SortOrder
+  taxValue?: Prisma.SortOrder
   unlimitedStock?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   stockStatus?: Prisma.SortOrder
   category?: Prisma.SortOrder
+  categories?: Prisma.SortOrder
   brand?: Prisma.SortOrder
   tags?: Prisma.SortOrder
   publishStatus?: Prisma.SortOrder
@@ -741,18 +928,26 @@ export type ProductCountOrderByAggregateInput = {
   image?: Prisma.SortOrder
   gallery?: Prisma.SortOrder
   sizes?: Prisma.SortOrder
+  supplyDuration?: Prisma.SortOrder
+  packsPerMonth?: Prisma.SortOrder
+  supplyOptions?: Prisma.SortOrder
+  subscriptionEnabled?: Prisma.SortOrder
+  stripeProductId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type ProductAvgOrderByAggregateInput = {
   price?: Prisma.SortOrder
   originalPrice?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
+  taxValue?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   featuredRank?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
+  packsPerMonth?: Prisma.SortOrder
 }
 
 export type ProductMaxOrderByAggregateInput = {
@@ -764,6 +959,8 @@ export type ProductMaxOrderByAggregateInput = {
   originalPrice?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   taxIncluded?: Prisma.SortOrder
+  taxType?: Prisma.SortOrder
+  taxValue?: Prisma.SortOrder
   unlimitedStock?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   stockStatus?: Prisma.SortOrder
@@ -776,8 +973,13 @@ export type ProductMaxOrderByAggregateInput = {
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
   image?: Prisma.SortOrder
+  supplyDuration?: Prisma.SortOrder
+  packsPerMonth?: Prisma.SortOrder
+  subscriptionEnabled?: Prisma.SortOrder
+  stripeProductId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type ProductMinOrderByAggregateInput = {
@@ -789,6 +991,8 @@ export type ProductMinOrderByAggregateInput = {
   originalPrice?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   taxIncluded?: Prisma.SortOrder
+  taxType?: Prisma.SortOrder
+  taxValue?: Prisma.SortOrder
   unlimitedStock?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   stockStatus?: Prisma.SortOrder
@@ -801,26 +1005,35 @@ export type ProductMinOrderByAggregateInput = {
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
   image?: Prisma.SortOrder
+  supplyDuration?: Prisma.SortOrder
+  packsPerMonth?: Prisma.SortOrder
+  subscriptionEnabled?: Prisma.SortOrder
+  stripeProductId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
 }
 
 export type ProductSumOrderByAggregateInput = {
   price?: Prisma.SortOrder
   originalPrice?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
+  taxValue?: Prisma.SortOrder
   stockQuantity?: Prisma.SortOrder
   featuredRank?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
+  packsPerMonth?: Prisma.SortOrder
 }
 
-export type ProductCreatetagsInput = {
-  set: string[]
+export type ProductNullableScalarRelationFilter = {
+  is?: Prisma.ProductWhereInput | null
+  isNot?: Prisma.ProductWhereInput | null
 }
 
-export type ProductCreategalleryInput = {
-  set: string[]
+export type ProductScalarRelationFilter = {
+  is?: Prisma.ProductWhereInput
+  isNot?: Prisma.ProductWhereInput
 }
 
 export type NullableFloatFieldUpdateOperationsInput = {
@@ -831,16 +1044,410 @@ export type NullableFloatFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type ProductUpdatetagsInput = {
-  set?: string[]
-  push?: string | string[]
+export type ProductCreateNestedOneWithoutSubscriptionsInput = {
+  create?: Prisma.XOR<Prisma.ProductCreateWithoutSubscriptionsInput, Prisma.ProductUncheckedCreateWithoutSubscriptionsInput>
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutSubscriptionsInput
+  connect?: Prisma.ProductWhereUniqueInput
 }
 
-export type ProductUpdategalleryInput = {
-  set?: string[]
-  push?: string | string[]
+export type ProductUpdateOneWithoutSubscriptionsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductCreateWithoutSubscriptionsInput, Prisma.ProductUncheckedCreateWithoutSubscriptionsInput>
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutSubscriptionsInput
+  upsert?: Prisma.ProductUpsertWithoutSubscriptionsInput
+  disconnect?: Prisma.ProductWhereInput | boolean
+  delete?: Prisma.ProductWhereInput | boolean
+  connect?: Prisma.ProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductUpdateToOneWithWhereWithoutSubscriptionsInput, Prisma.ProductUpdateWithoutSubscriptionsInput>, Prisma.ProductUncheckedUpdateWithoutSubscriptionsInput>
 }
 
+export type ProductCreateNestedOneWithoutProductReviewsInput = {
+  create?: Prisma.XOR<Prisma.ProductCreateWithoutProductReviewsInput, Prisma.ProductUncheckedCreateWithoutProductReviewsInput>
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutProductReviewsInput
+  connect?: Prisma.ProductWhereUniqueInput
+}
+
+export type ProductUpdateOneRequiredWithoutProductReviewsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductCreateWithoutProductReviewsInput, Prisma.ProductUncheckedCreateWithoutProductReviewsInput>
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutProductReviewsInput
+  upsert?: Prisma.ProductUpsertWithoutProductReviewsInput
+  connect?: Prisma.ProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductUpdateToOneWithWhereWithoutProductReviewsInput, Prisma.ProductUpdateWithoutProductReviewsInput>, Prisma.ProductUncheckedUpdateWithoutProductReviewsInput>
+}
+
+export type ProductCreateWithoutSubscriptionsInput = {
+  id?: string
+  slug: string
+  name: string
+  description: string
+  price: number
+  originalPrice?: number | null
+  discountPercent?: number
+  taxIncluded?: boolean
+  taxType?: string
+  taxValue?: number
+  unlimitedStock?: boolean
+  stockQuantity?: number
+  stockStatus?: string
+  category?: string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  brand?: string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishStatus?: string
+  featured?: boolean
+  featuredRank?: number
+  offered?: boolean
+  rating?: number
+  reviewCount?: number
+  image?: string
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: string | null
+  packsPerMonth?: number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: boolean
+  stripeProductId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  archivedAt?: Date | string | null
+  productReviews?: Prisma.ProductReviewCreateNestedManyWithoutProductInput
+}
+
+export type ProductUncheckedCreateWithoutSubscriptionsInput = {
+  id?: string
+  slug: string
+  name: string
+  description: string
+  price: number
+  originalPrice?: number | null
+  discountPercent?: number
+  taxIncluded?: boolean
+  taxType?: string
+  taxValue?: number
+  unlimitedStock?: boolean
+  stockQuantity?: number
+  stockStatus?: string
+  category?: string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  brand?: string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishStatus?: string
+  featured?: boolean
+  featuredRank?: number
+  offered?: boolean
+  rating?: number
+  reviewCount?: number
+  image?: string
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: string | null
+  packsPerMonth?: number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: boolean
+  stripeProductId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  archivedAt?: Date | string | null
+  productReviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutProductInput
+}
+
+export type ProductCreateOrConnectWithoutSubscriptionsInput = {
+  where: Prisma.ProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProductCreateWithoutSubscriptionsInput, Prisma.ProductUncheckedCreateWithoutSubscriptionsInput>
+}
+
+export type ProductUpsertWithoutSubscriptionsInput = {
+  update: Prisma.XOR<Prisma.ProductUpdateWithoutSubscriptionsInput, Prisma.ProductUncheckedUpdateWithoutSubscriptionsInput>
+  create: Prisma.XOR<Prisma.ProductCreateWithoutSubscriptionsInput, Prisma.ProductUncheckedCreateWithoutSubscriptionsInput>
+  where?: Prisma.ProductWhereInput
+}
+
+export type ProductUpdateToOneWithWhereWithoutSubscriptionsInput = {
+  where?: Prisma.ProductWhereInput
+  data: Prisma.XOR<Prisma.ProductUpdateWithoutSubscriptionsInput, Prisma.ProductUncheckedUpdateWithoutSubscriptionsInput>
+}
+
+export type ProductUpdateWithoutSubscriptionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  price?: Prisma.FloatFieldUpdateOperationsInput | number
+  originalPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  discountPercent?: Prisma.FloatFieldUpdateOperationsInput | number
+  taxIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxType?: Prisma.StringFieldUpdateOperationsInput | string
+  taxValue?: Prisma.FloatFieldUpdateOperationsInput | number
+  unlimitedStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  stockStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.StringFieldUpdateOperationsInput | string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  brand?: Prisma.StringFieldUpdateOperationsInput | string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  featuredRank?: Prisma.IntFieldUpdateOperationsInput | number
+  offered?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  image?: Prisma.StringFieldUpdateOperationsInput | string
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stripeProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  productReviews?: Prisma.ProductReviewUpdateManyWithoutProductNestedInput
+}
+
+export type ProductUncheckedUpdateWithoutSubscriptionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  price?: Prisma.FloatFieldUpdateOperationsInput | number
+  originalPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  discountPercent?: Prisma.FloatFieldUpdateOperationsInput | number
+  taxIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxType?: Prisma.StringFieldUpdateOperationsInput | string
+  taxValue?: Prisma.FloatFieldUpdateOperationsInput | number
+  unlimitedStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  stockStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.StringFieldUpdateOperationsInput | string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  brand?: Prisma.StringFieldUpdateOperationsInput | string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  featuredRank?: Prisma.IntFieldUpdateOperationsInput | number
+  offered?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  image?: Prisma.StringFieldUpdateOperationsInput | string
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stripeProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  productReviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutProductNestedInput
+}
+
+export type ProductCreateWithoutProductReviewsInput = {
+  id?: string
+  slug: string
+  name: string
+  description: string
+  price: number
+  originalPrice?: number | null
+  discountPercent?: number
+  taxIncluded?: boolean
+  taxType?: string
+  taxValue?: number
+  unlimitedStock?: boolean
+  stockQuantity?: number
+  stockStatus?: string
+  category?: string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  brand?: string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishStatus?: string
+  featured?: boolean
+  featuredRank?: number
+  offered?: boolean
+  rating?: number
+  reviewCount?: number
+  image?: string
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: string | null
+  packsPerMonth?: number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: boolean
+  stripeProductId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  archivedAt?: Date | string | null
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProductInput
+}
+
+export type ProductUncheckedCreateWithoutProductReviewsInput = {
+  id?: string
+  slug: string
+  name: string
+  description: string
+  price: number
+  originalPrice?: number | null
+  discountPercent?: number
+  taxIncluded?: boolean
+  taxType?: string
+  taxValue?: number
+  unlimitedStock?: boolean
+  stockQuantity?: number
+  stockStatus?: string
+  category?: string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  brand?: string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishStatus?: string
+  featured?: boolean
+  featuredRank?: number
+  offered?: boolean
+  rating?: number
+  reviewCount?: number
+  image?: string
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: string | null
+  packsPerMonth?: number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: boolean
+  stripeProductId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  archivedAt?: Date | string | null
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProductInput
+}
+
+export type ProductCreateOrConnectWithoutProductReviewsInput = {
+  where: Prisma.ProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProductCreateWithoutProductReviewsInput, Prisma.ProductUncheckedCreateWithoutProductReviewsInput>
+}
+
+export type ProductUpsertWithoutProductReviewsInput = {
+  update: Prisma.XOR<Prisma.ProductUpdateWithoutProductReviewsInput, Prisma.ProductUncheckedUpdateWithoutProductReviewsInput>
+  create: Prisma.XOR<Prisma.ProductCreateWithoutProductReviewsInput, Prisma.ProductUncheckedCreateWithoutProductReviewsInput>
+  where?: Prisma.ProductWhereInput
+}
+
+export type ProductUpdateToOneWithWhereWithoutProductReviewsInput = {
+  where?: Prisma.ProductWhereInput
+  data: Prisma.XOR<Prisma.ProductUpdateWithoutProductReviewsInput, Prisma.ProductUncheckedUpdateWithoutProductReviewsInput>
+}
+
+export type ProductUpdateWithoutProductReviewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  price?: Prisma.FloatFieldUpdateOperationsInput | number
+  originalPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  discountPercent?: Prisma.FloatFieldUpdateOperationsInput | number
+  taxIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxType?: Prisma.StringFieldUpdateOperationsInput | string
+  taxValue?: Prisma.FloatFieldUpdateOperationsInput | number
+  unlimitedStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  stockStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.StringFieldUpdateOperationsInput | string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  brand?: Prisma.StringFieldUpdateOperationsInput | string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  featuredRank?: Prisma.IntFieldUpdateOperationsInput | number
+  offered?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  image?: Prisma.StringFieldUpdateOperationsInput | string
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stripeProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProductNestedInput
+}
+
+export type ProductUncheckedUpdateWithoutProductReviewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  price?: Prisma.FloatFieldUpdateOperationsInput | number
+  originalPrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  discountPercent?: Prisma.FloatFieldUpdateOperationsInput | number
+  taxIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxType?: Prisma.StringFieldUpdateOperationsInput | string
+  taxValue?: Prisma.FloatFieldUpdateOperationsInput | number
+  unlimitedStock?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stockQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  stockStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.StringFieldUpdateOperationsInput | string
+  categories?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  brand?: Prisma.StringFieldUpdateOperationsInput | string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  featuredRank?: Prisma.IntFieldUpdateOperationsInput | number
+  offered?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  image?: Prisma.StringFieldUpdateOperationsInput | string
+  gallery?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sizes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  supplyDuration?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  packsPerMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplyOptions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  subscriptionEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  stripeProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProductNestedInput
+}
+
+
+/**
+ * Count Type ProductCountOutputType
+ */
+
+export type ProductCountOutputType = {
+  productReviews: number
+  subscriptions: number
+}
+
+export type ProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  productReviews?: boolean | ProductCountOutputTypeCountProductReviewsArgs
+  subscriptions?: boolean | ProductCountOutputTypeCountSubscriptionsArgs
+}
+
+/**
+ * ProductCountOutputType without action
+ */
+export type ProductCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProductCountOutputType
+   */
+  select?: Prisma.ProductCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ProductCountOutputType without action
+ */
+export type ProductCountOutputTypeCountProductReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProductReviewWhereInput
+}
+
+/**
+ * ProductCountOutputType without action
+ */
+export type ProductCountOutputTypeCountSubscriptionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SubscriptionWhereInput
+}
 
 
 export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -852,10 +1459,13 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   originalPrice?: boolean
   discountPercent?: boolean
   taxIncluded?: boolean
+  taxType?: boolean
+  taxValue?: boolean
   unlimitedStock?: boolean
   stockQuantity?: boolean
   stockStatus?: boolean
   category?: boolean
+  categories?: boolean
   brand?: boolean
   tags?: boolean
   publishStatus?: boolean
@@ -867,65 +1477,20 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   image?: boolean
   gallery?: boolean
   sizes?: boolean
+  supplyDuration?: boolean
+  packsPerMonth?: boolean
+  supplyOptions?: boolean
+  subscriptionEnabled?: boolean
+  stripeProductId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  archivedAt?: boolean
+  productReviews?: boolean | Prisma.Product$productReviewsArgs<ExtArgs>
+  subscriptions?: boolean | Prisma.Product$subscriptionsArgs<ExtArgs>
+  _count?: boolean | Prisma.ProductCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["product"]>
 
-export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
-  slug?: boolean
-  name?: boolean
-  description?: boolean
-  price?: boolean
-  originalPrice?: boolean
-  discountPercent?: boolean
-  taxIncluded?: boolean
-  unlimitedStock?: boolean
-  stockQuantity?: boolean
-  stockStatus?: boolean
-  category?: boolean
-  brand?: boolean
-  tags?: boolean
-  publishStatus?: boolean
-  featured?: boolean
-  featuredRank?: boolean
-  offered?: boolean
-  rating?: boolean
-  reviewCount?: boolean
-  image?: boolean
-  gallery?: boolean
-  sizes?: boolean
-  createdAt?: boolean
-  updatedAt?: boolean
-}, ExtArgs["result"]["product"]>
 
-export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
-  slug?: boolean
-  name?: boolean
-  description?: boolean
-  price?: boolean
-  originalPrice?: boolean
-  discountPercent?: boolean
-  taxIncluded?: boolean
-  unlimitedStock?: boolean
-  stockQuantity?: boolean
-  stockStatus?: boolean
-  category?: boolean
-  brand?: boolean
-  tags?: boolean
-  publishStatus?: boolean
-  featured?: boolean
-  featuredRank?: boolean
-  offered?: boolean
-  rating?: boolean
-  reviewCount?: boolean
-  image?: boolean
-  gallery?: boolean
-  sizes?: boolean
-  createdAt?: boolean
-  updatedAt?: boolean
-}, ExtArgs["result"]["product"]>
 
 export type ProductSelectScalar = {
   id?: boolean
@@ -936,10 +1501,13 @@ export type ProductSelectScalar = {
   originalPrice?: boolean
   discountPercent?: boolean
   taxIncluded?: boolean
+  taxType?: boolean
+  taxValue?: boolean
   unlimitedStock?: boolean
   stockQuantity?: boolean
   stockStatus?: boolean
   category?: boolean
+  categories?: boolean
   brand?: boolean
   tags?: boolean
   publishStatus?: boolean
@@ -951,15 +1519,29 @@ export type ProductSelectScalar = {
   image?: boolean
   gallery?: boolean
   sizes?: boolean
+  supplyDuration?: boolean
+  packsPerMonth?: boolean
+  supplyOptions?: boolean
+  subscriptionEnabled?: boolean
+  stripeProductId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  archivedAt?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "price" | "originalPrice" | "discountPercent" | "taxIncluded" | "unlimitedStock" | "stockQuantity" | "stockStatus" | "category" | "brand" | "tags" | "publishStatus" | "featured" | "featuredRank" | "offered" | "rating" | "reviewCount" | "image" | "gallery" | "sizes" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "price" | "originalPrice" | "discountPercent" | "taxIncluded" | "taxType" | "taxValue" | "unlimitedStock" | "stockQuantity" | "stockStatus" | "category" | "categories" | "brand" | "tags" | "publishStatus" | "featured" | "featuredRank" | "offered" | "rating" | "reviewCount" | "image" | "gallery" | "sizes" | "supplyDuration" | "packsPerMonth" | "supplyOptions" | "subscriptionEnabled" | "stripeProductId" | "createdAt" | "updatedAt" | "archivedAt", ExtArgs["result"]["product"]>
+export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  productReviews?: boolean | Prisma.Product$productReviewsArgs<ExtArgs>
+  subscriptions?: boolean | Prisma.Product$subscriptionsArgs<ExtArgs>
+  _count?: boolean | Prisma.ProductCountOutputTypeDefaultArgs<ExtArgs>
+}
 
 export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Product"
-  objects: {}
+  objects: {
+    productReviews: Prisma.$ProductReviewPayload<ExtArgs>[]
+    subscriptions: Prisma.$SubscriptionPayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     slug: string
@@ -969,23 +1551,54 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     originalPrice: number | null
     discountPercent: number
     taxIncluded: boolean
+    /**
+     * When tax is NOT included: "percent" (of the product price) or "fixed" (£ per item). Never discounted.
+     */
+    taxType: string
+    taxValue: number
     unlimitedStock: boolean
     stockQuantity: number
     stockStatus: string
     category: string
+    categories: runtime.JsonValue | null
     brand: string
-    tags: string[]
+    tags: runtime.JsonValue | null
     publishStatus: string
     featured: boolean
     featuredRank: number
     offered: boolean
+    /**
+     * Average of PUBLISHED reviews (0 = none yet). Kept in sync by ReviewsService.
+     */
     rating: number
+    /**
+     * Number of PUBLISHED reviews. Kept in sync by ReviewsService.
+     */
     reviewCount: number
     image: string
-    gallery: string[]
+    gallery: runtime.JsonValue | null
     sizes: runtime.JsonValue | null
+    supplyDuration: string | null
+    packsPerMonth: number | null
+    /**
+     * Supply options shown on the product page ("120 – 4 Month Supply"…), each with its own price,
+     * original price, badge and Subscribe & Save discount. See src/products/supply-options.ts.
+     */
+    supplyOptions: runtime.JsonValue | null
+    /**
+     * Subscribe & Save available for this product (needs supply options)
+     */
+    subscriptionEnabled: boolean
+    /**
+     * Stripe Product used for this product's subscriptions (created on first use)
+     */
+    stripeProductId: string | null
     createdAt: Date
     updatedAt: Date
+    /**
+     * Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
+     */
+    archivedAt: Date | null
   }, ExtArgs["result"]["product"]>
   composites: {}
 }
@@ -1104,30 +1717,6 @@ export interface ProductDelegate<ExtArgs extends runtime.Types.Extensions.Intern
   createMany<T extends ProductCreateManyArgs>(args?: Prisma.SelectSubset<T, ProductCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
 
   /**
-   * Create many Products and returns the data saved in the database.
-   * @param {ProductCreateManyAndReturnArgs} args - Arguments to create many Products.
-   * @example
-   * // Create many Products
-   * const product = await prisma.product.createManyAndReturn({
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * 
-   * // Create many Products and only return the `id`
-   * const productWithIdOnly = await prisma.product.createManyAndReturn({
-   *   select: { id: true },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * Note, that providing `undefined` is treated as the value not being there.
-   * Read more here: https://pris.ly/d/null-undefined
-   * 
-   */
-  createManyAndReturn<T extends ProductCreateManyAndReturnArgs>(args?: Prisma.SelectSubset<T, ProductCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-  /**
    * Delete a Product.
    * @param {ProductDeleteArgs} args - Arguments to delete one Product.
    * @example
@@ -1190,36 +1779,6 @@ export interface ProductDelegate<ExtArgs extends runtime.Types.Extensions.Intern
    * 
    */
   updateMany<T extends ProductUpdateManyArgs>(args: Prisma.SelectSubset<T, ProductUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
-
-  /**
-   * Update zero or more Products and returns the data updated in the database.
-   * @param {ProductUpdateManyAndReturnArgs} args - Arguments to update many Products.
-   * @example
-   * // Update many Products
-   * const product = await prisma.product.updateManyAndReturn({
-   *   where: {
-   *     // ... provide filter here
-   *   },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * 
-   * // Update zero or more Products and only return the `id`
-   * const productWithIdOnly = await prisma.product.updateManyAndReturn({
-   *   select: { id: true },
-   *   where: {
-   *     // ... provide filter here
-   *   },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * Note, that providing `undefined` is treated as the value not being there.
-   * Read more here: https://pris.ly/d/null-undefined
-   * 
-   */
-  updateManyAndReturn<T extends ProductUpdateManyAndReturnArgs>(args: Prisma.SelectSubset<T, ProductUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
   /**
    * Create or update one Product.
@@ -1380,6 +1939,8 @@ readonly fields: ProductFieldRefs;
  */
 export interface Prisma__ProductClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  productReviews<T extends Prisma.Product$productReviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$productReviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  subscriptions<T extends Prisma.Product$subscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$subscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1417,12 +1978,15 @@ export interface ProductFieldRefs {
   readonly originalPrice: Prisma.FieldRef<"Product", 'Float'>
   readonly discountPercent: Prisma.FieldRef<"Product", 'Float'>
   readonly taxIncluded: Prisma.FieldRef<"Product", 'Boolean'>
+  readonly taxType: Prisma.FieldRef<"Product", 'String'>
+  readonly taxValue: Prisma.FieldRef<"Product", 'Float'>
   readonly unlimitedStock: Prisma.FieldRef<"Product", 'Boolean'>
   readonly stockQuantity: Prisma.FieldRef<"Product", 'Int'>
   readonly stockStatus: Prisma.FieldRef<"Product", 'String'>
   readonly category: Prisma.FieldRef<"Product", 'String'>
+  readonly categories: Prisma.FieldRef<"Product", 'Json'>
   readonly brand: Prisma.FieldRef<"Product", 'String'>
-  readonly tags: Prisma.FieldRef<"Product", 'String[]'>
+  readonly tags: Prisma.FieldRef<"Product", 'Json'>
   readonly publishStatus: Prisma.FieldRef<"Product", 'String'>
   readonly featured: Prisma.FieldRef<"Product", 'Boolean'>
   readonly featuredRank: Prisma.FieldRef<"Product", 'Int'>
@@ -1430,10 +1994,16 @@ export interface ProductFieldRefs {
   readonly rating: Prisma.FieldRef<"Product", 'Float'>
   readonly reviewCount: Prisma.FieldRef<"Product", 'Int'>
   readonly image: Prisma.FieldRef<"Product", 'String'>
-  readonly gallery: Prisma.FieldRef<"Product", 'String[]'>
+  readonly gallery: Prisma.FieldRef<"Product", 'Json'>
   readonly sizes: Prisma.FieldRef<"Product", 'Json'>
+  readonly supplyDuration: Prisma.FieldRef<"Product", 'String'>
+  readonly packsPerMonth: Prisma.FieldRef<"Product", 'Int'>
+  readonly supplyOptions: Prisma.FieldRef<"Product", 'Json'>
+  readonly subscriptionEnabled: Prisma.FieldRef<"Product", 'Boolean'>
+  readonly stripeProductId: Prisma.FieldRef<"Product", 'String'>
   readonly createdAt: Prisma.FieldRef<"Product", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Product", 'DateTime'>
+  readonly archivedAt: Prisma.FieldRef<"Product", 'DateTime'>
 }
     
 
@@ -1450,6 +2020,10 @@ export type ProductFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Omit specific fields from the Product
    */
   omit?: Prisma.ProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null
   /**
    * Filter, which Product to fetch.
    */
@@ -1469,6 +2043,10 @@ export type ProductFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extension
    */
   omit?: Prisma.ProductOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null
+  /**
    * Filter, which Product to fetch.
    */
   where: Prisma.ProductWhereUniqueInput
@@ -1486,6 +2064,10 @@ export type ProductFindFirstArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Omit specific fields from the Product
    */
   omit?: Prisma.ProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null
   /**
    * Filter, which Product to fetch.
    */
@@ -1535,6 +2117,10 @@ export type ProductFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extensions
    */
   omit?: Prisma.ProductOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null
+  /**
    * Filter, which Product to fetch.
    */
   where?: Prisma.ProductWhereInput
@@ -1582,6 +2168,10 @@ export type ProductFindManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Omit specific fields from the Product
    */
   omit?: Prisma.ProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null
   /**
    * Filter, which Products to fetch.
    */
@@ -1631,6 +2221,10 @@ export type ProductCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   omit?: Prisma.ProductOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null
+  /**
    * The data needed to create a Product.
    */
   data: Prisma.XOR<Prisma.ProductCreateInput, Prisma.ProductUncheckedCreateInput>
@@ -1640,25 +2234,6 @@ export type ProductCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
  * Product createMany
  */
 export type ProductCreateManyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * The data used to create many Products.
-   */
-  data: Prisma.ProductCreateManyInput | Prisma.ProductCreateManyInput[]
-  skipDuplicates?: boolean
-}
-
-/**
- * Product createManyAndReturn
- */
-export type ProductCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Product
-   */
-  select?: Prisma.ProductSelectCreateManyAndReturn<ExtArgs> | null
-  /**
-   * Omit specific fields from the Product
-   */
-  omit?: Prisma.ProductOmit<ExtArgs> | null
   /**
    * The data used to create many Products.
    */
@@ -1678,6 +2253,10 @@ export type ProductUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the Product
    */
   omit?: Prisma.ProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null
   /**
    * The data needed to update a Product.
    */
@@ -1707,32 +2286,6 @@ export type ProductUpdateManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
 }
 
 /**
- * Product updateManyAndReturn
- */
-export type ProductUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Product
-   */
-  select?: Prisma.ProductSelectUpdateManyAndReturn<ExtArgs> | null
-  /**
-   * Omit specific fields from the Product
-   */
-  omit?: Prisma.ProductOmit<ExtArgs> | null
-  /**
-   * The data used to update Products.
-   */
-  data: Prisma.XOR<Prisma.ProductUpdateManyMutationInput, Prisma.ProductUncheckedUpdateManyInput>
-  /**
-   * Filter which Products to update
-   */
-  where?: Prisma.ProductWhereInput
-  /**
-   * Limit how many Products to update.
-   */
-  limit?: number
-}
-
-/**
  * Product upsert
  */
 export type ProductUpsertArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1744,6 +2297,10 @@ export type ProductUpsertArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the Product
    */
   omit?: Prisma.ProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null
   /**
    * The filter to search for the Product to update in case it exists.
    */
@@ -1771,6 +2328,10 @@ export type ProductDeleteArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   omit?: Prisma.ProductOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null
+  /**
    * Filter which Product to delete.
    */
   where: Prisma.ProductWhereUniqueInput
@@ -1791,6 +2352,54 @@ export type ProductDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
 }
 
 /**
+ * Product.productReviews
+ */
+export type Product$productReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProductReview
+   */
+  select?: Prisma.ProductReviewSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProductReview
+   */
+  omit?: Prisma.ProductReviewOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductReviewInclude<ExtArgs> | null
+  where?: Prisma.ProductReviewWhereInput
+  orderBy?: Prisma.ProductReviewOrderByWithRelationInput | Prisma.ProductReviewOrderByWithRelationInput[]
+  cursor?: Prisma.ProductReviewWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProductReviewScalarFieldEnum | Prisma.ProductReviewScalarFieldEnum[]
+}
+
+/**
+ * Product.subscriptions
+ */
+export type Product$subscriptionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Subscription
+   */
+  select?: Prisma.SubscriptionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Subscription
+   */
+  omit?: Prisma.SubscriptionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubscriptionInclude<ExtArgs> | null
+  where?: Prisma.SubscriptionWhereInput
+  orderBy?: Prisma.SubscriptionOrderByWithRelationInput | Prisma.SubscriptionOrderByWithRelationInput[]
+  cursor?: Prisma.SubscriptionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SubscriptionScalarFieldEnum | Prisma.SubscriptionScalarFieldEnum[]
+}
+
+/**
  * Product without action
  */
 export type ProductDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1802,4 +2411,8 @@ export type ProductDefaultArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Omit specific fields from the Product
    */
   omit?: Prisma.ProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null
 }

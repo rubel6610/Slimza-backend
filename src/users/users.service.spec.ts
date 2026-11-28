@@ -1,11 +1,18 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { vi } from 'vitest';
+import { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { StorageService } from '../storage/storage.service.js';
 import { UsersService } from './users.service.js';
 
 describe('UsersService', () => {
   let service: UsersService;
+  const mockStorageService = {
+    uploadFile: vi.fn(),
+    createUploadUrl: vi.fn(),
+    deleteFile: vi.fn().mockResolvedValue({ message: 'ok' }),
+  };
   const mockPrisma = {
     user: {
       findUnique: vi.fn(),
@@ -26,6 +33,8 @@ describe('UsersService', () => {
       providers: [
         UsersService,
         { provide: PrismaService, useValue: mockPrisma },
+        { provide: MailService, useValue: { sendAccountDeletedEmail: vi.fn(), sendAccountRestoredEmail: vi.fn() } },
+        { provide: StorageService, useValue: mockStorageService },
       ],
     }).compile();
 
@@ -70,5 +79,131 @@ describe('UsersService', () => {
         size: 5,
       }),
     ).rejects.toThrow(BadRequestException);
+  });
+
+  it('uploads avatar to MinIO and deletes previous MinIO avatar', async () => {
+    const existingUser = {
+      id: 'u1',
+      name: 'Alex Morgan',
+      firstName: 'Alex',
+      lastName: 'Morgan',
+      email: 'alex@example.com',
+      passwordHash: 'secret-hash',
+      phone: '',
+      birthday: '',
+      avatarUrl: 'http://127.0.0.1:9000/slimza-files/avatars/old-avatar.png',
+      role: 'CUSTOMER',
+      isEmailVerified: true,
+      emailVerifiedAt: new Date(),
+      deletionRequestedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    mockPrisma.user.findUnique.mockResolvedValue(existingUser);
+    mockStorageService.uploadFile.mockResolvedValue({
+      key: 'avatars/new-avatar.png',
+      url: 'http://127.0.0.1:9000/slimza-files/avatars/new-avatar.png',
+    });
+    mockPrisma.user.update.mockResolvedValue({
+      ...existingUser,
+      avatarUrl: 'http://127.0.0.1:9000/slimza-files/avatars/new-avatar.png',
+      addresses: [],
+    });
+
+    const file = {
+      buffer: Buffer.from('img'),
+      mimetype: 'image/png',
+      originalname: 'photo.png',
+      size: 100,
+    };
+    const result = await service.updateAvatar('u1', file);
+
+    expect(mockStorageService.uploadFile).toHaveBeenCalledWith(file, 'avatars');
+    expect(result.avatarUrl).toBe('http://127.0.0.1:9000/slimza-files/avatars/new-avatar.png');
+    expect(mockStorageService.deleteFile).toHaveBeenCalledWith('avatars/old-avatar.png');
+  });
+
+  it('removes avatar from MinIO on removeAvatar', async () => {
+    const existingUser = {
+      id: 'u1',
+      name: 'Alex Morgan',
+      firstName: 'Alex',
+      lastName: 'Morgan',
+      email: 'alex@example.com',
+      passwordHash: 'secret-hash',
+      phone: '',
+      birthday: '',
+      avatarUrl: 'http://127.0.0.1:9000/slimza-files/avatars/old-avatar.png',
+      role: 'CUSTOMER',
+      isEmailVerified: true,
+      emailVerifiedAt: new Date(),
+      deletionRequestedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    mockPrisma.user.findUnique.mockResolvedValue(existingUser);
+    mockPrisma.user.update.mockResolvedValue({
+      ...existingUser,
+      avatarUrl: '',
+      addresses: [],
+    });
+
+    const result = await service.removeAvatar('u1');
+
+    expect(result.avatarUrl).toBe('');
+    expect(mockStorageService.deleteFile).toHaveBeenCalledWith('avatars/old-avatar.png');
+  });
+
+  it('creates a presigned upload URL for avatars', async () => {
+    mockStorageService.createUploadUrl.mockResolvedValue({
+      key: 'avatars/uuid.png',
+      uploadUrl: 'http://127.0.0.1:9000/slimza-files/avatars/uuid.png?sig=1',
+      url: 'http://127.0.0.1:9000/slimza-files/avatars/uuid.png',
+    });
+
+    const result = await service.presignAvatar({
+      filename: 'me.png',
+      contentType: 'image/png',
+    });
+
+    expect(mockStorageService.createUploadUrl).toHaveBeenCalledWith(
+      'avatars',
+      'me.png',
+      'image/png',
+    );
+    expect(result.url).toBe('http://127.0.0.1:9000/slimza-files/avatars/uuid.png');
+  });
+
+  it('deletes previous MinIO avatar when updateMe saves a new avatarUrl', async () => {
+    const existingUser = {
+      id: 'u1',
+      name: 'Alex Morgan',
+      firstName: 'Alex',
+      lastName: 'Morgan',
+      email: 'alex@example.com',
+      passwordHash: 'secret-hash',
+      phone: '',
+      birthday: '',
+      avatarUrl: 'http://127.0.0.1:9000/slimza-files/avatars/old-avatar.png',
+      role: 'CUSTOMER',
+      isEmailVerified: true,
+      emailVerifiedAt: new Date(),
+      deletionRequestedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    mockPrisma.user.findUnique.mockResolvedValue(existingUser);
+    mockPrisma.user.update.mockResolvedValue({
+      ...existingUser,
+      avatarUrl: 'http://127.0.0.1:9000/slimza-files/avatars/new-avatar.png',
+      addresses: [],
+    });
+
+    const result = await service.updateMe('u1', {
+      avatarUrl: 'http://127.0.0.1:9000/slimza-files/avatars/new-avatar.png',
+    });
+
+    expect(result.avatarUrl).toBe('http://127.0.0.1:9000/slimza-files/avatars/new-avatar.png');
+    expect(mockStorageService.deleteFile).toHaveBeenCalledWith('avatars/old-avatar.png');
   });
 });

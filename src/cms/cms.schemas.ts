@@ -17,4 +17,11 @@ export const updateNewsletterLeadSchema = z.object({
 export type UpdateNewsletterLeadInput = z.infer<typeof updateNewsletterLeadSchema>;
 
 export const cmsKeyParamSchema = z.string().trim().min(1);
+export const cmsItemIdParamSchema = z.string().trim().min(1).max(200);
+
+/** `?includeArchived=true` → true; anything else (or missing) → false. */
+export const includeArchivedQuerySchema = z
+  .enum(['true', 'false'])
+  .optional()
+  .transform((value) => value === 'true');
 export const uuidParamSchema = z.string().uuid('Invalid ID format');

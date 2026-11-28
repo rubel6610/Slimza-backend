@@ -17,6 +17,14 @@ export const UserRole = {
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 
 
+export const UserStatus = {
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED'
+} as const
+
+export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
+
+
 export const OtpPurpose = {
   SIGNUP: 'SIGNUP',
   RESET: 'RESET'
@@ -26,7 +34,7 @@ export type OtpPurpose = (typeof OtpPurpose)[keyof typeof OtpPurpose]
 
 
 export const OrderStatus = {
-  PENDING: 'PENDING',
+  PLACED: 'PLACED',
   PROCESSING: 'PROCESSING',
   SHIPPED: 'SHIPPED',
   DELIVERED: 'DELIVERED',
@@ -44,3 +52,81 @@ export const PaymentStatus = {
 } as const
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const RefundStatus = {
+  REQUESTED: 'REQUESTED',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  REFUNDED: 'REFUNDED'
+} as const
+
+export type RefundStatus = (typeof RefundStatus)[keyof typeof RefundStatus]
+
+
+export const FranchiseInterest = {
+  FRANCHISE: 'FRANCHISE',
+  SALES_REPRESENTATIVE: 'SALES_REPRESENTATIVE'
+} as const
+
+export type FranchiseInterest = (typeof FranchiseInterest)[keyof typeof FranchiseInterest]
+
+
+export const FranchiseChannel = {
+  ONLINE: 'ONLINE',
+  RETAIL: 'RETAIL',
+  BOTH: 'BOTH'
+} as const
+
+export type FranchiseChannel = (typeof FranchiseChannel)[keyof typeof FranchiseChannel]
+
+
+export const FranchiseApplicationStatus = {
+  NEW: 'NEW',
+  CONTACTED: 'CONTACTED',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type FranchiseApplicationStatus = (typeof FranchiseApplicationStatus)[keyof typeof FranchiseApplicationStatus]
+
+
+export const LoyaltyEntryType = {
+  WELCOME: 'WELCOME',
+  PURCHASE: 'PURCHASE',
+  PURCHASE_REVERSAL: 'PURCHASE_REVERSAL',
+  REDEEM: 'REDEEM',
+  REDEEM_RETURN: 'REDEEM_RETURN',
+  BIRTHDAY: 'BIRTHDAY',
+  SOCIAL: 'SOCIAL',
+  ADMIN: 'ADMIN'
+} as const
+
+export type LoyaltyEntryType = (typeof LoyaltyEntryType)[keyof typeof LoyaltyEntryType]
+
+
+export const LoyaltyEntryStatus = {
+  PENDING: 'PENDING',
+  AVAILABLE: 'AVAILABLE',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type LoyaltyEntryStatus = (typeof LoyaltyEntryStatus)[keyof typeof LoyaltyEntryStatus]
+
+
+export const SubscriptionStatus = {
+  ACTIVE: 'ACTIVE',
+  PAST_DUE: 'PAST_DUE',
+  PAUSED: 'PAUSED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
+
+
+export const ReviewStatus = {
+  PUBLISHED: 'PUBLISHED',
+  HIDDEN: 'HIDDEN'
+} as const
+
+export type ReviewStatus = (typeof ReviewStatus)[keyof typeof ReviewStatus]

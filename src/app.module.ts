@@ -14,11 +14,22 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { CmsModule } from './cms/cms.module.js';
 import { CheckoutModule } from './checkout/checkout.module.js';
+import { CouponsModule } from './coupons/coupons.module.js';
+import { BlogsModule } from './blogs/blogs.module.js';
+import { LoyaltyModule } from './loyalty/loyalty.module.js';
+import { ReviewsModule } from './reviews/reviews.module.js';
+import { WellnessHubModule } from './wellness-hub/wellness-hub.module.js';
+import { WalletModule } from './wallet/wallet.module.js';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
+import { FranchiseModule } from './franchise/franchise.module.js';
 import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware.js';
 import { MailModule } from './mail/mail.module.js';
+import { MediaModule } from './media/media.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ProductsModule } from './products/products.module.js';
 import { UsersModule } from './users/users.module.js';
+import { RedisModule } from './redis/redis.module.js';
+import { StorageModule } from './storage/storage.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -35,12 +46,23 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       serviceId: 'slimza_backend',
     }),
     PrismaModule,
+    MediaModule,
     MailModule,
     AuthModule,
     UsersModule,
     CmsModule,
+    CouponsModule,
     CheckoutModule,
     ProductsModule,
+    FranchiseModule,
+    BlogsModule,
+    LoyaltyModule,
+    ReviewsModule,
+    WellnessHubModule,
+    WalletModule,
+    SubscriptionsModule,
+    RedisModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [

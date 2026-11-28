@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { PrismaClient } from '../generated/prisma/client.js';
+import { getDatabaseConnectionConfig } from './db-config.util.js';
 
 @Injectable()
 export class PrismaService
@@ -9,27 +9,23 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   private readonly logger = new Logger(PrismaService.name);
-  private readonly pool: pg.Pool;
 
   constructor() {
-    const connectionString = process.env.DATABASE_URL;
-    if (!connectionString) {
-      throw new Error('DATABASE_URL environment variable is required');
-    }
-
-    const pool = new pg.Pool({ connectionString });
-    const adapter = new PrismaPg(pool);
+    const { poolOptions, connectionString } = getDatabaseConnectionConfig();
+    const adapter = new PrismaMariaDb(poolOptions || connectionString);
     super({ adapter });
-    this.pool = pool;
+
+    this.logger.log(
+      `Prisma configured for MySQL at ${poolOptions.host ?? 'localhost'}:${poolOptions.port ?? 3306}/${poolOptions.database ?? 'slimza'} (user: ${poolOptions.user ?? 'anonymous'})`,
+    );
   }
 
   async onModuleInit() {
     await this.$connect();
-    this.logger.log('Connected to PostgreSQL via Prisma');
+    this.logger.log('Connected to MySQL via Prisma MariaDB adapter');
   }
 
   async onModuleDestroy() {
     await this.$disconnect();
-    await this.pool.end();
   }
 }

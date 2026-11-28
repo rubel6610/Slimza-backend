@@ -12,6 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { OtpPurpose, type Address, type User } from '../generated/prisma/client.js';
 import { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { accountBlockedException, getAccountBlock } from '../users/account-access.js';
 import type {
   ChangePasswordInput,
   ForgotPasswordInput,
@@ -67,6 +68,14 @@ export function serializeUser(user: User & { addresses?: Address[] }) {
     role: user.role,
     isEmailVerified: user.isEmailVerified,
     deletionRequestedAt: user.deletionRequestedAt,
+    /** The customer deleted their own account (soft delete; see UsersService.deleteMe) */
+    deletedAt: user.deletedAt,
+    deletionReason: user.deletionReason,
+    /** ACTIVE | SUSPENDED — see src/users/account-access.ts */
+    status: user.status,
+    suspendedAt: user.suspendedAt,
+    suspensionReason: user.suspensionReason,
+    archivedAt: user.archivedAt,
     createdAt: user.createdAt,
     addresses: (user.addresses ?? []).map((a) => ({
       id: a.id,
@@ -75,6 +84,7 @@ export function serializeUser(user: User & { addresses?: Address[] }) {
       line1: a.line1,
       line2: a.line2 ?? '',
       city: a.city,
+      district: a.district,
       postcode: a.postcode,
       country: a.country,
       phone: a.phone,
@@ -98,6 +108,12 @@ export class AuthService {
     const existing = await this.prisma.user.findUnique({
       where: { email: input.email },
     });
+
+    if (existing?.deletedAt) {
+      throw new ConflictException(
+        'Your account has been deleted. If you want your account back, please contact info@slimza.com.',
+      );
+    }
 
     if (existing && existing.isEmailVerified) {
       throw new ConflictException('An account with this email already exists');
@@ -349,6 +365,14 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    // Suspended / archived accounts can't sign in (src/users/account-access.ts).
+    // Checked after the password so the response doesn't reveal account state.
+    const block = getAccountBlock(user);
+    if (block) {
+      this.logger.warn(`Blocked sign-in for ${block.code}: ${input.email}`);
+      throw accountBlockedException(block);
+    }
+
     if (!user.isEmailVerified) {
       this.logger.warn(`Blocked sign-in for unverified email: ${input.email}`);
       throw new ForbiddenException({
@@ -397,6 +421,10 @@ export class AuthService {
       where: { id: existing.id },
       data: { revokedAt: new Date() },
     });
+
+    // A suspended / archived user's session can't be renewed.
+    const block = getAccountBlock(existing.user);
+    if (block) throw accountBlockedException(block);
 
     const tokens = await this.issueSessionTokens(
       existing.user,
@@ -464,11 +492,18 @@ export class AuthService {
       }),
     ]);
 
-    await this.mailService.sendOtpEmail({
-      to: email,
-      name,
-      code,
-      purpose: purpose === OtpPurpose.RESET ? 'reset' : 'signup',
+    // Dispatch OTP email asynchronously so slow/blocked SMTP never hangs signup or blocks navigation to /verify-email
+    void Promise.resolve(
+      this.mailService.sendOtpEmail({
+        to: email,
+        name,
+        code,
+        purpose: purpose === OtpPurpose.RESET ? 'reset' : 'signup',
+      }),
+    ).catch((err) => {
+      this.logger.warn(
+        `OTP email dispatch failed for ${email}: ${err instanceof Error ? err.message : ''}`,
+      );
     });
   }
 

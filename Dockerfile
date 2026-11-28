@@ -1,5 +1,5 @@
 
-FROM node:26-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ RUN npm ci
 
 COPY . .
 
-ENV DATABASE_URL="postgresql://build:build-only@localhost:5432/build_db"
+ENV DATABASE_URL="mysql://build:build-only@localhost:3306/build_db"
 
 RUN npx prisma generate
 
@@ -17,12 +17,13 @@ RUN npm run build
 
 
 # Production stage
-FROM node:26-alpine AS production
+FROM node:24-alpine AS production
 
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=4000
+
+ENV PORT=5173
 
 COPY package*.json ./
 
@@ -30,11 +31,10 @@ RUN npm ci --omit=dev && npm cache clean --force
 
 COPY --from=builder --chown=node:node /app/dist ./dist
 
-RUN mkdir -p /app/uploads \
-    && chown -R node:node /app/uploads
+# Uploaded files live in MinIO (S3_*), not on disk.
 
 USER node
 
-EXPOSE 4000
+EXPOSE 5173
 
 CMD ["node", "dist/main.js"]

@@ -6,12 +6,18 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
 }
 
 enum UserRole {
   CUSTOMER
   ADMIN
+}
+
+/// Whether a user may use their account. See src/users/account-access.ts.
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
 }
 
 enum OtpPurpose {
@@ -20,25 +26,49 @@ enum OtpPurpose {
 }
 
 model User {
-  id                  String         @id @default(uuid())
+  id                  String               @id @default(uuid())
   name                String
-  firstName           String         @default("")
-  lastName            String         @default("")
-  email               String         @unique
+  firstName           String               @default("")
+  lastName            String               @default("")
+  email               String               @unique
   passwordHash        String
-  phone               String         @default("")
-  birthday            String         @default("")
-  avatarUrl           String         @default("")
-  role                UserRole       @default(CUSTOMER)
-  isEmailVerified     Boolean        @default(false)
+  phone               String               @default("")
+  birthday            String               @default("")
+  avatarUrl           String               @default("")
+  role                UserRole             @default(CUSTOMER)
+  isEmailVerified     Boolean              @default(false)
   emailVerifiedAt     DateTime?
   deletionRequestedAt DateTime?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  /// The customer deleted their own account (Account → Settings). Soft delete: archivedAt is set
+  /// too, so the account is blocked and listed under Archived; an admin can restore it.
+  deletedAt           DateTime?
+  /// Optional reason the customer gave when deleting
+  deletionReason      String?              @db.Text
+  /// SUSPENDED = cannot sign in, buy or pay. Set by an admin; reversible.
+  status              UserStatus           @default(ACTIVE)
+  suspendedAt         DateTime?
+  suspensionReason    String?              @db.Text
+  /// Archive lifecycle (src/common/archive/archive.ts). Archived users cannot sign in either.
+  archivedAt          DateTime?
+  /// Loyalty: spendable points (sum of AVAILABLE ledger entries). Kept in sync by LoyaltyService.
+  loyaltyPoints       Int                  @default(0)
+  /// Loyalty: points ever earned (drives the tier). Redemptions don't lower it; reversals do.
+  loyaltyLifetime     Int                  @default(0)
+  /// Stripe Customer that holds this user's saved cards (created on first use).
+  stripeCustomerId    String?              @unique
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
   addresses           Address[]
   otpCodes            OtpCode[]
   refreshTokens       RefreshToken[]
   orders              Order[]
+  loyaltyTransactions LoyaltyTransaction[]
+  walletCards         WalletCard[]
+  subscriptions       Subscription[]
+  productReviews      ProductReview[]
+
+  @@index([status])
+  @@index([archivedAt])
 }
 
 model Address {
@@ -49,6 +79,8 @@ model Address {
   line1     String
   line2     String?
   city      String
+  /// District / county (optional)
+  district  String   @default("")
   postcode  String
   country   String
   phone     String   @default("")
@@ -102,17 +134,23 @@ model CmsSection {
 }
 
 model NewsletterLead {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  source       String   @default("Footer Newsletter")
-  status       String   @default("Subscribed")
-  subscribedAt DateTime @default(now())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id           String    @id @default(uuid())
+  email        String    @unique
+  source       String    @default("Footer Newsletter")
+  status       String    @default("Subscribed")
+  subscribedAt DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  /// Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
+  archivedAt   DateTime?
+
+  @@index([archivedAt])
 }
 
+/// Placed (automatic, every new order) → Processing → Shipped → Delivered; or Cancelled.
+/// Admins move orders along in Dashboard → Orders. Delivered (and paid) lets the customer review the products.
 enum OrderStatus {
-  PENDING
+  PLACED
   PROCESSING
   SHIPPED
   DELIVERED
@@ -126,6 +164,13 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum RefundStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  REFUNDED
+}
+
 model Order {
   id              String        @id @default(uuid())
   orderNumber     String        @unique
@@ -135,30 +180,79 @@ model Order {
   customerPhone   String        @default("")
   shippingAddress Json
   shippingMethod  String        @default("uk-standard")
+  /// How it ships, as shown to people: "Tracked International Delivery (Europe) · Evri International"
+  shippingLabel   String        @default("")
+  /// Set by the admin when the order is dispatched (Dashboard → order → Tracking)
+  trackingCarrier String?
+  trackingNumber  String?
+  trackingUrl     String?       @db.VarChar(500)
+  shippedAt       DateTime?
   shippingFee     Float         @default(0)
+  /// Tax added on top for products whose price doesn't include it (never discounted)
+  tax             Float         @default(0)
+  /// Set on renewal orders created by a Subscribe & Save subscription (the first order has items for several)
+  subscriptionId  String?
+  /// 2 = the subscription's second delivery, 3 = third… (null for normal orders)
+  subscriptionSequence Int?
+  /// Stripe invoice behind a subscription renewal order (unique: one order per invoice)
+  stripeInvoiceId String?       @unique
   subtotal        Float
   discount        Float         @default(0)
   bundleSavings   Float         @default(0)
   bundleReward    Float         @default(0)
+  /// Loyalty points spent on this order, and the £ they took off
+  pointsRedeemed  Int           @default(0)
+  pointsDiscount  Float         @default(0)
+  /// Loyalty points this order earns (pending until delivered)
+  pointsEarned    Int           @default(0)
   promoCode       String?
   total           Float
   currency        String        @default("gbp")
-  status          OrderStatus   @default(PROCESSING)
+  status          OrderStatus   @default(PLACED)
   paymentStatus   PaymentStatus @default(PENDING)
   paymentMode     String        @default("stripe")
+  /// How it was paid, as shown to the customer ("Visa •••• 4242", "Store credit")
+  paymentLabel    String        @default("")
   paymentIntentId String?       @unique
   stripeChargeId  String?
   metadata        Json?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+  /// Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
+  archivedAt      DateTime?
 
-  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  items           OrderItem[]
+  user          User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items         OrderItem[]
+  refundRequest RefundRequest?
 
   @@index([userId])
   @@index([customerEmail])
   @@index([paymentIntentId])
   @@index([orderNumber])
+  @@index([archivedAt])
+}
+
+model RefundRequest {
+  id             String       @id @default(uuid())
+  orderId        String       @unique
+  userId         String?
+  customerEmail  String
+  customerName   String
+  amount         Float
+  currency       String       @default("gbp")
+  reason         String       @db.Text
+  status         RefundStatus @default(REQUESTED)
+  adminNote      String?      @db.Text
+  stripeRefundId String?
+  processedAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([customerEmail])
+  @@index([createdAt])
 }
 
 model OrderItem {
@@ -176,41 +270,328 @@ model OrderItem {
   bundleData   Json?
   createdAt    DateTime @default(now())
 
-  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
   @@index([productId])
 }
 
 model Product {
-  id              String   @id @default(uuid())
-  slug            String   @unique
+  id              String    @id @default(uuid())
+  slug            String    @unique
   name            String
-  description     String   @default("")
+  description     String    @db.Text
   price           Float
   originalPrice   Float?
-  discountPercent Float    @default(0)
-  taxIncluded     Boolean  @default(true)
-  unlimitedStock  Boolean  @default(false)
-  stockQuantity   Int      @default(50)
-  stockStatus     String   @default("In Stock") // "In Stock" | "Low Stock" | "Out of Stock"
-  category        String   @default("cleanse-reset")
-  brand           String   @default("slimza-teas")
-  tags            String[] @default([])
-  publishStatus   String   @default("published") // "published" | "draft"
-  featured        Boolean  @default(false)
-  featuredRank    Int      @default(99)
-  offered         Boolean  @default(false)
-  rating          Float    @default(5.0)
-  reviewCount     Int      @default(12)
-  image           String   @default("/products/tea/teatox-green.png")
-  gallery         String[] @default([])
+  discountPercent Float     @default(0)
+  taxIncluded     Boolean   @default(true)
+  /// When tax is NOT included: "percent" (of the product price) or "fixed" (£ per item). Never discounted.
+  taxType         String    @default("percent")
+  taxValue        Float     @default(0)
+  unlimitedStock  Boolean   @default(false)
+  stockQuantity   Int       @default(50)
+  stockStatus     String    @default("In Stock") // "In Stock" | "Low Stock" | "Out of Stock"
+  category        String    @default("cleanse-reset")
+  categories      Json?
+  brand           String    @default("slimza-teas")
+  tags            Json?
+  publishStatus   String    @default("published") // "published" | "draft"
+  featured        Boolean   @default(false)
+  featuredRank    Int       @default(99)
+  offered         Boolean   @default(false)
+  /// Average of PUBLISHED reviews (0 = none yet). Kept in sync by ReviewsService.
+  rating          Float     @default(0)
+  /// Number of PUBLISHED reviews. Kept in sync by ReviewsService.
+  reviewCount     Int       @default(0)
+  image           String    @default("")
+  gallery         Json?
   sizes           Json?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  supplyDuration  String?   @default("1 Month")
+  packsPerMonth   Int?      @default(1)
+  /// Supply options shown on the product page ("120 – 4 Month Supply"…), each with its own price,
+  /// original price, badge and Subscribe & Save discount. See src/products/supply-options.ts.
+  supplyOptions   Json?
+  /// Subscribe & Save available for this product (needs supply options)
+  subscriptionEnabled Boolean @default(false)
+  /// Stripe Product used for this product's subscriptions (created on first use)
+  stripeProductId String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  /// Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
+  archivedAt      DateTime?
+  productReviews  ProductReview[]
+  subscriptions   Subscription[]
 
   @@index([slug])
   @@index([category])
   @@index([publishStatus])
   @@index([featured])
+  @@index([archivedAt])
+  @@index([price])
+  /// Full-text search (src/products/product-search.ts): one index per searchable column,
+  /// plus one on both for relevance ranking.
+  @@fulltext([name])
+  @@fulltext([description])
+  @@fulltext([name, description])
+}
+
+model Coupon {
+  id              String    @id @default(uuid())
+  code            String    @unique
+  discountPercent Float
+  customerRange   Int       @default(100)
+  uses            Int       @default(0)
+  generateDate    String
+  expiredDate     String
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  /// Soft-delete marker. null = live; set = archived (hidden, restorable). See src/common/archive/archive.ts
+  archivedAt      DateTime?
+
+  @@index([code])
+  @@index([archivedAt])
+}
+
+model MediaAsset {
+  id        String   @id @default(uuid())
+  folder    String
+  filename  String
+  mimeType  String
+  size      Int
+  data      Bytes    @db.LongBlob
+  createdAt DateTime @default(now())
+
+  @@unique([folder, filename])
+  @@index([folder])
+}
+
+/// What the applicant wants to become. See src/franchise/franchise.schemas.ts.
+enum FranchiseInterest {
+  FRANCHISE
+  SALES_REPRESENTATIVE
+}
+
+/// Where they want to sell.
+enum FranchiseChannel {
+  ONLINE
+  RETAIL
+  BOTH
+}
+
+/// Admin pipeline for an application.
+enum FranchiseApplicationStatus {
+  NEW
+  CONTACTED
+  APPROVED
+  REJECTED
+}
+
+/// Submitted from the public "Franchise with us" page (/franchise).
+/// Reviewed in the dashboard (Franchise). Follows the archive lifecycle.
+model FranchiseApplication {
+  id           String                     @id @default(uuid())
+  fullName     String
+  email        String
+  phone        String
+  address      String                     @db.Text
+  businessName String?
+  /// Country they want to sell in
+  country      String
+  /// City / region / area within that country
+  location     String
+  interest     FranchiseInterest
+  channel      FranchiseChannel
+  message      String?                    @db.Text
+  status       FranchiseApplicationStatus @default(NEW)
+  /// Internal note, never shown to the applicant
+  adminNote    String?                    @db.Text
+  /// Archive lifecycle (src/common/archive/archive.ts)
+  archivedAt   DateTime?
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+
+  @@index([status])
+  @@index([archivedAt])
+  @@index([createdAt])
+  @@index([email])
+}
+
+/// Blog posts, managed from Dashboard → Blogs. `content` is Markdown.
+/// Archive lifecycle (src/common/archive/archive.ts): archived posts are hidden from the shop.
+model Blog {
+  id          String    @id @default(uuid())
+  slug        String    @unique
+  title       String    @db.VarChar(300)
+  /// Short summary for cards and SEO
+  excerpt     String    @db.Text
+  /// Article body in Markdown (## heading, ### subheading, - list, > quote, **bold**)
+  content     String    @db.LongText
+  image       String    @db.VarChar(1000)
+  author      String    @default("Slimza")
+  /// Blog category slug (CMS section "blog_categories")
+  category    String    @default("")
+  publishedAt DateTime
+  archivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([category])
+  @@index([publishedAt])
+  @@index([archivedAt])
+}
+
+enum LoyaltyEntryType {
+  WELCOME
+  PURCHASE
+  PURCHASE_REVERSAL
+  REDEEM
+  REDEEM_RETURN
+  BIRTHDAY
+  SOCIAL
+  ADMIN
+}
+
+enum LoyaltyEntryStatus {
+  /// Earned but not spendable yet (order not delivered)
+  PENDING
+  /// Counted in User.loyaltyPoints
+  AVAILABLE
+  /// Never became spendable (order cancelled before delivery)
+  CANCELLED
+}
+
+/// Loyalty points ledger (src/loyalty). One row per change; `points` is signed.
+/// `referenceKey` is unique, so the same bonus / order can never be applied twice.
+model LoyaltyTransaction {
+  id           String             @id @default(uuid())
+  userId       String
+  type         LoyaltyEntryType
+  status       LoyaltyEntryStatus @default(AVAILABLE)
+  points       Int
+  description  String             @db.VarChar(300)
+  orderId      String?
+  referenceKey String             @unique @db.VarChar(191)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([orderId])
+  @@index([type])
+}
+
+/// Subscribe & Save (src/subscriptions). One per subscribed basket line. Billing runs in Stripe; every
+/// paid renewal creates a normal Order. The first delivery is part of the checkout order.
+enum SubscriptionStatus {
+  ACTIVE
+  /// A renewal payment failed; Stripe is retrying
+  PAST_DUE
+  /// Paused by the customer/admin: no renewals are charged until it is resumed
+  PAUSED
+  CANCELLED
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  userId               String
+  productId            String?
+  status               SubscriptionStatus @default(ACTIVE)
+  stripeSubscriptionId String?            @unique
+  stripeCustomerId     String?
+  productName          String
+  productImage         String             @default("")
+  /// The chosen supply option, e.g. "120 – 4 Month Supply"
+  optionId             String
+  optionLabel          String
+  /// Renews every intervalCount interval(s) — same as the supply length ("month" × 4)
+  interval             String
+  intervalCount        Int
+  quantity             Int                @default(1)
+  /// Subscription price per pack (after the Subscribe & Save discount)
+  unitPrice            Float
+  shippingMethod       String
+  shippingFee          Float
+  tax                  Float              @default(0)
+  /// What each renewal charges: unitPrice × quantity + delivery + tax
+  renewalAmount        Float
+  shippingAddress      Json
+  paymentLabel         String             @default("")
+  /// Paid deliveries so far (the first order counts as 1)
+  ordersCount          Int                @default(1)
+  /// Deliveries required before the customer may cancel (from the settings when they subscribed)
+  minOrders            Int                @default(2)
+  firstOrderId         String?
+  nextRenewalAt        DateTime?
+  cancelledAt          DateTime?
+  cancelReason         String?            @db.VarChar(300)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+}
+
+/// Saved cards when Stripe is NOT configured (test / demo mode). Only what a receipt shows:
+/// brand, last 4 and expiry — never the card number or CVC. With Stripe on, cards live in Stripe.
+model WalletCard {
+  id        String   @id @default(uuid())
+  userId    String
+  brand     String   @db.VarChar(40)
+  last4     String   @db.VarChar(4)
+  expMonth  Int
+  expYear   Int
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Visible = shown on the product page; Hidden = taken down by an admin (the customer still sees it as hidden).
+enum ReviewStatus {
+  PUBLISHED
+  HIDDEN
+}
+
+/// A customer's review of one product (src/reviews). One per customer per product; they can edit it.
+/// Product.rating / Product.reviewCount are recalculated from PUBLISHED, non-archived reviews.
+model ProductReview {
+  id               String       @id @default(uuid())
+  productId        String
+  /// null once the customer's account is deleted (the review stays, under authorName)
+  userId           String?
+  /// Shown publicly, e.g. "Sarah M."
+  authorName       String
+  rating           Int
+  title            String       @default("")
+  body             String       @db.Text
+  status           ReviewStatus @default(PUBLISHED)
+  /// The customer had a paid order containing this product when they reviewed it
+  verifiedPurchase Boolean      @default(false)
+  /// Shown in the homepage "What Our Customers Say" section
+  featured         Boolean      @default(false)
+  featuredAt       DateTime?
+  /// Public reply from Slimza, shown under the review
+  adminReply       String?      @db.Text
+  adminReplyAt     DateTime?
+  /// The admin changed the customer's wording (shown as "Edited by Slimza")
+  editedByAdmin    Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  /// Archive lifecycle (src/common/archive/archive.ts)
+  archivedAt       DateTime?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([productId, userId])
+  @@index([productId, status, archivedAt])
+  @@index([featured, status])
+  @@index([createdAt])
 }

@@ -77,6 +77,11 @@ export type NewsletterLead = Prisma.NewsletterLeadModel
  */
 export type Order = Prisma.OrderModel
 /**
+ * Model RefundRequest
+ * 
+ */
+export type RefundRequest = Prisma.RefundRequestModel
+/**
  * Model OrderItem
  * 
  */
@@ -86,3 +91,48 @@ export type OrderItem = Prisma.OrderItemModel
  * 
  */
 export type Product = Prisma.ProductModel
+/**
+ * Model Coupon
+ * 
+ */
+export type Coupon = Prisma.CouponModel
+/**
+ * Model MediaAsset
+ * 
+ */
+export type MediaAsset = Prisma.MediaAssetModel
+/**
+ * Model FranchiseApplication
+ * Submitted from the public "Franchise with us" page (/franchise).
+ * Reviewed in the dashboard (Franchise). Follows the archive lifecycle.
+ */
+export type FranchiseApplication = Prisma.FranchiseApplicationModel
+/**
+ * Model Blog
+ * Blog posts, managed from Dashboard → Blogs. `content` is Markdown.
+ * Archive lifecycle (src/common/archive/archive.ts): archived posts are hidden from the shop.
+ */
+export type Blog = Prisma.BlogModel
+/**
+ * Model LoyaltyTransaction
+ * Loyalty points ledger (src/loyalty). One row per change; `points` is signed.
+ * `referenceKey` is unique, so the same bonus / order can never be applied twice.
+ */
+export type LoyaltyTransaction = Prisma.LoyaltyTransactionModel
+/**
+ * Model Subscription
+ * 
+ */
+export type Subscription = Prisma.SubscriptionModel
+/**
+ * Model WalletCard
+ * Saved cards when Stripe is NOT configured (test / demo mode). Only what a receipt shows:
+ * brand, last 4 and expiry — never the card number or CVC. With Stripe on, cards live in Stripe.
+ */
+export type WalletCard = Prisma.WalletCardModel
+/**
+ * Model ProductReview
+ * A customer's review of one product (src/reviews). One per customer per product; they can edit it.
+ * Product.rating / Product.reviewCount are recalculated from PUBLISHED, non-archived reviews.
+ */
+export type ProductReview = Prisma.ProductReviewModel

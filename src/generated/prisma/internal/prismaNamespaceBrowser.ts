@@ -58,8 +58,17 @@ export const ModelName = {
   CmsSection: 'CmsSection',
   NewsletterLead: 'NewsletterLead',
   Order: 'Order',
+  RefundRequest: 'RefundRequest',
   OrderItem: 'OrderItem',
-  Product: 'Product'
+  Product: 'Product',
+  Coupon: 'Coupon',
+  MediaAsset: 'MediaAsset',
+  FranchiseApplication: 'FranchiseApplication',
+  Blog: 'Blog',
+  LoyaltyTransaction: 'LoyaltyTransaction',
+  Subscription: 'Subscription',
+  WalletCard: 'WalletCard',
+  ProductReview: 'ProductReview'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -92,6 +101,15 @@ export const UserScalarFieldEnum = {
   isEmailVerified: 'isEmailVerified',
   emailVerifiedAt: 'emailVerifiedAt',
   deletionRequestedAt: 'deletionRequestedAt',
+  deletedAt: 'deletedAt',
+  deletionReason: 'deletionReason',
+  status: 'status',
+  suspendedAt: 'suspendedAt',
+  suspensionReason: 'suspensionReason',
+  archivedAt: 'archivedAt',
+  loyaltyPoints: 'loyaltyPoints',
+  loyaltyLifetime: 'loyaltyLifetime',
+  stripeCustomerId: 'stripeCustomerId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -107,6 +125,7 @@ export const AddressScalarFieldEnum = {
   line1: 'line1',
   line2: 'line2',
   city: 'city',
+  district: 'district',
   postcode: 'postcode',
   country: 'country',
   phone: 'phone',
@@ -168,7 +187,8 @@ export const NewsletterLeadScalarFieldEnum = {
   status: 'status',
   subscribedAt: 'subscribedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  archivedAt: 'archivedAt'
 } as const
 
 export type NewsletterLeadScalarFieldEnum = (typeof NewsletterLeadScalarFieldEnum)[keyof typeof NewsletterLeadScalarFieldEnum]
@@ -183,25 +203,59 @@ export const OrderScalarFieldEnum = {
   customerPhone: 'customerPhone',
   shippingAddress: 'shippingAddress',
   shippingMethod: 'shippingMethod',
+  shippingLabel: 'shippingLabel',
+  trackingCarrier: 'trackingCarrier',
+  trackingNumber: 'trackingNumber',
+  trackingUrl: 'trackingUrl',
+  shippedAt: 'shippedAt',
   shippingFee: 'shippingFee',
+  tax: 'tax',
+  subscriptionId: 'subscriptionId',
+  subscriptionSequence: 'subscriptionSequence',
+  stripeInvoiceId: 'stripeInvoiceId',
   subtotal: 'subtotal',
   discount: 'discount',
   bundleSavings: 'bundleSavings',
   bundleReward: 'bundleReward',
+  pointsRedeemed: 'pointsRedeemed',
+  pointsDiscount: 'pointsDiscount',
+  pointsEarned: 'pointsEarned',
   promoCode: 'promoCode',
   total: 'total',
   currency: 'currency',
   status: 'status',
   paymentStatus: 'paymentStatus',
   paymentMode: 'paymentMode',
+  paymentLabel: 'paymentLabel',
   paymentIntentId: 'paymentIntentId',
   stripeChargeId: 'stripeChargeId',
   metadata: 'metadata',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  archivedAt: 'archivedAt'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
+export const RefundRequestScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  userId: 'userId',
+  customerEmail: 'customerEmail',
+  customerName: 'customerName',
+  amount: 'amount',
+  currency: 'currency',
+  reason: 'reason',
+  status: 'status',
+  adminNote: 'adminNote',
+  stripeRefundId: 'stripeRefundId',
+  processedAt: 'processedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RefundRequestScalarFieldEnum = (typeof RefundRequestScalarFieldEnum)[keyof typeof RefundRequestScalarFieldEnum]
 
 
 export const OrderItemScalarFieldEnum = {
@@ -232,10 +286,13 @@ export const ProductScalarFieldEnum = {
   originalPrice: 'originalPrice',
   discountPercent: 'discountPercent',
   taxIncluded: 'taxIncluded',
+  taxType: 'taxType',
+  taxValue: 'taxValue',
   unlimitedStock: 'unlimitedStock',
   stockQuantity: 'stockQuantity',
   stockStatus: 'stockStatus',
   category: 'category',
+  categories: 'categories',
   brand: 'brand',
   tags: 'tags',
   publishStatus: 'publishStatus',
@@ -247,11 +304,174 @@ export const ProductScalarFieldEnum = {
   image: 'image',
   gallery: 'gallery',
   sizes: 'sizes',
+  supplyDuration: 'supplyDuration',
+  packsPerMonth: 'packsPerMonth',
+  supplyOptions: 'supplyOptions',
+  subscriptionEnabled: 'subscriptionEnabled',
+  stripeProductId: 'stripeProductId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  archivedAt: 'archivedAt'
+} as const
+
+export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
+
+
+export const CouponScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  discountPercent: 'discountPercent',
+  customerRange: 'customerRange',
+  uses: 'uses',
+  generateDate: 'generateDate',
+  expiredDate: 'expiredDate',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  archivedAt: 'archivedAt'
+} as const
+
+export type CouponScalarFieldEnum = (typeof CouponScalarFieldEnum)[keyof typeof CouponScalarFieldEnum]
+
+
+export const MediaAssetScalarFieldEnum = {
+  id: 'id',
+  folder: 'folder',
+  filename: 'filename',
+  mimeType: 'mimeType',
+  size: 'size',
+  data: 'data',
+  createdAt: 'createdAt'
+} as const
+
+export type MediaAssetScalarFieldEnum = (typeof MediaAssetScalarFieldEnum)[keyof typeof MediaAssetScalarFieldEnum]
+
+
+export const FranchiseApplicationScalarFieldEnum = {
+  id: 'id',
+  fullName: 'fullName',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  businessName: 'businessName',
+  country: 'country',
+  location: 'location',
+  interest: 'interest',
+  channel: 'channel',
+  message: 'message',
+  status: 'status',
+  adminNote: 'adminNote',
+  archivedAt: 'archivedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
+export type FranchiseApplicationScalarFieldEnum = (typeof FranchiseApplicationScalarFieldEnum)[keyof typeof FranchiseApplicationScalarFieldEnum]
+
+
+export const BlogScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  excerpt: 'excerpt',
+  content: 'content',
+  image: 'image',
+  author: 'author',
+  category: 'category',
+  publishedAt: 'publishedAt',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BlogScalarFieldEnum = (typeof BlogScalarFieldEnum)[keyof typeof BlogScalarFieldEnum]
+
+
+export const LoyaltyTransactionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  status: 'status',
+  points: 'points',
+  description: 'description',
+  orderId: 'orderId',
+  referenceKey: 'referenceKey',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LoyaltyTransactionScalarFieldEnum = (typeof LoyaltyTransactionScalarFieldEnum)[keyof typeof LoyaltyTransactionScalarFieldEnum]
+
+
+export const SubscriptionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  status: 'status',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  stripeCustomerId: 'stripeCustomerId',
+  productName: 'productName',
+  productImage: 'productImage',
+  optionId: 'optionId',
+  optionLabel: 'optionLabel',
+  interval: 'interval',
+  intervalCount: 'intervalCount',
+  quantity: 'quantity',
+  unitPrice: 'unitPrice',
+  shippingMethod: 'shippingMethod',
+  shippingFee: 'shippingFee',
+  tax: 'tax',
+  renewalAmount: 'renewalAmount',
+  shippingAddress: 'shippingAddress',
+  paymentLabel: 'paymentLabel',
+  ordersCount: 'ordersCount',
+  minOrders: 'minOrders',
+  firstOrderId: 'firstOrderId',
+  nextRenewalAt: 'nextRenewalAt',
+  cancelledAt: 'cancelledAt',
+  cancelReason: 'cancelReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
+
+
+export const WalletCardScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  brand: 'brand',
+  last4: 'last4',
+  expMonth: 'expMonth',
+  expYear: 'expYear',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt'
+} as const
+
+export type WalletCardScalarFieldEnum = (typeof WalletCardScalarFieldEnum)[keyof typeof WalletCardScalarFieldEnum]
+
+
+export const ProductReviewScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  userId: 'userId',
+  authorName: 'authorName',
+  rating: 'rating',
+  title: 'title',
+  body: 'body',
+  status: 'status',
+  verifiedPurchase: 'verifiedPurchase',
+  featured: 'featured',
+  featuredAt: 'featuredAt',
+  adminReply: 'adminReply',
+  adminReplyAt: 'adminReplyAt',
+  editedByAdmin: 'editedByAdmin',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  archivedAt: 'archivedAt'
+} as const
+
+export type ProductReviewScalarFieldEnum = (typeof ProductReviewScalarFieldEnum)[keyof typeof ProductReviewScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -277,20 +497,69 @@ export const NullableJsonNullValueInput = {
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
-export const QueryMode = {
-  default: 'default',
-  insensitive: 'insensitive'
-} as const
-
-export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
-
-
 export const NullsOrder = {
   first: 'first',
   last: 'last'
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const UserOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  phone: 'phone',
+  birthday: 'birthday',
+  avatarUrl: 'avatarUrl',
+  deletionReason: 'deletionReason',
+  suspensionReason: 'suspensionReason',
+  stripeCustomerId: 'stripeCustomerId'
+} as const
+
+export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
+
+
+export const AddressOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  label: 'label',
+  name: 'name',
+  line1: 'line1',
+  line2: 'line2',
+  city: 'city',
+  district: 'district',
+  postcode: 'postcode',
+  country: 'country',
+  phone: 'phone'
+} as const
+
+export type AddressOrderByRelevanceFieldEnum = (typeof AddressOrderByRelevanceFieldEnum)[keyof typeof AddressOrderByRelevanceFieldEnum]
+
+
+export const OtpCodeOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  email: 'email',
+  codeHash: 'codeHash',
+  resetTokenHash: 'resetTokenHash'
+} as const
+
+export type OtpCodeOrderByRelevanceFieldEnum = (typeof OtpCodeOrderByRelevanceFieldEnum)[keyof typeof OtpCodeOrderByRelevanceFieldEnum]
+
+
+export const RefreshTokenOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tokenHash: 'tokenHash',
+  userAgent: 'userAgent',
+  ipAddress: 'ipAddress'
+} as const
+
+export type RefreshTokenOrderByRelevanceFieldEnum = (typeof RefreshTokenOrderByRelevanceFieldEnum)[keyof typeof RefreshTokenOrderByRelevanceFieldEnum]
 
 
 export const JsonNullValueFilter = {
@@ -300,4 +569,204 @@ export const JsonNullValueFilter = {
 } as const
 
 export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
+
+
+export const QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+} as const
+
+export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const CmsSectionOrderByRelevanceFieldEnum = {
+  key: 'key'
+} as const
+
+export type CmsSectionOrderByRelevanceFieldEnum = (typeof CmsSectionOrderByRelevanceFieldEnum)[keyof typeof CmsSectionOrderByRelevanceFieldEnum]
+
+
+export const NewsletterLeadOrderByRelevanceFieldEnum = {
+  id: 'id',
+  email: 'email',
+  source: 'source',
+  status: 'status'
+} as const
+
+export type NewsletterLeadOrderByRelevanceFieldEnum = (typeof NewsletterLeadOrderByRelevanceFieldEnum)[keyof typeof NewsletterLeadOrderByRelevanceFieldEnum]
+
+
+export const OrderOrderByRelevanceFieldEnum = {
+  id: 'id',
+  orderNumber: 'orderNumber',
+  userId: 'userId',
+  customerEmail: 'customerEmail',
+  customerName: 'customerName',
+  customerPhone: 'customerPhone',
+  shippingMethod: 'shippingMethod',
+  shippingLabel: 'shippingLabel',
+  trackingCarrier: 'trackingCarrier',
+  trackingNumber: 'trackingNumber',
+  trackingUrl: 'trackingUrl',
+  subscriptionId: 'subscriptionId',
+  stripeInvoiceId: 'stripeInvoiceId',
+  promoCode: 'promoCode',
+  currency: 'currency',
+  paymentMode: 'paymentMode',
+  paymentLabel: 'paymentLabel',
+  paymentIntentId: 'paymentIntentId',
+  stripeChargeId: 'stripeChargeId'
+} as const
+
+export type OrderOrderByRelevanceFieldEnum = (typeof OrderOrderByRelevanceFieldEnum)[keyof typeof OrderOrderByRelevanceFieldEnum]
+
+
+export const RefundRequestOrderByRelevanceFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  userId: 'userId',
+  customerEmail: 'customerEmail',
+  customerName: 'customerName',
+  currency: 'currency',
+  reason: 'reason',
+  adminNote: 'adminNote',
+  stripeRefundId: 'stripeRefundId'
+} as const
+
+export type RefundRequestOrderByRelevanceFieldEnum = (typeof RefundRequestOrderByRelevanceFieldEnum)[keyof typeof RefundRequestOrderByRelevanceFieldEnum]
+
+
+export const OrderItemOrderByRelevanceFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  productId: 'productId',
+  productName: 'productName',
+  productImage: 'productImage',
+  sizeLabel: 'sizeLabel',
+  planLabel: 'planLabel'
+} as const
+
+export type OrderItemOrderByRelevanceFieldEnum = (typeof OrderItemOrderByRelevanceFieldEnum)[keyof typeof OrderItemOrderByRelevanceFieldEnum]
+
+
+export const ProductOrderByRelevanceFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  name: 'name',
+  description: 'description',
+  taxType: 'taxType',
+  stockStatus: 'stockStatus',
+  category: 'category',
+  brand: 'brand',
+  publishStatus: 'publishStatus',
+  image: 'image',
+  supplyDuration: 'supplyDuration',
+  stripeProductId: 'stripeProductId'
+} as const
+
+export type ProductOrderByRelevanceFieldEnum = (typeof ProductOrderByRelevanceFieldEnum)[keyof typeof ProductOrderByRelevanceFieldEnum]
+
+
+export const CouponOrderByRelevanceFieldEnum = {
+  id: 'id',
+  code: 'code',
+  generateDate: 'generateDate',
+  expiredDate: 'expiredDate'
+} as const
+
+export type CouponOrderByRelevanceFieldEnum = (typeof CouponOrderByRelevanceFieldEnum)[keyof typeof CouponOrderByRelevanceFieldEnum]
+
+
+export const MediaAssetOrderByRelevanceFieldEnum = {
+  id: 'id',
+  folder: 'folder',
+  filename: 'filename',
+  mimeType: 'mimeType'
+} as const
+
+export type MediaAssetOrderByRelevanceFieldEnum = (typeof MediaAssetOrderByRelevanceFieldEnum)[keyof typeof MediaAssetOrderByRelevanceFieldEnum]
+
+
+export const FranchiseApplicationOrderByRelevanceFieldEnum = {
+  id: 'id',
+  fullName: 'fullName',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  businessName: 'businessName',
+  country: 'country',
+  location: 'location',
+  message: 'message',
+  adminNote: 'adminNote'
+} as const
+
+export type FranchiseApplicationOrderByRelevanceFieldEnum = (typeof FranchiseApplicationOrderByRelevanceFieldEnum)[keyof typeof FranchiseApplicationOrderByRelevanceFieldEnum]
+
+
+export const BlogOrderByRelevanceFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  excerpt: 'excerpt',
+  content: 'content',
+  image: 'image',
+  author: 'author',
+  category: 'category'
+} as const
+
+export type BlogOrderByRelevanceFieldEnum = (typeof BlogOrderByRelevanceFieldEnum)[keyof typeof BlogOrderByRelevanceFieldEnum]
+
+
+export const LoyaltyTransactionOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  description: 'description',
+  orderId: 'orderId',
+  referenceKey: 'referenceKey'
+} as const
+
+export type LoyaltyTransactionOrderByRelevanceFieldEnum = (typeof LoyaltyTransactionOrderByRelevanceFieldEnum)[keyof typeof LoyaltyTransactionOrderByRelevanceFieldEnum]
+
+
+export const SubscriptionOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  stripeCustomerId: 'stripeCustomerId',
+  productName: 'productName',
+  productImage: 'productImage',
+  optionId: 'optionId',
+  optionLabel: 'optionLabel',
+  interval: 'interval',
+  shippingMethod: 'shippingMethod',
+  paymentLabel: 'paymentLabel',
+  firstOrderId: 'firstOrderId',
+  cancelReason: 'cancelReason'
+} as const
+
+export type SubscriptionOrderByRelevanceFieldEnum = (typeof SubscriptionOrderByRelevanceFieldEnum)[keyof typeof SubscriptionOrderByRelevanceFieldEnum]
+
+
+export const WalletCardOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  brand: 'brand',
+  last4: 'last4'
+} as const
+
+export type WalletCardOrderByRelevanceFieldEnum = (typeof WalletCardOrderByRelevanceFieldEnum)[keyof typeof WalletCardOrderByRelevanceFieldEnum]
+
+
+export const ProductReviewOrderByRelevanceFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  userId: 'userId',
+  authorName: 'authorName',
+  title: 'title',
+  body: 'body',
+  adminReply: 'adminReply'
+} as const
+
+export type ProductReviewOrderByRelevanceFieldEnum = (typeof ProductReviewOrderByRelevanceFieldEnum)[keyof typeof ProductReviewOrderByRelevanceFieldEnum]
 

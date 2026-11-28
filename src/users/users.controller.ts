@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -24,11 +25,21 @@ import {
 } from '../auth/guards/jwt-auth.guard.js';
 import { UserRole } from '../generated/prisma/enums.js';
 import {
+  adminUsersPageQuerySchema,
+  adminUsersQuerySchema,
   createAddressSchema,
+  deleteMyAccountSchema,
+  presignAvatarSchema,
+  suspendUserSchema,
   updateAddressSchema,
   updateProfileSchema,
   uuidParamSchema,
+  type AdminUsersPageQuery,
+  type AdminUsersQuery,
   type CreateAddressInput,
+  type DeleteMyAccountInput,
+  type PresignAvatarInput,
+  type SuspendUserInput,
   type UpdateAddressInput,
   type UpdateProfileInput,
 } from './users.schemas.js';
@@ -68,6 +79,10 @@ export class UsersController {
     @UploadedFile() file?: UploadedAvatarFile,
   ) {
     return this.usersService.updateAvatar(user.sub, file);
+  }
+  @Post('me/avatar/presign')
+  presignAvatar(@Body({ schema: presignAvatarSchema }) body: PresignAvatarInput) {
+    return this.usersService.presignAvatar(body);
   }
 
   @Delete('me/avatar')
@@ -113,12 +128,17 @@ export class UsersController {
     return this.usersService.requestAccountDeletion(user.sub);
   }
 
+  /**
+   * The customer deletes their own account: body `{ password, reason? }`.
+   * Soft delete (archived + `deletedAt`); an admin can restore it. Signs them out.
+   */
   @Delete('me')
   async deleteMe(
     @CurrentUser() user: AuthUserPayload,
+    @Body({ schema: deleteMyAccountSchema }) body: DeleteMyAccountInput,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.usersService.deleteMe(user.sub);
+    const result = await this.usersService.deleteMe(user.sub, body);
     const secure = this.config.get<string>('COOKIE_SECURE') === 'true';
     const sameSiteRaw = (
       this.config.get<string>('COOKIE_SAME_SITE') || 'lax'
@@ -133,10 +153,26 @@ export class UsersController {
     return result;
   }
 
+  // ---- Admin: users list, account status, archive lifecycle ----------------
+  // Status rules: src/users/account-access.ts. Archive rules: src/common/archive/archive.ts.
+  // Admins can't act on their own account or on other admin accounts (403).
+
+  /**
+   * Paginated version (new): `?page=&limit=&q=&sort=name:asc&archived=&status=&role=`
+   * → `{ items, meta }`. Declared before `:id` so "paged" isn't read as a user id.
+   * See docs/PAGINATION.md.
+   */
+  @Roles(UserRole.ADMIN)
+  @Get('paged')
+  findPage(@Query({ schema: adminUsersPageQuerySchema }) query: AdminUsersPageQuery) {
+    return this.usersService.findPage(query);
+  }
+
+  /** Legacy: every user as one array. Kept until the dashboard uses /users/paged. */
   @Roles(UserRole.ADMIN)
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query({ schema: adminUsersQuerySchema }) query: AdminUsersQuery) {
+    return this.usersService.findAll(query);
   }
 
   @Roles(UserRole.ADMIN)
@@ -145,9 +181,51 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
+  /** Blocks sign-in, buying, paying and every other account action. Signs the user out. */
+  @Roles(UserRole.ADMIN)
+  @Patch(':id/suspend')
+  suspend(
+    @Param('id', { schema: uuidParamSchema }) id: string,
+    @Body({ schema: suspendUserSchema }) body: SuspendUserInput,
+    @CurrentUser() admin: AuthUserPayload,
+  ) {
+    return this.usersService.suspend(id, admin.sub, body.reason);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Patch(':id/activate')
+  activate(
+    @Param('id', { schema: uuidParamSchema }) id: string,
+    @CurrentUser() admin: AuthUserPayload,
+  ) {
+    return this.usersService.activate(id, admin.sub);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Patch(':id/archive')
+  archive(
+    @Param('id', { schema: uuidParamSchema }) id: string,
+    @CurrentUser() admin: AuthUserPayload,
+  ) {
+    return this.usersService.archive(id, admin.sub);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Patch(':id/unarchive')
+  unarchive(
+    @Param('id', { schema: uuidParamSchema }) id: string,
+    @CurrentUser() admin: AuthUserPayload,
+  ) {
+    return this.usersService.unarchive(id, admin.sub);
+  }
+
+  /** Permanent. The user must be archived first (409 otherwise). Orders are kept. */
   @Roles(UserRole.ADMIN)
   @Delete(':id')
-  remove(@Param('id', { schema: uuidParamSchema }) id: string) {
-    return this.usersService.remove(id);
+  remove(
+    @Param('id', { schema: uuidParamSchema }) id: string,
+    @CurrentUser() admin: AuthUserPayload,
+  ) {
+    return this.usersService.remove(id, admin.sub);
   }
 }

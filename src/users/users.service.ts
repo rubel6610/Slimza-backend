@@ -1,18 +1,32 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { mkdir, unlink, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import {
+  archiveWhere,
+  assertArchivedBeforeDelete,
+} from '../common/archive/archive.js';
+import { paginate, searchWhere, toOrderBy } from '../common/pagination/pagination.js';
+import type { Prisma } from '../generated/prisma/client.js';
+import { UserRole, UserStatus } from '../generated/prisma/enums.js';
 import { serializeUser } from '../auth/auth.service.js';
+import { verifyPassword } from '../auth/crypto.util.js';
+import { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
+  DeleteMyAccountInput,
+  AdminUsersPageQuery,
+  AdminUsersQuery,
   CreateAddressInput,
+  PresignAvatarInput,
   UpdateAddressInput,
   UpdateProfileInput,
 } from './users.schemas.js';
+import { StorageService } from '../storage/storage.service.js';
 
 export interface UploadedAvatarFile {
   buffer: Buffer;
@@ -31,7 +45,13 @@ const MIME_TO_EXT: Record<string, string> = {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(UsersService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
+    private readonly storageService: StorageService,
+  ) {}
 
   async getMe(userId: string) {
     const user = await this.prisma.user.findUnique({
@@ -82,7 +102,19 @@ export class UsersService {
       },
     });
 
+    if (input.avatarUrl !== undefined && input.avatarUrl !== existing.avatarUrl) {
+      await this.deleteAvatarIfExists(existing.avatarUrl);
+    }
+
     return serializeUser(updated);
+  }
+
+  presignAvatar(input: PresignAvatarInput) {
+    return this.storageService.createUploadUrl(
+      'avatars',
+      input.filename,
+      input.contentType,
+    );
   }
 
   async updateAvatar(userId: string, file?: UploadedAvatarFile) {
@@ -106,14 +138,11 @@ export class UsersService {
     });
     if (!existing) throw new NotFoundException('User not found');
 
-    const avatarsDir = join(process.cwd(), 'uploads', 'avatars');
-    await mkdir(avatarsDir, { recursive: true });
+    const { url: nextAvatarUrl } = await this.storageService.uploadFile(
+      file,
+      'avatars',
+    );
 
-    const filename = `${userId}-${Date.now()}.${ext}`;
-    const filePath = join(avatarsDir, filename);
-    await writeFile(filePath, file.buffer);
-
-    const nextAvatarUrl = `/uploads/avatars/${filename}`;
     const updated = await this.prisma.user.update({
       where: { id: userId },
       data: { avatarUrl: nextAvatarUrl },
@@ -122,7 +151,7 @@ export class UsersService {
       },
     });
 
-    await this.deleteLocalAvatarIfExists(existing.avatarUrl);
+    await this.deleteAvatarIfExists(existing.avatarUrl);
     return serializeUser(updated);
   }
 
@@ -140,18 +169,22 @@ export class UsersService {
       },
     });
 
-    await this.deleteLocalAvatarIfExists(existing.avatarUrl);
+    await this.deleteAvatarIfExists(existing.avatarUrl);
     return serializeUser(updated);
   }
 
-  private async deleteLocalAvatarIfExists(avatarUrl: string) {
-    if (!avatarUrl.startsWith('/uploads/avatars/')) return;
-    const filename = avatarUrl.slice('/uploads/avatars/'.length);
-    if (!filename || filename.includes('/') || filename.includes('..')) return;
-    try {
-      await unlink(join(process.cwd(), 'uploads', 'avatars', filename));
-    } catch {
-      // File may already be missing; ignore cleanup errors.
+  private async deleteAvatarIfExists(avatarUrl: string) {
+    if (!avatarUrl) return;
+
+    const marker = 'avatars/';
+    const idx = avatarUrl.indexOf(marker);
+    if (idx !== -1) {
+      const key = avatarUrl.slice(idx).split('?')[0].split('#')[0];
+      await this.storageService.deleteFile(key).catch((err) => {
+        this.logger.warn(
+          `Failed to delete old MinIO avatar "${key}": ${String(err)}`,
+        );
+      });
     }
   }
 
@@ -175,6 +208,7 @@ export class UsersService {
           line1: input.line1,
           line2: input.line2 ?? null,
           city: input.city,
+          district: input.district ?? '',
           postcode: input.postcode,
           country: input.country,
           phone: input.phone ?? '',
@@ -210,6 +244,7 @@ export class UsersService {
           line1: input.line1 ?? existing.line1,
           line2: input.line2 !== undefined ? input.line2 || null : existing.line2,
           city: input.city ?? existing.city,
+          district: input.district ?? existing.district,
           postcode: input.postcode ?? existing.postcode,
           country: input.country ?? existing.country,
           phone: input.phone ?? existing.phone,
@@ -276,36 +311,197 @@ export class UsersService {
     };
   }
 
-  async deleteMe(userId: string) {
-    await this.prisma.user.delete({ where: { id: userId } });
-    return { ok: true as const };
-  }
+  /**
+   * The customer deletes their own account (Account → Settings). This is a SOFT delete:
+   * the account is archived and marked `deletedAt`, so it is blocked everywhere and the
+   * customer is signed out, but orders, points and reviews are kept and an admin can
+   * restore it (Dashboard → Users → Archived → Restore). Permanent deletion stays an
+   * admin action (`remove`). Admin accounts can't be deleted this way.
+   */
+  async deleteMe(userId: string, input: DeleteMyAccountInput) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+    if (user.role === UserRole.ADMIN) {
+      throw new ForbiddenException('Admin accounts cannot be deleted from account settings.');
+    }
+    if (!(await verifyPassword(input.password, user.passwordHash))) {
+      throw new BadRequestException('Your password is incorrect');
+    }
 
-  async findAll() {
-    const users = await this.prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        addresses: { orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }] },
+    const now = new Date();
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        deletedAt: now,
+        archivedAt: user.archivedAt ?? now,
+        deletionReason: input.reason || null,
       },
     });
+    await this.revokeSessions(user.id);
+    void this.mailService.sendAccountDeletedEmail({ to: user.email, name: user.firstName || user.name });
+    this.logger.warn(`User ${user.email} deleted their account${input.reason ? ` (reason: ${input.reason})` : ''}`);
+    return {
+      ok: true as const,
+      message: "Your account has been deleted. If you change your mind, contact us and we can restore it.",
+    };
+  }
+
+  // ===========================================================================
+  // Admin: user list + account status + archive lifecycle.
+  // Rules: src/users/account-access.ts and src/common/archive/archive.ts
+  // ===========================================================================
+
+  private readonly withAddresses = {
+    addresses: { orderBy: [{ isDefault: 'desc' as const }, { createdAt: 'asc' as const }] },
+  };
+
+  /** Admin list. Defaults to live (non-archived) users of any status. */
+  async findAll(query: Partial<AdminUsersQuery> = {}) {
+    const users = await this.prisma.user.findMany({
+      where: {
+        ...archiveWhere(query.archived),
+        ...(query.status ? { status: query.status } : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+      include: this.withAddresses,
+    });
     return users.map(serializeUser);
+  }
+
+  /**
+   * Paginated, searchable, sortable user list — the worked example of
+   * src/common/pagination/pagination.ts. Read top to bottom:
+   */
+  async findPage(query: AdminUsersPageQuery) {
+    // 1. Filters → one Prisma `where`. Each piece is {} when not used, so spreading is safe.
+    const where: Prisma.UserWhereInput = {
+      ...archiveWhere(query.archived),
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.role ? { role: query.role } : {}),
+      ...searchWhere(query.q, ['name', 'email', 'phone']),
+    };
+
+    // 2. Count + fetch the page together; the same `where` is used for both,
+    //    so `total` always matches what the pages contain.
+    const result = await paginate(query, {
+      count: () => this.prisma.user.count({ where }),
+      findMany: ({ skip, take }) =>
+        this.prisma.user.findMany({
+          where,
+          orderBy: toOrderBy(query.sort),
+          skip,
+          take,
+          include: this.withAddresses,
+        }),
+    });
+
+    // 3. Never send raw rows (password hashes!) — serialise like every other endpoint.
+    return { ...result, items: result.items.map(serializeUser) };
   }
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      include: {
-        addresses: { orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }] },
-      },
+      include: this.withAddresses,
     });
     if (!user) throw new NotFoundException('User not found');
     return serializeUser(user);
   }
 
-  async remove(id: string) {
-    const existing = await this.prisma.user.findUnique({ where: { id } });
-    if (!existing) throw new NotFoundException('User not found');
-    await this.prisma.user.delete({ where: { id } });
+  /**
+   * Loads the target of an admin action and refuses actions that could lock
+   * the shop out: admins can't act on themselves or on other admin accounts.
+   */
+  private async findManageableUser(id: string, actingAdminId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+    if (user.id === actingAdminId) {
+      throw new ForbiddenException('You cannot suspend, archive or delete your own account.');
+    }
+    if (user.role === UserRole.ADMIN) {
+      throw new ForbiddenException('Admin accounts cannot be suspended, archived or deleted.');
+    }
+    return user;
+  }
+
+  /** Signs the user out everywhere (their refresh tokens stop working). */
+  private async revokeSessions(userId: string) {
+    await this.prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+  }
+
+  /** Suspend: the user can't sign in, buy, pay or use the account. Reversible. */
+  async suspend(id: string, actingAdminId: string, reason?: string) {
+    const user = await this.findManageableUser(id, actingAdminId);
+    const updated = await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        status: UserStatus.SUSPENDED,
+        suspendedAt: user.status === UserStatus.SUSPENDED ? user.suspendedAt : new Date(),
+        suspensionReason: reason?.trim() || null,
+      },
+      include: this.withAddresses,
+    });
+    await this.revokeSessions(user.id);
+    this.logger.warn(`Suspended user ${user.email}${reason ? ` (${reason})` : ''}`);
+    return serializeUser(updated);
+  }
+
+  /** Activate: lift a suspension. */
+  async activate(id: string, actingAdminId: string) {
+    const user = await this.findManageableUser(id, actingAdminId);
+    const updated = await this.prisma.user.update({
+      where: { id: user.id },
+      data: { status: UserStatus.ACTIVE, suspendedAt: null, suspensionReason: null },
+      include: this.withAddresses,
+    });
+    this.logger.log(`Activated user ${user.email}`);
+    return serializeUser(updated);
+  }
+
+  /** Archive: hide from the users list and block the account. Restorable. */
+  async archive(id: string, actingAdminId: string) {
+    const user = await this.findManageableUser(id, actingAdminId);
+    if (user.archivedAt) return this.findOne(user.id);
+    const updated = await this.prisma.user.update({
+      where: { id: user.id },
+      data: { archivedAt: new Date() },
+      include: this.withAddresses,
+    });
+    await this.revokeSessions(user.id);
+    this.logger.warn(`Archived user ${user.email}`);
+    return serializeUser(updated);
+  }
+
+  /**
+   * Restore from the archive. A suspended user stays suspended. Also recovers an
+   * account the customer deleted themselves: they can sign in again with their old password.
+   */
+  async unarchive(id: string, actingAdminId: string) {
+    const user = await this.findManageableUser(id, actingAdminId);
+    if (!user.archivedAt) return this.findOne(user.id);
+    const updated = await this.prisma.user.update({
+      where: { id: user.id },
+      data: { archivedAt: null, deletedAt: null, deletionReason: null, deletionRequestedAt: null },
+      include: this.withAddresses,
+    });
+    this.logger.log(`Restored user ${user.email}${user.deletedAt ? ' (had deleted their own account)' : ''}`);
+    void this.mailService.sendAccountRestoredEmail({ to: user.email, name: user.firstName || user.name });
+    return serializeUser(updated);
+  }
+
+  /**
+   * Permanent delete (archived users only, 409 otherwise). Addresses and
+   * sessions are deleted with the user; their orders are kept with `userId = null`.
+   */
+  async remove(id: string, actingAdminId: string) {
+    const user = await this.findManageableUser(id, actingAdminId);
+    assertArchivedBeforeDelete(user, `User ${user.email}`);
+    await this.prisma.user.delete({ where: { id: user.id } });
+    await this.deleteAvatarIfExists(user.avatarUrl);
+    this.logger.warn(`Permanently deleted user ${user.email}`);
     return { ok: true as const };
   }
 }
